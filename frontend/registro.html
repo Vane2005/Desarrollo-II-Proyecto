@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - TerapiaFisica+</title>
+    <link rel="stylesheet" href="assets/css/registro.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="logo-placeholder">
+                <img src="./assets/img/logo.jpeg" alt="Fisioterapia en casa">
+            </div>
+            <h2 class="brand-name">TerapiaFisica+</h2>
+            
+            <div class="login-section">
+                <p class="login-text">¿Ya Tienes Cuenta?</p>
+                <button class="btn-ingresar" onclick="window.location.href='index.html'">Ingresar</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h1 class="title">Registro</h1>
+            
+            <form id="registroForm" class="registro-form">
+                <div class="form-grid">
+                    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+                    <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
+                    
+                    <input type="email" id="correo" name="correo" placeholder="Correo" required>
+                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" placeholder="F. Nacimiento" required>
+                    
+                    <input type="text" id="cc" name="cc" placeholder="C.C" required>
+                    <input type="tel" id="telefono" name="telefono" placeholder="Telefono" required>
+                    
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required>
+                    <input type="password" id="confirmarContrasena" name="confirmarContrasena" placeholder="Conf. Contraseña" required>
+                </div>
+
+                <button type="submit" class="btn-confirmar">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/registro.js"></script>
+</body>
+</html>
