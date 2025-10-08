@@ -205,10 +205,21 @@ body {
 .btn-delete {
   background-color: #ef4444;
   color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-delete:hover {
   background-color: #dc2626;
+}
+
+.btn-delete:active {
+  transform: scale(0.95);
 }
 
 .empty-state {

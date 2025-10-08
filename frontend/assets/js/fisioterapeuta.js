@@ -10,6 +10,7 @@ let patients = [
     cc: "1234567890",
     diagnostico: "Lesión de rodilla derecha",
     fechaRegistro: "2024-01-15",
+    password: "aB3xZ",
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ let patients = [
     cc: "0987654321",
     diagnostico: "Dolor lumbar crónico",
     fechaRegistro: "2024-01-20",
+    password: "kL9mP",
   },
 ]
 
@@ -63,6 +65,14 @@ function renderPatients() {
                 </div>
                 <div class="patient-info-item">
                     <strong>Fecha Nacimiento:</strong> ${formatDate(patient.fechaNacimiento)}
+                </div>
+                <!-- Added password display with copy button -->
+                <div class="patient-info-item">
+                    <strong>Contraseña:</strong> 
+                    <span id="password-${patient.id}">${patient.password}</span>
+                    <button class="btn-copy-password" onclick="copyPassword('${patient.password}')" title="Copiar contraseña">
+                        📋
+                    </button>
                 </div>
             </div>
             ${
@@ -131,6 +141,8 @@ document.getElementById("addPatientForm").addEventListener("submit", (e) => {
   const formData = new FormData(e.target)
   const sendEmail = document.getElementById("sendEmail").checked
 
+  const generatedPassword = generatePassword()
+
   const newPatient = {
     id: patients.length + 1,
     nombre: formData.get("nombre"),
@@ -141,6 +153,7 @@ document.getElementById("addPatientForm").addEventListener("submit", (e) => {
     cc: formData.get("cc"),
     diagnostico: formData.get("diagnostico"),
     fechaRegistro: new Date().toISOString().split("T")[0],
+    password: generatedPassword,
   }
 
   patients.push(newPatient)
@@ -152,7 +165,9 @@ document.getElementById("addPatientForm").addEventListener("submit", (e) => {
   renderPatients()
   closeAddPatientModal()
 
-  alert("Paciente agregado exitosamente" + (sendEmail ? " y correo enviado" : ""))
+  alert(
+    `Paciente agregado exitosamente${sendEmail ? " y correo enviado" : ""}\n\nContraseña generada: ${generatedPassword}\n\nRecuerda enviar esta contraseña al paciente.`,
+  )
 })
 
 // Enviar correo a paciente
@@ -168,10 +183,11 @@ function sendEmailToPatient(patientId) {
   // Por ahora, solo simulamos el envío
   console.log("[v0] Enviando correo a:", patient.correo)
   console.log("[v0] Datos del paciente:", patient)
+  console.log("[v0] Contraseña:", patient.password)
 
   // Simular envío de correo
   alert(
-    `Invitación enviada a ${patient.nombre} ${patient.apellido} (${patient.correo})\n\nEl paciente recibirá un correo con sus credenciales de acceso.`,
+    `Invitación enviada a ${patient.nombre} ${patient.apellido} (${patient.correo})\n\nContraseña: ${patient.password}\n\nEl paciente recibirá un correo con sus credenciales de acceso.`,
   )
 }
 
@@ -199,4 +215,25 @@ function formatDate(dateString) {
     month: "long",
     day: "numeric",
   })
+}
+
+function generatePassword() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  let password = ""
+  for (let i = 0; i < 5; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return password
+}
+
+function copyPassword(password) {
+  navigator.clipboard
+    .writeText(password)
+    .then(() => {
+      alert("Contraseña copiada al portapapeles: " + password)
+    })
+    .catch((err) => {
+      console.error("Error al copiar:", err)
+      alert("No se pudo copiar la contraseña")
+    })
 }
