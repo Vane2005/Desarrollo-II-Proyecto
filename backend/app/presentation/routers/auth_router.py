@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.presentation.schemas.usuario_schema import FisioCreate
 from app.data.db import get_db 
 from app.logic.auth_service import crear_fisioterapeuta
-import traceback  # 👈 Importa esto
+import traceback 
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -39,7 +39,6 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
             detail=str(e)
         )
     except Exception as e:
-        # 👇 ESTO TE MOSTRARÁ EL ERROR REAL
         print("❌ ERROR COMPLETO:")
         print(traceback.format_exc())
         

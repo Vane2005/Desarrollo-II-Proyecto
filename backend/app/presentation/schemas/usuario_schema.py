@@ -30,4 +30,4 @@ class FisioResponse(BaseModel):
     mensaje: str
 
     class Config:
-        from_attributes = True  # Antes era orm_mode = True
+        from_attributes = True  
