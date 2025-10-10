@@ -6,5 +6,5 @@ app = FastAPI()
 
 @app.post("/auth/register")
 def registrar_usuario(usuario: FisioCreate):
-    # Aquí guardarías en BD
+    # Aquí guarda en BD
     return {"message": f"Usuario {usuario.nombre} registrado con éxito"}
