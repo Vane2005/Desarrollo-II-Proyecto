@@ -1,6 +1,6 @@
 from app.data.models.user import User_Fisioterapeuta
 from sqlalchemy.orm import Session
-from app.utils.security import hash_password
+from app.config.security import hash_password
 
 def crear_fisioterapeuta(db:Session, cedula: str, correo: str,  nombre:str, contrasena: str, telefono:str):
     try:
