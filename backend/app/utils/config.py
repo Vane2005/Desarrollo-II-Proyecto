@@ -1,1 +1,1 @@
-# Configuración del sistema
+# Configuración del sistema, Variables de entorno (UR, BD, MinIo)
