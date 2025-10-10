@@ -132,18 +132,20 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         btnSubmit.textContent = 'Registrando...';
         
         const resultado = await registrarFisioterapeuta(datos);
-        
+
+        // Guardar el email y nombre para usarlo en el pago
+        localStorage.setItem('userEmail', datos.email);
+        localStorage.setItem('userName', datos.nombre);
+
         mostrarMensaje('exito', `
             <strong>✅ Registro exitoso</strong><br>
-            ${resultado.mensaje}
+            ${resultado.mensaje}<br>
+            Redirigiendo al pago...
         `);
-        
-        // Limpiar formulario
-        e.target.reset();
-        
-        // Redirigir al login después de 2 segundos
+
+        // Redirigir a la página de pago después de 2 segundos
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = 'pago.html';
         }, 2000);
         
     } catch (error) {
@@ -151,8 +153,8 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
             <strong>❌ Error en el registro</strong><br>
             ${error.message}
         `);
-    } finally {
-        // Rehabilitar botón
+        
+        // Rehabilitar botón solo si hay error
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'Registrar';
