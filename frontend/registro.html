@@ -25,24 +25,75 @@
             
             <form id="registroForm" class="registro-form">
                 <div class="form-grid">
-                    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
-                    <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
+                    <input 
+                        type="text" 
+                        id="cedula" 
+                        name="cedula" 
+                        placeholder="cedula" 
+                        required
+                        minlength="6"
+                        maxlength="20"
+                        pattern="[0-9]+"
+                        title="La cédula debe tener entre 6 y 20 dígitos"
+                        placeholder="Ej: 1234567890"
+                    >
+                    <input 
+                        type="text" 
+                        id="nombre" 
+                        name="nombre" 
+                        placeholder="nombre" 
+                        required
+                        minlength="2"
+                        maxlength="100"
+                        title="El nombre debe tener mínimo 2 caracteres"
+                    >
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        title="Ingrese un email válido"
+                        placeholder="email" 
+                        required
+                    >
+                    <input 
+                        type="tel" 
+                        id="telefono" 
+                        name="telefono" 
+                        placeholder="Telefono" 
+                        required
+                        minlength="7"
+                        maxlength="15"
+                        pattern="[0-9]+"
+                        title="El teléfono debe tener entre 7 y 15 dígitos"
+                    >
                     
-                    <input type="email" id="correo" name="correo" placeholder="Correo" required>
-                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" placeholder="F. Nacimiento" required>
-                    
-                    <input type="text" id="cc" name="cc" placeholder="C.C" required>
-                    <input type="tel" id="telefono" name="telefono" placeholder="Telefono" required>
-                    
-                    <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required>
-                    <input type="password" id="confirmarContrasena" name="confirmarContrasena" placeholder="Conf. Contraseña" required>
+                    <input 
+                        type="password" 
+                        id="contrasena" 
+                        name="contrasena" 
+                        placeholder="Contraseña" 
+                        required
+                        minlength="8"
+                        maxlength="72"
+                        title="La contraseña debe tener al menos 8 caracteres"
+                        placeholder="Mínimo 8 caracteres"
+                    >
+                    <input 
+                        type="password" 
+                        id="confirmarContrasena" 
+                        name="confirmarContrasena" 
+                        placeholder="Conf. Contraseña" 
+                        required
+                    >
                 </div>
 
-                <button type="submit" class="btn-confirmar">Confirmar</button>
+                <button type="submit" class="btn-confirmar">Registrar</button>
+                
             </form>
+            <p id="message"></p>
         </div>
     </div>
 
-    <script src="assets/js/registro.js"></script>
+    <script src="./assets/js/registro.js"></script>
 </body>
 </html>
