@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.presentation.routers.auth_router import router as auth_router  
 from app.presentation.routers.payment_router import router as payment_router
+from app.config import jwt_config  # Asegura que la configuración JWT se cargue
+
 
 app = FastAPI()
 
