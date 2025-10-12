@@ -2,7 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
 class FisioCreate(BaseModel):
-    """Schema para crear un fisioterapeuta"""
+    #Schema para crear un fisioterapeuta
     cedula: str = Field(..., min_length=6, max_length=20, description="Cédula del fisioterapeuta")
     email: EmailStr = Field(..., description="Email del usuario")
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
@@ -21,7 +21,7 @@ class FisioCreate(BaseModel):
         }
 
 class FisioResponse(BaseModel):
-    """Schema para respuesta del fisioterapeuta"""
+    #Schema para respuesta del fisioterapeuta
     id: str
     email: str
     nombre: str
@@ -31,3 +31,24 @@ class FisioResponse(BaseModel):
 
     class Config:
         from_attributes = True  
+
+class LoginCreate(BaseModel):
+    """Schema para login"""
+    email: EmailStr = Field(..., description="Email del usuario")
+    contrasena: str = Field(..., min_length=4, description="Contraseña")
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "fisio@ejemplo.com",
+                "contrasena": "miPassword123"
+            }
+        }
+class LoginResponse(BaseModel):
+    """Schema para respuesta de login"""
+    access_token: str
+    token_type: str = "bearer"
+    tipo_usuario: str  # "fisio" o "paciente"
+    nombre: str
+    email: str
+    class Config:
+        from_attributes = True        

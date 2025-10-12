@@ -15,5 +15,5 @@ class User_Paciente(Base):
     cedula = Column(String, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     correo = Column(String, unique=True, index=True, nullable=False)
-    contraseña = Column(String, nullable=False)
+    contrasena = Column(String, nullable=False)
     telefono = Column(String, nullable=False)
