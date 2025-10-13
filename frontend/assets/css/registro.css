@@ -202,4 +202,57 @@ body {
     width: 400px;
     height: 350px;
   }
+
+/* Mensajes de éxito y error */
+#message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+#message.exito {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+  /* Estilos para inputs con error */
+  input:invalid:not(:placeholder-shown) {
+      border-color: #ff4444;
+  }
+
+  input:valid:not(:placeholder-shown) {
+      border-color: #4CAF50;
+  }
+
+  /* Deshabilitar botón mientras procesa */
+  button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+  }
+
+  /* Indicador visual de contraseñas que no coinciden */
+  input#confirmarContrasena:invalid {
+      border-color: #ff4444 !important;
+  }
+
 }

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Paciente</title>
+</head>
+<body>
+    <h1>Bienvenido, Paciente: <span id="userName"></span></h1>
+    <p>Tipo: Paciente</p>
+    <button onclick="logout()">Cerrar Sesión</button>
+    <script>
+        document.getElementById('userName').textContent = localStorage.getItem('userName');
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
