@@ -1,158 +1,86 @@
-/* // Login form handler
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const usuario = document.getElementById('usuario').value;
-    const contrasena = document.getElementById('contrasena').value;
-    
-    try {
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: usuario,
-                password: contrasena
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Store token
-            localStorage.setItem('token', data.access_token);
-            // Redirect to dashboard
-            window.location.href = '/dashboard.html';
-        } else {
-            alert('Error: ' + (data.detail || 'Credenciales inválidas'));
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al conectar con el servidor');
-    }
-});
-
-// Forgot password link handler
-document.querySelector('.forgot-password').addEventListener('click', (e) => {
-    e.preventDefault();
-    // Redirect to password recovery page
-    window.location.href = '/recuperar-contrasena.html';
-});
-
-// Register link handler
-document.querySelector('.register-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    // Redirect to registration page
-    window.location.href = '/registro.html';
-});
-
-
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById('usuario').value;  // Cambia 'usuario' a email si actualizas HTML
-    const contrasena = document.getElementById('contrasena').value;
-    
-    try {
-        const response = await fetch('http://localhost:8000/auth/login', {  // Endpoint correcto
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email,  // Usa email en lugar de username
-                contrasena: contrasena
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Guardar token y datos de usuario
-            localStorage.setItem('token', data.access_token);
-            localStorage.setItem('userType', data.tipo_usuario);
-            localStorage.setItem('userName', data.nombre);
-            localStorage.setItem('userEmail', data.email);
-            
-            // Redirigir según tipo
-            if (data.tipo_usuario === 'fisio') {
-                window.location.href = '/dashboard_fisio.html';  // Crea este archivo si no existe
-            } else if (data.tipo_usuario === 'paciente') {
-                window.location.href = '/dashboard_paciente.html';  // Crea este archivo si no existe
-            } else {
-                alert('Tipo de usuario desconocido');
-            }
-        } else {
-            alert('Error: ' + (data.detail || 'Credenciales inválidas'));
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al conectar con el servidor');
-    }
-});
- */
-
 document.addEventListener('DOMContentLoaded', function() {
-const loginForm = document.getElementById('loginForm');  // Asume ID del form en index.html
-const errorDiv = document.getElementById('error-message');  // Agrega un <div id="error-message"></div> en index.html para errores
+    const loginForm = document.getElementById('loginForm');  
+    const errorDiv = document.getElementById('error-message');  
 
-loginForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-    showError('Por favor, completa todos los campos.');
-    return;
+    // --- Verificar si el usuario ya tiene sesión activa ---
+    const token = localStorage.getItem('token');
+    const tipo = localStorage.getItem('tipo_usuario');
+    if (token && tipo) {
+        if (tipo === 'fisio') {
+            window.location.href = 'dashboard_fisio.html';
+        } else if (tipo === 'paciente') {
+            window.location.href = 'dashboard_paciente.html';
+        }
+        return;
     }
 
-    try {
-    const response = await fetch('http://localhost:8000/auth/login', {  // Asume backend en puerto 8000
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo: email, contrasena: password })  // Usa 'correo' y 'contrasena' como en schema
+    // --- Manejador del formulario de login ---
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const usuario = document.getElementById('usuario').value.trim();
+        const contrasena = document.getElementById('contrasena').value.trim();
+
+        if (!usuario || !contrasena) {
+            showError('Por favor, completa todos los campos.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: usuario,      // Asegúrate de que tu backend espere "correo"
+                    contrasena: contrasena
+                })
+            });
+
+            const data = await response.json();
+
+          if (response.ok) {
+    // --- Guardar token y datos ---
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('tipo_usuario', data.tipo_usuario);
+    localStorage.setItem('nombre', data.nombre || 'Usuario');
+
+    // --- Redirigir según tipo ---
+    if (data.tipo_usuario === 'fisio') {
+        window.location.href = 'dashboard_fisio.html';
+    } else if (data.tipo_usuario === 'paciente') {
+        window.location.href = 'dashboard_paciente.html';
+    } else {
+        showError('Tipo de usuario no reconocido.');
+    }
+}
+
+
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            showError('No se pudo conectar con el servidor. Verifica que esté corriendo.');
+        }
     });
 
-    if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('tipo_usuario', data.tipo_usuario);
-        localStorage.setItem('nombre', data.nombre || 'Usuario');
+    // --- Link "Recuperar contraseña" ---
+    document.querySelector('.forgot-password').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'recuperar-contrasena.html';
+    });
 
-        // Verificación y redirección
-        if (data.tipo_usuario === 'fisio') {
-        window.location.href = 'dashboard_fisio.html';
-        } else if (data.tipo_usuario === 'paciente') {
-        window.location.href = 'dashboard_paciente.html';
+    // --- Link "Registrarse" ---
+    document.querySelector('.register-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'registro.html';
+    });
+
+    // --- Mostrar mensajes de error ---
+    function showError(message) {
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.style.color = 'red';
         } else {
-        showError('Tipo de usuario no reconocido.');
+            alert(message);
         }
-    } else {
-        const errorData = await response.json();
-        showError(errorData.detail || 'Error en el login. Intenta de nuevo.');
     }
-    } catch (error) {
-    showError('Error de conexión. Verifica que el servidor esté corriendo.');
-    console.error('Login error:', error);
-    }
-});
-
-function showError(message) {
-    if (errorDiv) {
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    errorDiv.style.color = 'red';
-    } else {
-    alert(message);  // Fallback si no agregas el div
-    }
-}
-
-// Opcional: Verificar si ya está logueado al cargar la página
-const token = localStorage.getItem('token');
-const tipo = localStorage.getItem('tipo_usuario');
-if (token && tipo) {
-    if (tipo === 'fisio') window.location.href = 'dashboard_fisio.html';
-    else if (tipo === 'paciente') window.location.href = 'dashboard_paciente.html';
-}
 });

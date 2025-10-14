@@ -11,7 +11,7 @@ class User_Fisioterapeuta(Base):
 
 
 class User_Paciente(Base):
-    __tablename__ = "Paciente"
+    __tablename__ = "paciente"
     cedula = Column(String, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     correo = Column(String, unique=True, index=True, nullable=False)
