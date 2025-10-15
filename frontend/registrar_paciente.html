@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - TerapiaFisica+</title>
+    <link rel="stylesheet" href="assets/css/registro.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Panel izquierdo con logo -->
+        <div class="left-panel">
+            <div class="logo-placeholder">
+                <img src="./assets/img/logo.jpeg" alt="Fisioterapia en casa">
+            </div>
+            <h2 class="brand-name">TerapiaFisica+</h2>
+        </div>
+
+        <!-- Panel derecho con formulario -->
+        <div class="right-panel">
+            <h1 class="title">Registro de Paciente</h1>
+            
+            <form id="registroForm" class="registro-form">
+                <div class="form-grid">
+                    <input 
+                        type="text" 
+                        id="cedula" 
+                        name="cedula" 
+                        placeholder="Cédula" 
+                        required
+                        minlength="6"
+                        maxlength="20"
+                        pattern="[0-9]+"
+                        title="La cédula debe tener entre 6 y 20 dígitos y solo números"
+                    >
+
+                    <input 
+                        type="text" 
+                        id="nombre" 
+                        name="nombre" 
+                        placeholder="Nombre completo" 
+                        required
+                        minlength="2"
+                        maxlength="100"
+                        title="El nombre debe tener al menos 2 caracteres"
+                    >
+
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Correo electrónico" 
+                        required
+                        title="Ingrese un email válido"
+                    >
+
+                    <input 
+                        type="tel" 
+                        id="telefono" 
+                        name="telefono" 
+                        placeholder="Teléfono" 
+                        required
+                        minlength="7"
+                        maxlength="15"
+                        pattern="[0-9]+"
+                        title="El teléfono debe tener entre 7 y 15 dígitos"
+                    >
+                </div>
+
+                <button type="submit" class="btn-confirmar">Registrar</button>
+            </form>
+
+            <p id="message"></p>
+        </div>
+    </div>
+
+    <script src="./assets/js/registro_paciente.js"></script>
+</body>
+</html>

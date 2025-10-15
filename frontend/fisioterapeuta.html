@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Fisioterapeuta - TerapiaFisica+</title>
+    <link rel="stylesheet" href="assets/css/fisioterapeuta.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1 class="header-title">TerapiaFisica+</h1>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <div class="section-header">
+                    <h2 class="section-title">Gestión de Pacientes</h2>
+                    <button class="btn-add-patient" onclick="openAddPatientModal()">
+                        + Agregar Paciente
+                    </button>
+                </div>
+
+                <div class="patients-container">
+                    <div class="search-bar">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Buscar paciente por nombre o correo..."
+                            onkeyup="filterPatients()"
+                        >
+                    </div>
+
+                    <div class="patients-list" id="patientsList">
+                         Los pacientes se cargarán dinámicamente aquí 
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+     Modal para agregar paciente 
+    <div id="addPatientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Agregar Nuevo Paciente</h3>
+                <button class="close-btn" onclick="closeAddPatientModal()">&times;</button>
+            </div>
+            
+            <form id="addPatientForm" class="patient-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="patientNombre">Nombre</label>
+                        <input type="text" id="patientNombre" name="nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientApellido">Apellido</label>
+                        <input type="text" id="patientApellido" name="apellido" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientCorreo">Correo Electrónico</label>
+                        <input type="email" id="patientCorreo" name="correo" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientTelefono">Teléfono</label>
+                        <input type="tel" id="patientTelefono" name="telefono" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientFechaNacimiento">Fecha de Nacimiento</label>
+                        <input type="date" id="patientFechaNacimiento" name="fechaNacimiento" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientCC">Cédula</label>
+                        <input type="text" id="patientCC" name="cc" required>
+                    </div>
+                </div>
+
+                <div class="form-group-full">
+                    <label for="patientDiagnostico">Diagnóstico</label>
+                    <textarea id="patientDiagnostico" name="diagnostico" rows="3" placeholder="Descripción del diagnóstico..."></textarea>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="sendEmail" name="sendEmail" checked>
+                    <label for="sendEmail">Enviar invitación por correo electrónico</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddPatientModal()">Cancelar</button>
+                    <button type="submit" class="btn-submit">Agregar Paciente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/fisioterapeuta.js"></script>
+</body>
+</html>

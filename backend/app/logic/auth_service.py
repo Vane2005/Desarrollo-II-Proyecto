@@ -53,9 +53,9 @@ def authenticate_user(db: Session, email: str, password: str):
     if fisio and verify_password(password, fisio.contrasena):
         return {"tipo": "fisio", "id": fisio.cedula, "nombre": fisio.nombre, "email": fisio.correo}
     
-    # Buscar en Paciente
+   
     paciente = db.query(User_Paciente).filter(User_Paciente.correo == email).first()
     if paciente and verify_password(password, paciente.contrasena):
-        return {"tipo": "paciente", "id": paciente.cedula, "nombre": paciente.nombre, "email": paciente.correo}
+       return {"tipo": "paciente", "id": paciente.cedula, "nombre": paciente.nombre, "email": paciente.correo}
     
     return None  # Credenciales inválidas (si las datos ingresados no coinciden)

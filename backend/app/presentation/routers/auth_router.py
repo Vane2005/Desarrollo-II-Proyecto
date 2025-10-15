@@ -46,7 +46,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
             detail=str(e)
         )
     except Exception as e:
-        print("❌ ERROR COMPLETO:")
+        print("ERROR COMPLETO:")
         print(traceback.format_exc())
         
         raise HTTPException(
@@ -117,6 +117,6 @@ def get_current_user(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-@router.get("/auth/verify")
+@router.get("/verify")
 async def verify_token(token: str = Depends(oauth2_scheme)):  # Usa OAuth2PasswordBearer de FastAPI
     return {"message": "Token válido", "tipo_usuario": get_current_user(token).tipo_usuario}  # Implementa get_current_user con jwt.decode

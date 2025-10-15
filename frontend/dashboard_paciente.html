@@ -3,18 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Paciente</title>
+    <title>Dashboard Paciente - Ejercicios Asignados</title>
+    <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
+    <style>
+        /* Ajustes específicos del paciente */
+        .content-section {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-top: 15px;
+        }
+
+        .library-header {
+            margin-bottom: 25px;
+        }
+
+        .library-header h2 {
+            font-size: 26px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .library-header p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .filter-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .exercise-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .exercise-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .exercise-content {
+            padding: 15px 20px;
+        }
+
+        .exercise-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .exercise-body-part {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .exercise-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-results h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Bienvenido, Paciente: <span id="userName"></span></h1>
-    <p>Tipo: Paciente</p>
-    <button onclick="logout()">Cerrar Sesión</button>
-    <script>
-        document.getElementById('userName').textContent = localStorage.getItem('userName');
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-    </script>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <span class="toggle-icon">☰</span>
+            </button>
+            
+            <div class="sidebar-header">
+                <h2>FisioApp</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="ejercicios-asignados">
+                    <span class="nav-icon">💪</span>
+                    <span>Ejercicios Asignados</span>
+                </button>
+            </nav>
+            <button class="btn-logout" onclick="logout()">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </button>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="section-title">Ejercicios Asignados</h1>
+            </header>
+
+            <section id="ejercicios-asignados" class="content-section active">
+                <div class="library-header">
+                    <h2>Biblioteca de Ejercicios</h2>
+                    <p>Selecciona una extremidad para filtrar tus ejercicios asignados</p>
+                </div>
+
+                <div class="filters" id="filters">
+                    <!-- Filtros dinámicos -->
+                </div>
+
+                <div class="exercises-grid" id="exercisesGrid">
+                    <!-- Ejercicios dinámicos -->
+                </div>
+
+                <div class="no-results" id="noResults" style="display: none;">
+                    <h3>No se encontraron ejercicios</h3>
+                    <p>Intenta seleccionar otra extremidad</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/dashboard_paciente.js"></script>
 </body>
 </html>

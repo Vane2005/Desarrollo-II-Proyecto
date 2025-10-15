@@ -51,4 +51,23 @@ class LoginResponse(BaseModel):
     nombre: str
     email: str
     class Config:
-        from_attributes = True        
+        from_attributes = True     
+
+class PacienteCreate(BaseModel):
+    #Schema para crear un fisioterapeuta
+    cedula: str = Field(..., min_length=6, max_length=20, description="Cédula")
+    email: EmailStr = Field(..., description="Email ")
+    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
+   
+    telefono: str = Field(..., min_length=7, max_length=15, description="Número de teléfono")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "cedula": "1234567890",
+                "email": "paciente@ejemplo.com",
+                "nombre": "Juan Pérez",
+            
+                "telefono": "3001234567"
+            }
+        }   
