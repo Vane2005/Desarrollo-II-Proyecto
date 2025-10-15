@@ -30,10 +30,7 @@
                     <span class="nav-icon">📊</span>
                     <span>Avance Paciente</span>
                 </button>
-                <button class="nav-item" data-section="biblioteca-ejercicios">
-                    <span class="nav-icon">📚</span>
-                    <span>Biblioteca de Ejercicios</span>
-                </button>
+                
             </nav>
             <button class="btn-logout">
                 <span class="nav-icon">🚪</span>
@@ -82,87 +79,6 @@
 
             <!-- Asignar Ejercicios Section -->
             <section id="asignar-ejercicios" class="content-section">
-                <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Escriba el nombre del paciente a buscar">
-                        <button class="btn-search">Buscar</button>
-                    </div>
-                </div>
-
-                <div class="patients-card">
-                    <div class="patients-header">
-                        <h3>Lista Pacientes Encontrados:</h3>
-                        <div class="global-actions">
-                            <button class="btn-select-all" id="selectAllPatients">Seleccionar Todos</button>
-                            <button class="btn-action btn-create" onclick="window.location.href='registrar_paciente.html'"> Crear Paciente</button>
-                        </div>
-                    </div>
-                    
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient1" class="patient-checkbox">
-                            <label for="patient1" class="patient-name">Nombre Completo del Primer paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient2" class="patient-checkbox">
-                            <label for="patient2" class="patient-name">Nombre Completo del Segundo paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient3" class="patient-checkbox">
-                            <label for="patient3" class="patient-name">Nombre Completo del Tercer paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Avance Paciente Section -->
-            <section id="avance-paciente" class="content-section">
-                <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Escriba el nombre del paciente a buscar">
-                        <button class="btn-search">Buscar</button>
-                    </div>
-                </div>
-
-                <div class="patients-card">
-                    <h3>Lista Pacientes Encontrados:</h3>
-                    <div class="patient-progress-item">
-                        <div class="progress-info">
-                            <p class="patient-name">Nombre Paciente</p>
-                            <p class="progress-label">Avance: <span class="progress-percentage">75%</span></p>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%"></div>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-details">Ver Detalles</button>
-                            <button class="btn-action btn-edit-paciente">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Biblioteca de Ejercicios Section -->
-            <section id="biblioteca-ejercicios" class="content-section">
                 <div class="search-card">
                     <h3>Buscar Paciente Por Nombre:</h3>
                     <div class="search-bar">
@@ -232,6 +148,38 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Avance Paciente Section -->
+            <section id="avance-paciente" class="content-section">
+                <div class="search-card">
+                    <h3>Buscar Paciente Por Nombre:</h3>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Escriba el nombre del paciente a buscar">
+                        <button class="btn-search">Buscar</button>
+                    </div>
+                </div>
+
+                <div class="patients-card">
+                    <h3>Lista Pacientes Encontrados:</h3>
+                    <div class="patient-progress-item">
+                        <div class="progress-info">
+                            <p class="patient-name">Nombre Paciente</p>
+                            <p class="progress-label">Avance: <span class="progress-percentage">75%</span></p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                        <div class="patient-actions">
+                            <button class="btn-action btn-details">Ver Detalles</button>
+                            <button class="btn-action btn-edit-paciente">Editar Paciente</button>
+                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Biblioteca de Ejercicios Section -->
+           
         </main>
     </div>
 
