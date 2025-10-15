@@ -15,12 +15,12 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
     Registra un nuevo Paciente en el sistema
     """
     try:
-        usuario = crear(
+        usuario, contrasena_generada = crear(
             db=db,
             cedula=datos.cedula,
             correo=datos.email,
             nombre=datos.nombre,
-            contrasena=datos.contrasena,
+            
             telefono=datos.telefono
         )
         
@@ -30,6 +30,10 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
                 "id": usuario.cedula,
                 "nombre": usuario.nombre,
                 "email": usuario.correo
+            },
+            "credenciales": {
+                "correo": usuario.correo,
+                "contrasena": contrasena_generada
             }
         }
     

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,17 +8,17 @@
 </head>
 <body>
     <div class="container">
+        <!-- Panel izquierdo con logo -->
         <div class="left-panel">
             <div class="logo-placeholder">
                 <img src="./assets/img/logo.jpeg" alt="Fisioterapia en casa">
             </div>
             <h2 class="brand-name">TerapiaFisica+</h2>
-            
-            
         </div>
 
+        <!-- Panel derecho con formulario -->
         <div class="right-panel">
-            <h1 class="title">Registro paciente</h1>
+            <h1 class="title">Registro de Paciente</h1>
             
             <form id="registroForm" class="registro-form">
                 <div class="form-grid">
@@ -27,67 +26,50 @@
                         type="text" 
                         id="cedula" 
                         name="cedula" 
-                        placeholder="cedula" 
+                        placeholder="Cédula" 
                         required
                         minlength="6"
                         maxlength="20"
                         pattern="[0-9]+"
-                        title="La cédula debe tener entre 6 y 20 dígitos"
-                        placeholder="Ej: 1234567890"
+                        title="La cédula debe tener entre 6 y 20 dígitos y solo números"
                     >
+
                     <input 
                         type="text" 
                         id="nombre" 
                         name="nombre" 
-                        placeholder="nombre" 
+                        placeholder="Nombre completo" 
                         required
                         minlength="2"
                         maxlength="100"
-                        title="El nombre debe tener mínimo 2 caracteres"
+                        title="El nombre debe tener al menos 2 caracteres"
                     >
+
                     <input 
                         type="email" 
                         id="email" 
                         name="email" 
-                        title="Ingrese un email válido"
-                        placeholder="email" 
+                        placeholder="Correo electrónico" 
                         required
+                        title="Ingrese un email válido"
                     >
+
                     <input 
                         type="tel" 
                         id="telefono" 
                         name="telefono" 
-                        placeholder="Telefono" 
+                        placeholder="Teléfono" 
                         required
                         minlength="7"
                         maxlength="15"
                         pattern="[0-9]+"
                         title="El teléfono debe tener entre 7 y 15 dígitos"
                     >
-                    
-                    <input 
-                        type="password" 
-                        id="contrasena" 
-                        name="contrasena" 
-                        placeholder="Contraseña" 
-                        required
-                        minlength="8"
-                        maxlength="72"
-                        title="La contraseña debe tener al menos 8 caracteres"
-                        placeholder="Mínimo 8 caracteres"
-                    >
-                    <input 
-                        type="password" 
-                        id="confirmarContrasena" 
-                        name="confirmarContrasena" 
-                        placeholder="Conf. Contraseña" 
-                        required
-                    >
                 </div>
 
                 <button type="submit" class="btn-confirmar">Registrar</button>
-                
             </form>
+
             <p id="message"></p>
         </div>
     </div>
