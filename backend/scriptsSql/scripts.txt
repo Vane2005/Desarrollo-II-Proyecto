@@ -1,0 +1,72 @@
+-- =========================================
+-- CREACIÓN DE TABLAS BASE
+-- =========================================
+
+CREATE TABLE Fisioterapeuta (
+    Cedula VARCHAR(20) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Correo VARCHAR(100) UNIQUE NOT NULL,
+    Contrasena VARCHAR(100) NOT NULL,
+    Estado VARCHAR(10) NOT NULL,
+    Telefono VARCHAR(20)
+);
+
+CREATE TABLE Paciente (
+    Cedula VARCHAR(20) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Correo VARCHAR(100) UNIQUE NOT NULL,
+    Contrasena VARCHAR(100) NOT NULL,
+    Estado VARCHAR(10) NOT NULL,
+    Telefono VARCHAR(20),
+    Progreso NUMERIC(5,2) DEFAULT 0 CHECK (Progreso >= 0 AND Progreso <= 100)
+);
+
+CREATE TABLE Lesion (
+    Id_lesion SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Extremidad VARCHAR
+);
+
+CREATE TABLE Ejercicio (
+    Id_ejercicio SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Url VARCHAR NOT NULL
+);
+
+-- =========================================
+-- RELACIONES
+-- =========================================
+
+-- Un fisioterapeuta trata a muchos pacientes
+CREATE TABLE Trata (
+    Cedula_fisioterapeuta VARCHAR(20) NOT NULL,
+    Cedula_paciente VARCHAR(20) NOT NULL,
+    PRIMARY KEY (Cedula_fisioterapeuta, Cedula_paciente),
+    FOREIGN KEY (Cedula_fisioterapeuta) REFERENCES Fisioterapeuta(Cedula)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (Cedula_paciente) REFERENCES Paciente(Cedula)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Un paciente sufre una o varias lesiones
+CREATE TABLE Sufre (
+    Cedula_paciente VARCHAR(20) NOT NULL,
+    Id_lesion INT NOT NULL,
+    PRIMARY KEY (Cedula_paciente, Id_lesion),
+    FOREIGN KEY (Cedula_paciente) REFERENCES Paciente(Cedula)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (Id_lesion) REFERENCES Lesion(Id_lesion)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Un ejercicio puede servir para muchas lesiones (y viceversa)
+CREATE TABLE Ejercicio_Lesion (
+    Id_ejercicio INT NOT NULL,
+    Id_lesion INT NOT NULL,
+    PRIMARY KEY (Id_ejercicio, Id_lesion),
+    FOREIGN KEY (Id_ejercicio) REFERENCES Ejercicio(Id_ejercicio)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (Id_lesion) REFERENCES Lesion(Id_lesion)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
