@@ -7,9 +7,9 @@ let cardElement;
 
 // Configuración de pago para Colombia
 const PAYMENT_CONFIG = {
-    amount: 1599900,  // $15,999 COP en centavos (15999 * 100)  
+    amount: 19999900,  // $15,999 COP en centavos (15999 * 100)  
     currency: 'cop', 
-    displayAmount: '$15,999 COP'  
+    displayAmount: '$199,999 COP'  
 };
 
 // Inicializar Stripe
