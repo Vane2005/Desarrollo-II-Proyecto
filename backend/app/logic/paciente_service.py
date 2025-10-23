@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.data.models.user import User_Paciente
-from app.config.security import hash_password
+from data.models.user import User_Paciente
+from config.security import hash_password
 import secrets
 import string
 # import smtplib

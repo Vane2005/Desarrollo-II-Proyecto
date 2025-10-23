@@ -1,24 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from app.presentation.schemas.usuario_schema import (
-    FisioCreate, 
-    LoginCreate, 
-    LoginResponse,
-    RecuperarContrasenaRequest,
-    RecuperarContrasenaResponse
-)
-from app.data.db import get_db 
-from app.logic.auth_service import (
-    crear_fisioterapeuta, 
-    authenticate_user,
-    recuperar_contrasena
-)
-from app.config.jwt_config import create_access_token
+from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse
+from data.db import get_db 
+from logic.auth_service import crear_fisioterapeuta, authenticate_user
+from config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from app.config.jwt_config import SECRET_KEY, ALGORITHM
+from config.jwt_config import SECRET_KEY, ALGORITHM
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -41,6 +31,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
             correo=datos.email,
             nombre=datos.nombre,
             contrasena=datos.contrasena,
+            estado="inactivo",
             telefono=datos.telefono
         )
         
@@ -65,7 +56,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al registrar usuario: {str(e)}"  # 👈 Muestra el error
+            detail=f"Error al registrar usuario: {str(e)}" 
         )
 
 

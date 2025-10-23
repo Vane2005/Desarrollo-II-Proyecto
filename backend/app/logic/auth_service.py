@@ -1,41 +1,17 @@
-""" from app.data.models.user import User_Fisioterapeuta
-from sqlalchemy.orm import Session
-from app.config.security import hash_password
-
-def crear_fisioterapeuta(db:Session, cedula: str, correo: str,  nombre:str, contrasena: str, telefono:str):
-    try:
-        # Hashear contraseña
-        #contrasena_hash = hash_password(contrasena)
-        fisio = User_Fisioterapeuta(cedula=cedula, nombre=nombre, correo=correo, contrasena=contrasena, telefono=telefono)
-        # Usar la sesión recibida
-        db.add(fisio)
-        db.commit()
-        db.refresh(fisio)
-        
-        return fisio
-
-
-    except Exception as e:
-        db.rollback()
-        raise e """
-
-
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from app.data.models.user import User_Fisioterapeuta, User_Paciente
-from app.config.security import hash_password, verify_password
-from app.logic.email_service import send_recovery_email
-from app.logic.utils import generar_contrasena_aleatoria
+from data.models.user import User_Fisioterapeuta, User_Paciente  # Importar ambos modelos
+from config.security import hash_password, verify_password  # Activar hashing
 
-
-def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, telefono: str):
+def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, estado: str, telefono: str):
     try:
         contrasena_hash = hash_password(contrasena)
         fisio = User_Fisioterapeuta(
             cedula=cedula, 
             nombre=nombre, 
             correo=correo, 
-            contrasena=contrasena_hash,
+            contrasena=contrasena_hash,  
+            estado=estado,
             telefono=telefono
         )
         db.add(fisio)
