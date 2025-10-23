@@ -16,7 +16,7 @@ def send_email(to: str, subject: str, body: str):
         smtp.send_message(msg)
  """
 
-# backend/app/logic/email_service.py
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -25,19 +25,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-EMAIL_ORIGEN = os.getenv("EMAIL_ORIGEN", "juan.damian.cuervo@correounivalle.edu.co")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "cuvd hmgd uguj qsge")
+EMAIL_ORIGEN = os.getenv("EMAIL_ORIGEN")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5500")  # Configurable
 
 def send_recovery_email(to: str, contrasena: str, nombre: str = "Usuario"):
     """
     Envía un correo con la contraseña recuperada
-    
-    Args:
-        to: Email del destinatario
-        contrasena: Contraseña del usuario
-        nombre: Nombre del usuario (opcional)
     """
     try:
+        # Validar configuración
+        if not EMAIL_ORIGEN or not EMAIL_PASSWORD:
+            raise Exception("Configuración de email incompleta. Verifica EMAIL_ORIGEN y EMAIL_PASSWORD en .env")
+
         # Crear mensaje
         msg = MIMEMultipart('alternative')
         msg["Subject"] = "Recuperación de Contraseña - TerapiaFisica+"
@@ -60,8 +60,8 @@ def send_recovery_email(to: str, contrasena: str, nombre: str = "Usuario"):
                         <p>Hemos recibido una solicitud para recuperar tu contraseña de TerapiaFisica+.</p>
                         
                         <div style="background: white; border-left: 4px solid #16a085; padding: 20px; margin: 20px 0;">
-                            <p style="margin: 0; color: #666;">Tu contraseña es:</p>
-                            <p style="font-size: 24px; font-weight: bold; color: #16a085; margin: 10px 0;">{contrasena}</p>
+                            <p style="margin: 0; color: #666;">Tu nueva contraseña temporal es:</p>
+                            <p style="font-size: 24px; font-weight: bold; color: #16a085; margin: 10px 0; letter-spacing: 2px;">{contrasena}</p>
                         </div>
                         
                         <p style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px;">
@@ -69,7 +69,7 @@ def send_recovery_email(to: str, contrasena: str, nombre: str = "Usuario"):
                         </p>
                         
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="http://localhost:5500/index.html" 
+                            <a href="{FRONTEND_URL}/index.html" 
                                style="background: #16a085; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
                                 Iniciar Sesión
                             </a>
@@ -97,9 +97,11 @@ def send_recovery_email(to: str, contrasena: str, nombre: str = "Usuario"):
 
         Hemos recibido una solicitud para recuperar tu contraseña de TerapiaFisica+.
 
-        Tu contraseña es: {contrasena}
+        Tu nueva contraseña temporal es: {contrasena}
 
         Por tu seguridad, te recomendamos cambiar esta contraseña después de iniciar sesión.
+
+        Puedes iniciar sesión aquí: {FRONTEND_URL}/index.html
 
         Si no solicitaste esta recuperación, ignora este correo. Tu cuenta permanece segura.
 
@@ -131,6 +133,9 @@ def send_email(to: str, subject: str, body: str):
     Función genérica para enviar emails
     """
     try:
+        if not EMAIL_ORIGEN or not EMAIL_PASSWORD:
+            raise Exception("Configuración de email incompleta")
+
         msg = MIMEText(body)
         msg["Subject"] = subject
         msg["From"] = EMAIL_ORIGEN

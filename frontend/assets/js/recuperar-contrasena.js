@@ -1,4 +1,3 @@
-// frontend/assets/js/recuperar-contrasena.js
 const API_URL = 'http://localhost:8000';
 
 function mostrarMensaje(tipo, contenido) {
@@ -12,6 +11,12 @@ function mostrarMensaje(tipo, contenido) {
             messageDiv.style.display = 'none';
         }, 10000);
     }
+}
+
+// Validar formato de email
+function esEmailValido(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
 }
 
 // Validar correos en tiempo real
@@ -30,6 +35,15 @@ document.getElementById('confirmarCorreo')?.addEventListener('input', function()
 
 document.getElementById('correo')?.addEventListener('input', function() {
     const confirmar = document.getElementById('confirmarCorreo');
+    
+    // Validar formato de email
+    if (this.value && !esEmailValido(this.value)) {
+        this.style.borderColor = '#ff4444';
+    } else {
+        this.style.borderColor = '';
+    }
+    
+    // Revalidar confirmación si ya tiene valor
     if (confirmar.value) {
         confirmar.dispatchEvent(new Event('input'));
     }
@@ -43,7 +57,13 @@ document.getElementById('recuperarForm')?.addEventListener('submit', async (e) =
     const correo = document.getElementById('correo').value.trim();
     const confirmarCorreo = document.getElementById('confirmarCorreo').value.trim();
     
-    // Validar que los correos coincidan
+    // Validaciones previas
+    if (!esEmailValido(correo)) {
+        mostrarMensaje('error', 'Por favor ingresa un correo electrónico válido');
+        document.getElementById('correo').focus();
+        return;
+    }
+    
     if (correo !== confirmarCorreo) {
         mostrarMensaje('error', 'Los correos electrónicos no coinciden');
         document.getElementById('confirmarCorreo').focus();
@@ -51,6 +71,7 @@ document.getElementById('recuperarForm')?.addEventListener('submit', async (e) =
     }
 
     const btnRecuperar = document.getElementById('btnRecuperar');
+    const textoOriginal = btnRecuperar.textContent;
     btnRecuperar.disabled = true;
     btnRecuperar.textContent = 'Procesando...';
 
@@ -71,22 +92,38 @@ document.getElementById('recuperarForm')?.addEventListener('submit', async (e) =
 
         mostrarMensaje('exito', `
             <strong> ¡Contraseña enviada!</strong><br>
-            ${data.mensaje}<br>
-            Revisa tu bandeja de entrada (y spam) en ${correo}
+            ${data.mensaje}<br><br>
+            <strong>Revisa tu bandeja de entrada y spam</strong><br>
+            Correo: <strong>${correo}</strong>
         `);
 
         document.getElementById('recuperarForm').reset();
 
+        // Redirigir al login después de 5 segundos
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 5000);
+
     } catch (error) {
         console.error('Error:', error);
+        
+        let mensajeError = error.message;
+        
+        // Personalizar mensajes de error comunes
+        if (mensajeError.includes('Failed to fetch')) {
+            mensajeError = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo.';
+        } else if (mensajeError.includes('No existe una cuenta')) {
+            mensajeError = 'No existe una cuenta registrada con ese correo electrónico.';
+        }
+        
         mostrarMensaje('error', `
             <strong> Error</strong><br>
-            ${error.message}
+            ${mensajeError}
         `);
     } finally {
         btnRecuperar.disabled = false;
-        btnRecuperar.textContent = 'Recuperar Contraseña';
+        btnRecuperar.textContent = textoOriginal;
     }
 });
 
-console.log('✅ Script de recuperar contraseña cargado correctamente');
+console.log('Script de recuperar contraseña cargado correctamente');
