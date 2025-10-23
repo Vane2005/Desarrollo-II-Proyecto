@@ -71,3 +71,20 @@ class PacienteCreate(BaseModel):
                 "telefono": "3001234567"
             }
         }   
+
+
+class RecuperarContrasenaRequest(BaseModel):
+    #Schema para solicitud de recuperación de contraseña
+    email: EmailStr = Field(..., description="Email del usuario")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "usuario@ejemplo.com"
+            }
+        }
+
+class RecuperarContrasenaResponse(BaseModel):
+    #Schema para respuesta de recuperación de contraseña
+    mensaje: str
+    email: str        
