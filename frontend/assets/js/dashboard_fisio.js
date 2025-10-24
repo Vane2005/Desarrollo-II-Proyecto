@@ -37,10 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Handle logout
+  // Handle logout - CORREGIDO
   logoutBtn.addEventListener("click", () => {
     if (confirm("¿Está seguro que desea cerrar sesión?")) {
-      // Redirect to login page or clear session
+      console.log("🚪 Cerrando sesión...")
+      
+      // Limpiar COMPLETAMENTE el localStorage
+      localStorage.clear()
+      
+      // También puedes eliminar items específicos si prefieres:
+      // localStorage.removeItem('token')
+      // localStorage.removeItem('tipo_usuario')
+      // localStorage.removeItem('nombre')
+      // localStorage.removeItem('email')
+      
+      console.log("✅ LocalStorage limpiado")
+      
+      // Redirigir al login
       window.location.href = "index.html"
     }
   })
@@ -51,8 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", function () {
       const input = this.previousElementSibling
       if (input.value.trim()) {
-        console.log("[v0] Buscando:", input.value)
-        // Add search functionality here
+        console.log("🔍 Buscando:", input.value)
         alert("Función de búsqueda: " + input.value)
       } else {
         alert("Por favor ingrese un término de búsqueda")
@@ -65,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editBtn) {
     editBtn.addEventListener("click", () => {
       alert("Función de edición de información personal")
-      // Add edit functionality here
     })
   }
 
@@ -74,9 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
   actionButtons.forEach((btn) => {
     btn.addEventListener("click", function () {
       const action = this.textContent.trim()
-      console.log("[v0] Acción:", action)
+      console.log("✅ Acción:", action)
       alert("Función: " + action)
-      // Add specific action functionality here
     })
   })
 
@@ -104,8 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((cb) => cb.closest(".exercise-item").querySelector(".exercise-name").textContent)
         .join(", ")
 
-      console.log("[v0] Asignando ejercicios:", exerciseNames)
-      console.log("[v0] A pacientes:", patientNames)
+      console.log("📋 Asignando ejercicios:", exerciseNames)
+      console.log("👥 A pacientes:", patientNames)
 
       alert(`Asignando ejercicios:\n${exerciseNames}\n\nA pacientes:\n${patientNames}`)
 
@@ -151,3 +161,5 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
+console.log("Script dashboard_fisio.js cargado correctamente")
