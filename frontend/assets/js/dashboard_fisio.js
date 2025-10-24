@@ -104,7 +104,7 @@ if (btnBuscar) {
             <input type="checkbox" class="exercise-checkbox" value="${e.id_ejercicio}">
             <h3>${e.nombre}</h3>
             <p>${e.descripcion}</p>
-            <small>${e.parte_cuerpo}</small>
+            <small>${e.categoria}</small>
           </label>
         `;
         container.appendChild(card);
@@ -116,45 +116,52 @@ if (btnBuscar) {
 
   cargarEjercicios();
 
-  // ==========================================
-  // ✅ ASIGNAR EJERCICIOS A PACIENTE
-  // ==========================================
-  const assignBtn = document.getElementById("assignSelectedExercises");
-  if (assignBtn) {
-    assignBtn.addEventListener("click", async () => {
-      if (!window.pacienteCedula) {
-        alert("Primero busque un paciente por cédula.");
-        return;
-      }
+// ==========================================
+// ✅ ASIGNAR EJERCICIOS A PACIENTE
+// ==========================================
+const assignBtn = document.getElementById("assignSelectedExercises");
+if (assignBtn) {
+  assignBtn.addEventListener("click", async () => {
+    if (!window.pacienteCedula) {
+      alert("Primero busque un paciente por cédula.");
+      return;
+    }
 
-      const seleccionados = Array.from(
-        document.querySelectorAll(".exercise-checkbox:checked")
-      ).map((cb) => parseInt(cb.value));
+    const seleccionados = Array.from(
+      document.querySelectorAll(".exercise-checkbox:checked")
+    ).map((cb) => parseInt(cb.value));
 
-      if (seleccionados.length === 0) {
-        alert("Seleccione al menos un ejercicio.");
-        return;
-      }
+    if (seleccionados.length === 0) {
+      alert("Seleccione al menos un ejercicio.");
+      return;
+    }
 
-      try {
-        const res = await fetch(`${API_URL}/asignar-ejercicio`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            cedula_paciente: window.pacienteCedula,
-            ejercicios: seleccionados,
-          }),
-        });
+    console.log("✅ Ejercicios seleccionados:", seleccionados); // debug
 
-        if (!res.ok) throw new Error("Error al asignar");
-        alert("✅ Ejercicios asignados correctamente");
-        document
-          .querySelectorAll(".exercise-checkbox:checked")
-          .forEach((cb) => (cb.checked = false));
-      } catch (error) {
-        alert("❌ Error al asignar ejercicios");
-        console.error(error);
-      }
-    });
-  }
+    try {
+      const res = await fetch(`${API_URL}/asignar-ejercicio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cedula_paciente: window.pacienteCedula,
+          ejercicios: seleccionados,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Error desconocido");
+
+      alert("✅ Ejercicios asignados correctamente");
+      document
+        .querySelectorAll(".exercise-checkbox:checked")
+        .forEach((cb) => (cb.checked = false));
+    } catch (error) {
+      console.error("❌ Error al asignar ejercicios:", error);
+      alert("❌ Error al asignar ejercicios");
+    }
+  });
+}
+
+ 
+
 });

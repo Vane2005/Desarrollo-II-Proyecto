@@ -49,6 +49,46 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
 
 
 # ============================================================
+# 3️⃣ OBTENER LISTA DE EJERCICIOS
+# ============================================================
+
+
+@router.get("/ejercicios")
+def obtener_ejercicios(db: Session = Depends(get_db)):
+    """
+    Devuelve todos los ejercicios disponibles (de cualquier paciente)
+    """
+    print(" Se llamó a /paciente/ejercicios")
+    try:
+        query = text("""
+            SELECT id_ejercicio, nombre, descripcion, categoria
+            FROM Ejercicio
+        """)
+        ejercicios = db.execute(query).fetchall()
+
+        if not ejercicios:
+            print(" No hay ejercicios en la base de datos.")
+            return []
+
+        print(" Ejercicios encontrados:", ejercicios)
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "categoria": e[3]
+            }
+            for e in ejercicios
+            ]
+    except Exception as e:
+        import traceback, sys
+        print(" ERROR EN /paciente/ejercicios:")
+        traceback.print_exc(file=sys.stdout)
+        return {"error_debug": repr(e)}
+
+
+
+# ============================================================
 # 2️⃣ BUSCAR PACIENTE POR CÉDULA
 # ============================================================
 @router.get("/{cedula}")
@@ -91,33 +131,11 @@ def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
 
 
 
-# ============================================================
-# 3️⃣ OBTENER LISTA DE EJERCICIOS
-# ============================================================
-@router.get("/ejercicios")
-def obtener_ejercicios(db: Session = Depends(get_db)):
-    """
-    Devuelve todos los ejercicios disponibles
-    """
-    try:
-        query = text("""
-            SELECT id_ejercicio, nombre, descripcion, parte_cuerpo
-            FROM Ejercicio
-        """)
-        ejercicios = db.execute(query).fetchall()
 
-        return [
-            {
-                "id_ejercicio": e[0],
-                "nombre": e[1],
-                "descripcion": e[2],
-                "parte_cuerpo": e[3]
-            }
-            for e in ejercicios
-        ]
-    except Exception as e:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 
 
 # ============================================================
@@ -149,11 +167,13 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
             })
         db.commit()
 
-        return {"mensaje": "✅ Ejercicios asignados correctamente"}
+        return {"mensaje": " Ejercicios asignados correctamente"}
     except Exception as e:
         db.rollback()
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al asignar ejercicios: {str(e)}")
+
+
 
 
 
