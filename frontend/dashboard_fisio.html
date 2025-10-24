@@ -80,15 +80,16 @@
             <!-- Asignar Ejercicios Section -->
             <section id="asignar-ejercicios" class="content-section">
                 <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
+                    <h3>Buscar Paciente Por cedula:</h3>
                     <div class="search-bar">
-                        <select class="select-patient">
-                            <option>Seleccione una opción</option>
-                            <option>Paciente 1</option>
-                            <option>Paciente 2</option>
-                            <option>Paciente 3</option>
-                        </select>
-                        <button class="btn-search">Buscar</button>
+                    <input type="text" id="cedulaInput" placeholder="Ingrese cédula del paciente">
+                    <button id="btnBuscarCedula" class="btn-search">Buscar</button>
+                    </div>
+
+                    <div id="infoPaciente" class="info-card" style="display: none;">
+                      <h3>Datos del Paciente</h3>
+                      <p><strong>Nombre:</strong> <span id="pacienteNombre"></span></p>
+                      <p><strong>Correo:</strong> <span id="pacienteCorreo"></span></p>
                     </div>
                     
                     <button class="btn-assign-exercises" id="assignSelectedExercises">Asignar Ejercicios Seleccionados</button>
