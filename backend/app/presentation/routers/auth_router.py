@@ -8,22 +8,15 @@ from app.presentation.schemas.usuario_schema import (
     RecuperarContrasenaResponse
 )
 from app.data.db import get_db 
-from app.logic.auth_service import (
-    crear_fisioterapeuta, 
-    authenticate_user,
-    recuperar_contrasena
-)
-from app.config.jwt_config import create_access_token
+from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
+from app.logic.email_service import send_recovery_email
+from app.logic.utils import generar_contrasena_aleatoria
+from app.config.jwt_config import create_access_token, SECRET_KEY, ALGORITHM
+from app.config.security import hash_password
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from app.config.jwt_config import SECRET_KEY, ALGORITHM
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -41,6 +34,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
             correo=datos.email,
             nombre=datos.nombre,
             contrasena=datos.contrasena,
+            estado="inactivo",
             telefono=datos.telefono
         )
         
@@ -54,7 +48,6 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
         }
     
     except ValueError as e:
-        # Errores de validación
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -65,7 +58,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al registrar usuario: {str(e)}"  # 👈 Muestra el error
+            detail=f"Error al registrar usuario: {str(e)}" 
         )
 
 
@@ -85,7 +78,7 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
             )
         
         # Crear token JWT con tipo de usuario
-        access_token_expires = timedelta(minutes=30)  # Ajusta según sea necesario
+        access_token_expires = timedelta(minutes=30)
         access_token = create_access_token(
             data={"sub": user_data["email"], "tipo": user_data["tipo"]}, 
             expires_delta=access_token_expires
@@ -119,7 +112,6 @@ def get_current_user(token: str):
                 detail="Token inválido: tipo de usuario no encontrado",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        # Puedes retornar un objeto o dict con tipo_usuario
         class User:
             def __init__(self, tipo_usuario):
                 self.tipo_usuario = tipo_usuario
@@ -132,8 +124,8 @@ def get_current_user(token: str):
         )
 
 @router.get("/verify")
-async def verify_token(token: str = Depends(oauth2_scheme)):  # Usa OAuth2PasswordBearer de FastAPI
-    return {"message": "Token válido", "tipo_usuario": get_current_user(token).tipo_usuario}  # Implementa get_current_user con jwt.decode
+async def verify_token(token: str = Depends(oauth2_scheme)):
+    return {"message": "Token válido", "tipo_usuario": get_current_user(token).tipo_usuario}
 
 
 @router.post("/recuperar-contrasena", response_model=RecuperarContrasenaResponse)
@@ -154,14 +146,12 @@ def recuperar_contrasena_endpoint(
         }
     
     except ValueError as e:
-        # Usuario no encontrado
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
     
     except Exception as e:
-        # Error al enviar email u otro error
         print("ERROR EN RECUPERAR CONTRASEÑA:", traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

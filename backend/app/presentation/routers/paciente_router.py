@@ -20,7 +20,6 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
             cedula=datos.cedula,
             correo=datos.email,
             nombre=datos.nombre,
-            
             telefono=datos.telefono
         )
         
@@ -49,5 +48,5 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al registrar usuario: {str(e)}"  # 👈 Muestra el error
+            detail=f"Error al registrar usuario: {str(e)}" 
         )

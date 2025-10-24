@@ -1,21 +1,14 @@
-# backend/app/utils/security.py
+import bcrypt
 from passlib.context import CryptContext
-
-# Configurar bcrypt SIN validación de longitud
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12  # Opcional: número de rondas
-)
 
 def hash_password(password: str) -> str:
     """
     Hashea una contraseña usando bcrypt.
     IMPORTANTE: Trunca a 72 caracteres antes de hashear.
     """
-    # Truncar ANTES de pasar a passlib
+    # Truncar ANTES de pasar a bcrypt
     password_truncated = password[:72] if len(password) > 72 else password
-    return pwd_context.hash(password_truncated)
+    return bcrypt.hashpw(password_truncated.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -23,4 +16,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     # Truncar también en la verificación
     plain_password_truncated = plain_password[:72] if len(plain_password) > 72 else plain_password
-    return pwd_context.verify(plain_password_truncated, hashed_password)
+    return bcrypt.checkpw(  # ← CORREGIDO: era "chechpw", ahora es "checkpw"
+        plain_password_truncated.encode("utf-8"),
+        hashed_password.encode("utf-8"),
+    )

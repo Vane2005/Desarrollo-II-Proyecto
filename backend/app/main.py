@@ -1,4 +1,3 @@
-# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.presentation.routers.auth_router import router as auth_router  
@@ -8,10 +7,10 @@ from app.config import jwt_config  # Asegura que la configuración JWT se cargue
 
 app = FastAPI()
 
-# CORS SETTINGS - Asegúrate de que esto esté antes de include_router
+# CORS SETTINGS 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # <-- Usa "*" para permitir todo temporalmente (luego puedes restringirlo)
+    allow_origins=["*"],  # <-- Usa "*" para permitir todo temporalmente
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
