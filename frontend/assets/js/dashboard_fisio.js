@@ -1,153 +1,167 @@
-// Navigation functionality
+// ===============================
+// DASHBOARD FISIO JS COMPLETO
+// ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  const navItems = document.querySelectorAll(".nav-item")
-  const sections = document.querySelectorAll(".content-section")
-  const sectionTitle = document.getElementById("section-title")
-  const logoutBtn = document.querySelector(".btn-logout")
-  const toggleSidebarBtn = document.getElementById("toggleSidebar")
-  const sidebar = document.getElementById("sidebar")
+  const API_URL = "http://localhost:8000/paciente";
 
-  // Section titles mapping
+  const navItems = document.querySelectorAll(".nav-item");
+  const sections = document.querySelectorAll(".content-section");
+  const sectionTitle = document.getElementById("section-title");
+  const logoutBtn = document.querySelector(".btn-logout");
+  const toggleSidebarBtn = document.getElementById("toggleSidebar");
+  const sidebar = document.getElementById("sidebar");
+
   const sectionTitles = {
     "informacion-personal": "Información Personal",
     "asignar-ejercicios": "Asignar Ejercicios",
     "avance-paciente": "Avance Paciente",
-    "biblioteca-ejercicios": "Biblioteca de Ejercicios",
-  }
+  };
 
+  // === Toggle Sidebar ===
   toggleSidebarBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed")
-  })
+    sidebar.classList.toggle("collapsed");
+  });
 
-  // Handle navigation clicks
+  // === Navegación entre secciones ===
   navItems.forEach((item) => {
     item.addEventListener("click", function () {
-      const targetSection = this.getAttribute("data-section")
+      const targetSection = this.getAttribute("data-section");
+      navItems.forEach((nav) => nav.classList.remove("active"));
+      sections.forEach((section) => section.classList.remove("active"));
 
-      // Remove active class from all nav items and sections
-      navItems.forEach((nav) => nav.classList.remove("active"))
-      sections.forEach((section) => section.classList.remove("active"))
+      this.classList.add("active");
+      document.getElementById(targetSection).classList.add("active");
+      sectionTitle.textContent = sectionTitles[targetSection];
+    });
+  });
 
-      // Add active class to clicked nav item and corresponding section
-      this.classList.add("active")
-      document.getElementById(targetSection).classList.add("active")
-
-      // Update section title
-      sectionTitle.textContent = sectionTitles[targetSection]
-    })
-  })
-
-  // Handle logout
+  // === Logout ===
   logoutBtn.addEventListener("click", () => {
-    if (confirm("¿Está seguro que desea cerrar sesión?")) {
-      // Redirect to login page or clear session
-      window.location.href = "index.html"
+    if (confirm("¿Desea cerrar sesión?")) window.location.href = "login.html";
+  });
+
+  // ==========================================
+  // 🔍 BUSCAR PACIENTE POR CÉDULA
+  // ==========================================
+ // debug: buscar paciente y mostrar status + body en consola
+const btnBuscar = document.getElementById("btnBuscarCedula");
+if (btnBuscar) {
+  btnBuscar.addEventListener("click", async () => {
+    const cedula = document.getElementById("cedulaInput").value.trim();
+    if (!cedula) return alert("Por favor ingrese una cédula");
+
+    try {
+      const res = await fetch(`${API_URL}/${cedula}`);
+      // debug: ver status y texto
+      console.log("FETCH /paciente status:", res.status);
+      const text = await res.text();
+      console.log("FETCH /paciente body (raw):", text);
+
+      // Luego parsear si es JSON válido
+      if (!res.ok) {
+        // intenta mostrar JSON si viene así
+        try {
+          const errJson = JSON.parse(text);
+          alert("No encontrado: " + (errJson.detail || JSON.stringify(errJson)));
+        } catch (e) {
+          alert("No encontrado (status " + res.status + ")");
+        }
+        document.getElementById("infoPaciente").style.display = "none";
+        return;
+      }
+
+      const data = JSON.parse(text);
+      document.getElementById("infoPaciente").style.display = "block";
+      document.getElementById("pacienteNombre").textContent = data.nombre;
+      document.getElementById("pacienteCorreo").textContent = data.correo;
+      window.pacienteCedula = cedula;
+      console.log("Paciente encontrado:", data);
+    } catch (error) {
+      console.error("Error fetch paciente:", error);
+      alert("❌ Error de conexión con el servidor");
+      document.getElementById("infoPaciente").style.display = "none";
     }
-  })
+  });
+}
 
-  // Handle search buttons
-  const searchButtons = document.querySelectorAll(".btn-search")
-  searchButtons.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const input = this.previousElementSibling
-      if (input.value.trim()) {
-        console.log("[v0] Buscando:", input.value)
-        // Add search functionality here
-        alert("Función de búsqueda: " + input.value)
-      } else {
-        alert("Por favor ingrese un término de búsqueda")
-      }
-    })
-  })
 
-  // Handle edit button
-  const editBtn = document.querySelector(".btn-edit")
-  if (editBtn) {
-    editBtn.addEventListener("click", () => {
-      alert("Función de edición de información personal")
-      // Add edit functionality here
-    })
+  // ==========================================
+  // 🏋️ CARGAR EJERCICIOS DISPONIBLES
+  // ==========================================
+  async function cargarEjercicios() {
+    try {
+      const res = await fetch(`${API_URL}/ejercicios`);
+      const ejercicios = await res.json();
+
+      const container = document.getElementById("exercisesGrid");
+      container.innerHTML = "";
+
+      ejercicios.forEach((e) => {
+        const card = document.createElement("div");
+        card.classList.add("exercise-card");
+        card.innerHTML = `
+          <label class="exercise-item">
+            <input type="checkbox" class="exercise-checkbox" value="${e.id_ejercicio}">
+            <h3>${e.nombre}</h3>
+            <p>${e.descripcion}</p>
+            <small>${e.categoria}</small>
+          </label>
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Error cargando ejercicios:", err);
+    }
   }
 
-  // Handle patient action buttons
-  const actionButtons = document.querySelectorAll(".btn-action")
-  actionButtons.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const action = this.textContent.trim()
-      console.log("[v0] Acción:", action)
-      alert("Función: " + action)
-      // Add specific action functionality here
-    })
-  })
+  cargarEjercicios();
 
-  const assignExercisesBtn = document.getElementById("assignSelectedExercises")
-  if (assignExercisesBtn) {
-    assignExercisesBtn.addEventListener("click", () => {
-      const selectedPatients = document.querySelectorAll(".patient-checkbox:checked")
-      const selectedExercises = document.querySelectorAll(".exercise-checkbox:checked")
+// ==========================================
+// ✅ ASIGNAR EJERCICIOS A PACIENTE
+// ==========================================
+const assignBtn = document.getElementById("assignSelectedExercises");
+if (assignBtn) {
+  assignBtn.addEventListener("click", async () => {
+    if (!window.pacienteCedula) {
+      alert("Primero busque un paciente por cédula.");
+      return;
+    }
 
-      if (selectedPatients.length === 0) {
-        alert("Por favor seleccione al menos un paciente")
-        return
-      }
+    const seleccionados = Array.from(
+      document.querySelectorAll(".exercise-checkbox:checked")
+    ).map((cb) => parseInt(cb.value));
 
-      if (selectedExercises.length === 0) {
-        alert("Por favor seleccione al menos un ejercicio")
-        return
-      }
+    if (seleccionados.length === 0) {
+      alert("Seleccione al menos un ejercicio.");
+      return;
+    }
 
-      const patientNames = Array.from(selectedPatients)
-        .map((cb) => cb.nextElementSibling.textContent)
-        .join(", ")
+    console.log("✅ Ejercicios seleccionados:", seleccionados); // debug
 
-      const exerciseNames = Array.from(selectedExercises)
-        .map((cb) => cb.closest(".exercise-item").querySelector(".exercise-name").textContent)
-        .join(", ")
+    try {
+      const res = await fetch(`${API_URL}/asignar-ejercicio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cedula_paciente: window.pacienteCedula,
+          ejercicios: seleccionados,
+        }),
+      });
 
-      console.log("[v0] Asignando ejercicios:", exerciseNames)
-      console.log("[v0] A pacientes:", patientNames)
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Error desconocido");
 
-      alert(`Asignando ejercicios:\n${exerciseNames}\n\nA pacientes:\n${patientNames}`)
+      alert("✅ Ejercicios asignados correctamente");
+      document
+        .querySelectorAll(".exercise-checkbox:checked")
+        .forEach((cb) => (cb.checked = false));
+    } catch (error) {
+      console.error("❌ Error al asignar ejercicios:", error);
+      alert("❌ Error al asignar ejercicios");
+    }
+  });
+}
 
-      // Desmarcar checkboxes después de asignar
-      selectedPatients.forEach((cb) => (cb.checked = false))
-      selectedExercises.forEach((cb) => (cb.checked = false))
-    })
-  }
+ 
 
-  const selectAllPatientsBtn = document.createElement("button")
-  selectAllPatientsBtn.textContent = "Seleccionar Todos"
-  selectAllPatientsBtn.className = "btn-action"
-  selectAllPatientsBtn.style.marginBottom = "1rem"
-
-  const patientsCard = document.querySelector("#asignar-ejercicios .patients-card")
-  if (patientsCard) {
-    patientsCard.insertBefore(selectAllPatientsBtn, patientsCard.querySelector(".patient-item"))
-
-    selectAllPatientsBtn.addEventListener("click", () => {
-      const checkboxes = document.querySelectorAll(".patient-checkbox")
-      const allChecked = Array.from(checkboxes).every((cb) => cb.checked)
-
-      checkboxes.forEach((cb) => (cb.checked = !allChecked))
-      selectAllPatientsBtn.textContent = allChecked ? "Seleccionar Todos" : "Deseleccionar Todos"
-    })
-  }
-
-  const selectAllExercisesBtn = document.createElement("button")
-  selectAllExercisesBtn.textContent = "Seleccionar Todos"
-  selectAllExercisesBtn.className = "btn-action"
-  selectAllExercisesBtn.style.marginBottom = "1rem"
-
-  const exercisesCard = document.querySelector("#biblioteca-ejercicios .exercises-card")
-  if (exercisesCard) {
-    exercisesCard.insertBefore(selectAllExercisesBtn, exercisesCard.querySelector(".exercises-grid"))
-
-    selectAllExercisesBtn.addEventListener("click", () => {
-      const checkboxes = document.querySelectorAll(".exercise-checkbox")
-      const allChecked = Array.from(checkboxes).every((cb) => cb.checked)
-
-      checkboxes.forEach((cb) => (cb.checked = !allChecked))
-      selectAllExercisesBtn.textContent = allChecked ? "Seleccionar Todos" : "Deseleccionar Todos"
-    })
-  }
-})
+});

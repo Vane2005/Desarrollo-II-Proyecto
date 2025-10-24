@@ -1,240 +1,141 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Fisioterapeuta</title>
-    <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Fisioterapeuta</title>
+  <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
+  
 </head>
 <body>
-    <div class="dashboard-container">
+  <div class="dashboard-container">
 
-        <aside class="sidebar" id="sidebar">
-            <button class="btn-toggle-sidebar" id="toggleSidebar">
-                <span class="toggle-icon">☰</span>
-            </button>
-            
-            <div class="sidebar-header">
-                <h2>FisioApp</h2>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="btn-toggle-sidebar" id="toggleSidebar">
+        <span class="toggle-icon">☰</span>
+      </button>
+
+      <div class="sidebar-header">
+        <h2>FisioApp</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="informacion-personal">
+          <span class="nav-icon">👤</span>
+          <span>Información Personal</span>
+        </button>
+        <button class="nav-item" data-section="asignar-ejercicios">
+          <span class="nav-icon">📋</span>
+          <span>Asignar Ejercicios</span>
+        </button>
+        <button class="nav-item" data-section="avance-paciente">
+          <span class="nav-icon">📊</span>
+          <span>Avance Paciente</span>
+        </button>
+      </nav>
+
+      <button class="btn-logout">
+        <span class="nav-icon">🚪</span>
+        <span>Cerrar Sesión</span>
+      </button>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+      <header class="content-header">
+        <h1 id="section-title">Información Personal</h1>
+      </header>
+
+      <!-- ================== INFORMACIÓN PERSONAL ================== -->
+      <section id="informacion-personal" class="content-section active">
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Título Profesional: Fisioterapeuta</h3>
+            <button class="btn-edit">Guardar Cambios</button>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nombre</label>
+              <input type="text" class="info-input" value="Nombre fisio">
             </div>
-            <nav class="sidebar-nav">
-                <button class="nav-item active" data-section="informacion-personal">
-                    <span class="nav-icon">👤</span>
-                    <span>Información Personal</span>
-                </button>
-                <button class="nav-item" data-section="asignar-ejercicios">
-                    <span class="nav-icon">📋</span>
-                    <span>Asignar Ejercicios</span>
-                </button>
-                <button class="nav-item" data-section="avance-paciente">
-                    <span class="nav-icon">📊</span>
-                    <span>Avance Paciente</span>
-                </button>
-                <button class="nav-item" data-section="biblioteca-ejercicios">
-                    <span class="nav-icon">📚</span>
-                    <span>Biblioteca de Ejercicios</span>
-                </button>
-            </nav>
-            <button class="btn-logout">
-                <span class="nav-icon">🚪</span>
-                <span>Cerrar Sesión</span>
-            </button>
-        </aside>
+            <div class="info-item">
+              <label>Apellido</label>
+              <input type="text" class="info-input" value="Apellido fisio">
+            </div>
+            <div class="info-item">
+              <label>Documento De Identidad</label>
+              <input type="text" class="info-input" value="documento fisio">
+            </div>
+            <div class="info-item">
+              <label>Correo Electrónico</label>
+              <input type="email" class="info-input" value="correo fisio">
+            </div>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <input type="tel" class="info-input" value="telefono fisio">
+            </div>
+          </div>
+        </div>
+      </section>
 
-         
-        <main class="main-content">
-              
-            <header class="content-header">
-                <h1 id="section-title">Información Personal</h1>
-            </header>
+      <!-- ================== ASIGNAR EJERCICIOS ================== -->
+      <section id="asignar-ejercicios" class="content-section">
+        <div class="search-card">
+          <h3>Buscar Paciente Por Cédula:</h3>
+          <div class="search-bar">
+            <input type="text" id="cedulaInput" placeholder="Ingrese cédula del paciente">
+            <button id="btnBuscarCedula" class="btn-search">Buscar</button>
+          </div>
 
-            <!-- Información Personal Section -->
-            <section id="informacion-personal" class="content-section active">
-                <div class="info-card">
-                    <div class="card-header">
-                        <h3>Título Profesional: Fisioterapeuta</h3>
-                        <button class="btn-edit">Guardar Cambios</button>
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <label>Nombre</label>
-                            <input type="text" class="info-input" value="Nombre fisio">
-                        </div>
-                        <div class="info-item">
-                            <label>Apellido</label>
-                            <input type="text" class="info-input" value="Apellido fisio">
-                        </div>
-                        <div class="info-item">
-                            <label>Documento De Identidad</label>
-                            <input type="text" class="info-input" value="documento fisio">
-                        </div>
-                        <div class="info-item">
-                            <label>Correo Electrónico</label>
-                            <input type="email" class="info-input" value="correo fisio">
-                        </div>
-                        <div class="info-item">
-                            <label>Teléfono</label>
-                            <input type="tel" class="info-input" value="telefono fisio">
-                        </div>
-                    </div>
-                </div>
-            </section>
+          <div id="infoPaciente" class="info-card" style="display: none;">
+            <h3>Datos del Paciente</h3>
+            <p><strong>Nombre:</strong> <span id="pacienteNombre"></span></p>
+            <p><strong>Correo:</strong> <span id="pacienteCorreo"></span></p>
+          </div>
 
-            <!-- Asignar Ejercicios Section -->
-            <section id="asignar-ejercicios" class="content-section">
-                <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Escriba el nombre del paciente a buscar">
-                        <button class="btn-search">Buscar</button>
-                    </div>
-                </div>
+          <button class="btn-assign-exercises" id="assignSelectedExercises">Asignar Ejercicios Seleccionados</button>
+        </div>
 
-                <div class="patients-card">
-                    <div class="patients-header">
-                        <h3>Lista Pacientes Encontrados:</h3>
-                        <div class="global-actions">
-                            <button class="btn-select-all" id="selectAllPatients">Seleccionar Todos</button>
-                            <button class="btn-action btn-create" onclick="window.location.href='registrar_paciente.html'"> Crear Paciente</button>
-                        </div>
-                    </div>
-                    
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient1" class="patient-checkbox">
-                            <label for="patient1" class="patient-name">Nombre Completo del Primer paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient2" class="patient-checkbox">
-                            <label for="patient2" class="patient-name">Nombre Completo del Segundo paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                    <div class="patient-item">
-                        <div class="patient-select">
-                            <input type="checkbox" id="patient3" class="patient-checkbox">
-                            <label for="patient3" class="patient-name">Nombre Completo del Tercer paciente en la lista</label>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-edit-patient">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <div class="exercises-card">
+          <h3>Lista De Ejercicios Disponibles:</h3>
+          <!-- Aquí se llenan los ejercicios desde el backend -->
+          <div class="exercises-grid" id="exercisesGrid">
+            <p>Cargando ejercicios...</p>
+          </div>
+        </div>
+      </section>
 
-            <!-- Avance Paciente Section -->
-            <section id="avance-paciente" class="content-section">
-                <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Escriba el nombre del paciente a buscar">
-                        <button class="btn-search">Buscar</button>
-                    </div>
-                </div>
+      <!-- ================== AVANCE PACIENTE ================== -->
+      <section id="avance-paciente" class="content-section">
+        <div class="search-card">
+          <h3>Buscar Paciente Por Nombre:</h3>
+          <div class="search-bar">
+            <input type="text" placeholder="Escriba el nombre del paciente a buscar">
+            <button class="btn-search">Buscar</button>
+          </div>
+        </div>
 
-                <div class="patients-card">
-                    <h3>Lista Pacientes Encontrados:</h3>
-                    <div class="patient-progress-item">
-                        <div class="progress-info">
-                            <p class="patient-name">Nombre Paciente</p>
-                            <p class="progress-label">Avance: <span class="progress-percentage">75%</span></p>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%"></div>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-action btn-details">Ver Detalles</button>
-                            <button class="btn-action btn-edit-paciente">Editar Paciente</button>
-                            <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <div class="patients-card">
+          <h3>Lista Pacientes Encontrados:</h3>
+          <div class="patient-progress-item">
+            <div class="progress-info">
+              <p class="patient-name">Nombre Paciente</p>
+              <p class="progress-label">Avance: <span class="progress-percentage">75%</span></p>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 75%"></div>
+            </div>
+            <div class="patient-actions">
+              <button class="btn-action btn-details">Ver Detalles</button>
+              <button class="btn-action btn-edit-paciente">Editar Paciente</button>
+              <button class="btn-action btn-disable">Inhabilitar Paciente</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-            <!-- Biblioteca de Ejercicios Section -->
-            <section id="biblioteca-ejercicios" class="content-section">
-                <div class="search-card">
-                    <h3>Buscar Paciente Por Nombre:</h3>
-                    <div class="search-bar">
-                        <select class="select-patient">
-                            <option>Seleccione una opción</option>
-                            <option>Paciente 1</option>
-                            <option>Paciente 2</option>
-                            <option>Paciente 3</option>
-                        </select>
-                        <button class="btn-search">Buscar</button>
-                    </div>
-                    
-                    <button class="btn-assign-exercises" id="assignSelectedExercises">Asignar Ejercicios Seleccionados</button>
-                </div>
-
-                <div class="exercises-card">
-                    <h3>Lista De Ejercicios Encontrados:</h3>
-                    <div class="exercises-grid">
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise1">
-                                <label for="exercise1" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Estiramiento de Cuello</p>
-                        </div>
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise2">
-                                <label for="exercise2" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Flexión de Rodilla</p>
-                        </div>
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise3">
-                                <label for="exercise3" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Rotación de Hombro</p>
-                        </div>
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise4">
-                                <label for="exercise4" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Extensión Lumbar</p>
-                        </div>
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise5">
-                                <label for="exercise5" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Equilibrio en Una Pierna</p>
-                        </div>
-                        <div class="exercise-item">
-                            <div class="exercise-image">
-                                <img src="/placeholder.svg?height=150&width=200" alt="Ejercicio">
-                                <input type="checkbox" class="exercise-checkbox" id="exercise6">
-                                <label for="exercise6" class="checkbox-label"></label>
-                            </div>
-                            <p class="exercise-name">Abducción de Cadera</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="assets/js/dashboard_fisio.js"></script>
+  <script src="assets/js/dashboard_fisio.js"></script>
 </body>
 </html>

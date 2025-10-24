@@ -621,3 +621,47 @@ body {
     display: none;
   }
 }
+
+/* ==== ESTILOS PARA LAS TARJETAS DE EJERCICIOS ==== */
+
+.exercise-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exercise-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.exercise-item h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.exercise-item p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+
+.exercise-item small {
+  font-size: 0.8rem;
+  color: #16a085;
+  font-weight: 500;
+}
+
+.exercise-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #16a085;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
