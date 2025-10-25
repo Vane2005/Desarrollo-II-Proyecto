@@ -33,16 +33,17 @@ class FisioResponse(BaseModel):
         from_attributes = True  
 
 class LoginCreate(BaseModel):
-    """Schema para login"""
-    email: EmailStr = Field(..., description="Email del usuario")
+    """Schema para login - ahora usa cédula en lugar de email"""
+    cedula: str = Field(..., min_length=6, max_length=20, description="Cédula del usuario")
     contrasena: str = Field(..., min_length=4, description="Contraseña")
     class Config:
         json_schema_extra = {
             "example": {
-                "email": "fisio@ejemplo.com",
+                "cedula": "1234567890",
                 "contrasena": "miPassword123"
             }
         }
+
 class LoginResponse(BaseModel):
     """Schema para respuesta de login"""
     access_token: str
@@ -87,4 +88,4 @@ class RecuperarContrasenaRequest(BaseModel):
 class RecuperarContrasenaResponse(BaseModel):
     #Schema para respuesta de recuperación de contraseña
     mensaje: str
-    email: str        
+    email: str

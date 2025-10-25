@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse
+from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse
 from data.db import get_db 
-from logic.auth_service import crear_fisioterapeuta, authenticate_user
+from logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
 from config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
@@ -63,22 +63,23 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=LoginResponse)
 def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
     """
-    Inicia sesión y verifica tipo de usuario.
+    Inicia sesión verificando la cédula en las tablas Fisioterapeuta y Paciente.
+    Redirige al dashboard correspondiente según el tipo de usuario.
     """
     try:
-        # Autenticar
-        user_data = authenticate_user(db, datos.email, datos.contrasena)
+        # Autenticar por cédula
+        user_data = authenticate_user(db, datos.cedula, datos.contrasena)
         if not user_data:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciales inválidas",
+                detail="Cédula o contraseña incorrecta",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
         # Crear token JWT con tipo de usuario
-        access_token_expires = timedelta(minutes=30)  # Ajusta según sea necesario
+        access_token_expires = timedelta(minutes=30)
         access_token = create_access_token(
-            data={"sub": user_data["email"], "tipo": user_data["tipo"]}, 
+            data={"sub": user_data["email"], "tipo": user_data["tipo"], "cedula": user_data["id"]}, 
             expires_delta=access_token_expires
         )
         

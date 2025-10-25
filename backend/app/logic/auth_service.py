@@ -1,3 +1,5 @@
+from logic.email_service import send_recovery_email
+from logic.utils import generar_contrasena_aleatoria
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from data.models.user import User_Fisioterapeuta, User_Paciente  # Importar ambos modelos
@@ -23,15 +25,18 @@ def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, con
         raise e
 
 
-def authenticate_user(db: Session, email: str, password: str):
-
-    # Buscar en Fisioterapeuta
-    fisio = db.query(User_Fisioterapeuta).filter(User_Fisioterapeuta.correo == email).first()
+def authenticate_user(db: Session, cedula: str, password: str):
+    """
+    Autentica un usuario buscando por cédula en ambas tablas (Fisioterapeuta y Paciente).
+    Retorna el tipo de usuario y sus datos si las credenciales son correctas.
+    """
+    # Buscar en Fisioterapeuta por cédula
+    fisio = db.query(User_Fisioterapeuta).filter(User_Fisioterapeuta.cedula == cedula).first()
     if fisio and verify_password(password, fisio.contrasena):
         return {"tipo": "fisio", "id": fisio.cedula, "nombre": fisio.nombre, "email": fisio.correo}
     
-    # Buscar en Paciente
-    paciente = db.query(User_Paciente).filter(User_Paciente.correo == email).first()
+    # Buscar en Paciente por cédula
+    paciente = db.query(User_Paciente).filter(User_Paciente.cedula == cedula).first()
     if paciente and verify_password(password, paciente.contrasena):
        return {"tipo": "paciente", "id": paciente.cedula, "nombre": paciente.nombre, "email": paciente.correo}
     

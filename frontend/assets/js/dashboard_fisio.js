@@ -35,10 +35,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // === Logout ===
-  logoutBtn.addEventListener("click", () => {
-    if (confirm("¿Desea cerrar sesión?")) window.location.href = "login.html";
-  });
+// === Logout ===
+logoutBtn.addEventListener("click", async () => {
+  if (!confirm("¿Desea cerrar sesión?")) return;
+
+  try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('tipo_usuario');
+    localStorage.removeItem('nombre');
+  } catch (e) {
+    console.warn('Error limpiando localStorage al cerrar sesión', e);
+  }
+  window.location.replace('index.html');
+});
+
 
   // ==========================================
   // 🔍 BUSCAR PACIENTE POR CÉDULA
