@@ -1,0 +1,15 @@
+-- =========================================
+-- INSERCIÓN DE PACIENTES
+-- =========================================
+INSERT INTO Paciente (Cedula, Nombre, Correo, Contrasena, Estado, Telefono, Progreso) VALUES
+('1111111111', 'Pedro Sánchez Gómez', 'pedro.sanchez@email.com', 'hashed_password_p1', 'Activo', '3101111111', 45.50),
+('2222222222', 'Laura Ramírez Díaz', 'laura.ramirez@email.com', 'hashed_password_p2', 'Activo', '3102222222', 78.25),
+('3333333333', 'Diego Morales Ortiz', 'diego.morales@email.com', 'hashed_password_p3', 'Activo', '3103333333', 30.00),
+('4444444444', 'Sofía Castro Vargas', 'sofia.castro@email.com', 'hashed_password_p4', 'Activo', '3104444444', 62.75),
+('5555555555', 'Miguel Ángel Herrera', 'miguel.herrera@email.com', 'hashed_password_p5', 'Activo', '3105555555', 15.00),
+('6666666666', 'Carolina Jiménez Roa', 'carolina.jimenez@email.com', 'hashed_password_p6', 'Activo', '3106666666', 90.00),
+('7777777777', 'Andrés Felipe Rojas', 'andres.rojas@email.com', 'hashed_password_p7', 'Activo', '3107777777', 55.50),
+('8888888888', 'Valentina López Cruz', 'valentina.lopez@email.com', 'hashed_password_p8', 'Inactivo', '3108888888', 0.00),
+('9999999999', 'Santiago Gutiérrez', 'santiago.gutierrez@email.com', 'hashed_password_p9', 'Activo', '3109999999', 38.25),
+('1010101010', 'Isabella Fernández', 'isabella.fernandez@email.com', 'hashed_password_p10', 'Activo', '3101010101', 82.00);
+

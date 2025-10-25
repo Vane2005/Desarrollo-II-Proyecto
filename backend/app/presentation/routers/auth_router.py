@@ -4,6 +4,10 @@ from app.presentation.schemas.usuario_schema import FisioCreate, LoginCreate, Lo
 from app.data.db import get_db 
 from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena, cambiar_contrasena
 from app.config.jwt_config import create_access_token
+from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse
+from data.db import get_db 
+from logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
+from config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
@@ -58,15 +62,16 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=LoginResponse)
 def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
     """
-    Inicia sesión y verifica tipo de usuario y estado de pago.
+    Inicia sesión verificando la cédula en las tablas Fisioterapeuta y Paciente.
+    Redirige al dashboard correspondiente según el tipo de usuario.
     """
     try:
-        # Autenticar
-        user_data = authenticate_user(db, datos.email, datos.contrasena)
+        # Autenticar por cédula
+        user_data = authenticate_user(db, datos.cedula, datos.contrasena)
         if not user_data:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciales inválidas",
+                detail="Cédula o contraseña incorrecta",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         

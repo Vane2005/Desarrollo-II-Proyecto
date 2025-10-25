@@ -1,0 +1,17 @@
+=========================================
+Insercion extremidades basicas
+=========================================
+INSERT INTO Extremidad (Nombre) VALUES
+('Brazo'),
+('Hombro'),
+('Codo'),
+('Muñeca'),
+('Mano'),
+('Pierna'),
+('Rodilla'),
+('Tobillo'),
+('Pie'),
+('Cervical'),
+('Lumbar'),
+('Tronco'),
+('Cadera');
