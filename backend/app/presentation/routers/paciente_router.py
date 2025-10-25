@@ -176,5 +176,58 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
 
 
 
-
+# ============================================================
+# 5️⃣ OBTENER EJERCICIOS COMPLETADOS DE UN PACIENTE
+# ============================================================
+@router.get("/ejercicios-completados/{cedula}")
+def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios completados de un paciente específico
+    incluyendo la URL del video de Cloudinary
+    """
+    try:
+        query = text("""
+            SELECT 
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Fecha_realizacion,
+                ta.Observaciones
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado = 'Completado'
+            ORDER BY ta.Fecha_realizacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return []
+        
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General",
+                "fecha_realizacion": e[6].isoformat() if e[6] else None,
+                "observaciones": e[7]
+            }
+            for e in ejercicios
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/ejercicios-completados:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener ejercicios completados: {str(e)}"
+        )
 

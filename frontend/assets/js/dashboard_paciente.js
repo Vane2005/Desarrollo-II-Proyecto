@@ -46,10 +46,18 @@ const filtersContainer = document.getElementById("filters")
 const exercisesGrid = document.getElementById("exercisesGrid")
 const noResults = document.getElementById("noResults")
 
+const API_URL = "http://localhost:8000/paciente"
+
 // Inicializar
 document.addEventListener("DOMContentLoaded", () => {
   generarFiltros()
   mostrarEjercicios(ejercicios)
+  initSidebar()
+  initNavigation()
+  cargarFiltros()
+  cargarEjercicios()
+  cargarFiltrosRealizados()
+  cargarEjerciciosRealizadosDesdeAPI()
 })
 
 // Generar los botones de filtro dinámicamente
@@ -81,7 +89,7 @@ function mostrarEjercicios(lista) {
   if (lista.length === 0) {
     noResults.style.display = "block"
     return
-    }
+  }
 
   noResults.style.display = "none"
 
@@ -89,14 +97,14 @@ function mostrarEjercicios(lista) {
     const card = document.createElement("div")
     card.classList.add("exercise-card")
 
-        card.innerHTML = `
-            <img src="${e.imagen}" alt="${e.nombre}" class="exercise-image">
-            <div class="exercise-content">
-                <span class="exercise-body-part">${e.parteCuerpo}</span>
-                <h3 class="exercise-title">${e.nombre}</h3>
-                <p class="exercise-description">${e.descripcion}</p>
-            </div>
-        `
+    card.innerHTML = `
+      <img src="${e.imagen}" alt="${e.nombre}" class="exercise-image">
+      <div class="exercise-content">
+        <span class="exercise-body-part">${e.parteCuerpo}</span>
+        <h3 class="exercise-title">${e.nombre}</h3>
+        <p class="exercise-description">${e.descripcion}</p>
+      </div>
+    `
 
     exercisesGrid.appendChild(card)
   })
@@ -161,51 +169,10 @@ const ejerciciosAsignados = [
 ]
 
 // Datos de ejemplo para ejercicios realizados
-const ejerciciosRealizados = [
-  {
-    id: 1,
-    nombre: "Flexión de Rodilla",
-    extremidad: "Rodilla",
-    descripcion: "Ejercicio para fortalecer los músculos de la rodilla",
-    repeticiones: 10,
-    fechaRealizacion: "2024-01-15",
-    completado: true,
-    imagen: "/knee-flexion-exercise.jpg",
-  },
-  {
-    id: 2,
-    nombre: "Elevación de Brazo",
-    extremidad: "Brazo",
-    descripcion: "Ejercicio para mejorar la movilidad del hombro",
-    repeticiones: 15,
-    fechaRealizacion: "2024-01-14",
-    completado: true,
-    imagen: "/arm-elevation-exercise.jpg",
-  },
-  {
-    id: 3,
-    nombre: "Rotación de Cuello",
-    extremidad: "Cervical",
-    descripcion: "Ejercicio para mejorar la movilidad cervical",
-    repeticiones: 10,
-    fechaRealizacion: "2024-01-13",
-    completado: true,
-    imagen: "/neck-rotation-exercise.png",
-  },
-]
+const ejerciciosRealizados = []
 
 let filtroActual = "Todos"
 let filtroRealizadosActual = "Todos"
-
-// Inicialización
-document.addEventListener("DOMContentLoaded", () => {
-  initSidebar()
-  initNavigation()
-  cargarFiltros()
-  cargarEjercicios()
-  cargarFiltrosRealizados()
-  cargarEjerciciosRealizados()
-})
 
 // Funcionalidad del sidebar
 function initSidebar() {
@@ -274,12 +241,12 @@ function cargarFiltros() {
 
   filtersContainer.innerHTML = extremidades
     .map(
-    (ext) => `
-      <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
+      (ext) => `
+        <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
                 onclick="filtrarEjerciciosAsignados('${ext}')">
           ${ext}
-      </button>
-    `,
+        </button>
+      `,
     )
     .join("")
 }
@@ -360,17 +327,59 @@ function cargarFiltrosRealizados() {
 
   filtersContainer.innerHTML = extremidades
     .map(
-    (ext) => `
-      <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
+      (ext) => `
+        <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
                 onclick="filtrarEjerciciosRealizados('${ext}')">
           ${ext}
-      </button>
-    `,
+        </button>
+      `,
     )
     .join("")
 }
 
-// Cargar ejercicios realizados
+async function cargarEjerciciosRealizadosDesdeAPI() {
+  try {
+    // Get patient cedula from localStorage (assuming it's stored during login)
+    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+    if (!cedula) {
+      console.error("No se encontró la cédula del paciente")
+      mostrarMensajeError("No se pudo identificar al paciente")
+      return
+    }
+
+    const response = await fetch(`${API_URL}/ejercicios-completados/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar ejercicios: ${response.status}`)
+    }
+
+    const ejerciciosCompletados = await response.json()
+
+    // Update the global variable with real data
+    ejerciciosRealizados.length = 0 // Clear array
+    ejerciciosRealizados.push(
+      ...ejerciciosCompletados.map((ej) => ({
+        id: ej.id_ejercicio,
+        nombre: ej.nombre,
+        extremidad: ej.extremidad,
+        descripcion: ej.descripcion,
+        repeticiones: ej.repeticiones,
+        fechaRealizacion: ej.fecha_realizacion,
+        completado: true,
+        urlVideo: ej.url_video,
+        observaciones: ej.observaciones,
+      })),
+    )
+
+    // Reload the UI with real data
+    cargarEjerciciosRealizados()
+  } catch (error) {
+    console.error("Error al cargar ejercicios completados:", error)
+    mostrarMensajeError("Error al cargar los ejercicios completados")
+  }
+}
+
 function cargarEjerciciosRealizados() {
   const grid = document.getElementById("exercisesGridRealizados")
   const noResults = document.getElementById("noResultsRealizados")
@@ -393,10 +402,23 @@ function cargarEjerciciosRealizados() {
     .map(
       (ejercicio) => `
         <div class="exercise-card completed">
-            <div class="exercise-image">
-                <img src="${ejercicio.imagen}" alt="${ejercicio.nombre}">
+            ${
+              ejercicio.urlVideo
+                ? `
+              <div class="exercise-video">
+                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                  <source src="${ejercicio.urlVideo}" type="video/mp4">
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              </div>
+            `
+                : `
+              <div class="exercise-image">
+                <img src="${ejercicio.imagen || "/placeholder.svg?height=200&width=300"}" alt="${ejercicio.nombre}">
                 <div class="completed-badge">✓ Completado</div>
-            </div>
+              </div>
+            `
+            }
             <div class="exercise-content">
                 <h3 class="exercise-title">${ejercicio.nombre}</h3>
                 <span class="exercise-category">${ejercicio.extremidad}</span>
@@ -405,6 +427,15 @@ function cargarEjerciciosRealizados() {
                     <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
                     <span><strong>Fecha:</strong> ${formatearFecha(ejercicio.fechaRealizacion)}</span>
                 </div>
+                ${
+                  ejercicio.observaciones
+                    ? `
+                  <div class="exercise-observations">
+                    <strong>Observaciones:</strong> ${ejercicio.observaciones}
+                  </div>
+                `
+                    : ""
+                }
             </div>
         </div>
     `,
@@ -429,14 +460,14 @@ function filtrarEjerciciosRealizados(extremidad) {
 function marcarComoRealizado(id) {
   const ejercicio = ejerciciosAsignados.find((ej) => ej.id === id)
   if (ejercicio) {
-  const ejercicioRealizado = {
-    ...ejercicio,
-    fechaRealizacion: new Date().toISOString().split("T")[0],
-    completado: true,
-  }
-  ejerciciosRealizados.unshift(ejercicioRealizado)
+    const ejercicioRealizado = {
+      ...ejercicio,
+      fechaRealizacion: new Date().toISOString().split("T")[0],
+      completado: true,
+    }
+    ejerciciosRealizados.unshift(ejercicioRealizado)
     cargarFiltrosRealizados()
-  cargarEjerciciosRealizados()
+    cargarEjerciciosRealizados()
     alert("¡Ejercicio marcado como realizado!")
   }
 }
@@ -451,16 +482,29 @@ function formatearFecha(fecha) {
   })
 }
 
+function mostrarMensajeError(mensaje) {
+  const grid = document.getElementById("exercisesGridRealizados")
+  if (grid) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+        <p style="color: #e74c3c; font-size: 1.1rem;">${mensaje}</p>
+      </div>
+    `
+  }
+}
+
 // Cerrar sesión
 function cerrarSesion() {
-  if (!confirm("¿Desea cerrar sesión?")) return;
+  if (!confirm("¿Desea cerrar sesión?")) return
 
   try {
-    localStorage.removeItem('token');
-    localStorage.removeItem('tipo_usuario');
-    localStorage.removeItem('nombre');
+    localStorage.removeItem("token")
+    localStorage.removeItem("tipo_usuario")
+    localStorage.removeItem("nombre")
+    localStorage.removeItem("cedula")
+    localStorage.removeItem("usuario_id")
   } catch (e) {
-    console.warn('Error limpiando localStorage al cerrar sesión', e);
+    console.warn("Error limpiando localStorage al cerrar sesión", e)
   }
-  window.location.replace('index.html');
-};
+  window.location.replace("index.html")
+}
