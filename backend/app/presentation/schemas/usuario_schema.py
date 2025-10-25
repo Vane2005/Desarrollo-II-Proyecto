@@ -72,9 +72,8 @@ class PacienteCreate(BaseModel):
             }
         }   
 
-
 class RecuperarContrasenaRequest(BaseModel):
-    #Schema para solicitud de recuperación de contraseña
+    """Schema para solicitud de recuperación de contraseña"""
     email: EmailStr = Field(..., description="Email del usuario")
     
     class Config:
@@ -85,6 +84,26 @@ class RecuperarContrasenaRequest(BaseModel):
         }
 
 class RecuperarContrasenaResponse(BaseModel):
-    #Schema para respuesta de recuperación de contraseña
+    """Schema para respuesta de recuperación de contraseña"""
     mensaje: str
-    email: str        
+    email: str
+
+class CambiarContrasenaRequest(BaseModel):
+    """Schema para solicitud de cambio de contraseña"""
+    contrasena_actual: str = Field(..., min_length=4, description="Contraseña actual")
+    contrasena_nueva: str = Field(..., min_length=8, description="Nueva contraseña (mínimo 8 caracteres)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "contrasena_actual": "password123",
+                "contrasena_nueva": "newPassword456"
+            }
+        }
+
+class CambiarContrasenaResponse(BaseModel):
+    """Schema para respuesta de cambio de contraseña"""
+    mensaje: str
+    email: str
+
+

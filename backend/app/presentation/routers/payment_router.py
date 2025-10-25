@@ -1,12 +1,12 @@
 # backend/app/presentation/routers/payment_router.py
 from fastapi import APIRouter, HTTPException, status
-from presentation.schemas.payment_schema import PaymentIntentCreate, PaymentIntentResponse
-from logic.payment_service import crear_payment_intent, confirmar_pago
-from config.stripe_config import get_stripe_publishable_key
+from app.presentation.schemas.payment_schema import PaymentIntentCreate, PaymentIntentResponse
+from app.logic.payment_service import crear_payment_intent, confirmar_pago
+from app.config.stripe_config import get_stripe_publishable_key
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from data.db import get_db 
-from logic.fisio_service import actualizar_estado_fisioterapeuta  
+from app.data.db import get_db 
+from app.logic.fisio_service import actualizar_estado_fisioterapeuta  
 
 
 router = APIRouter(prefix="/payments", tags=["Pagos"])

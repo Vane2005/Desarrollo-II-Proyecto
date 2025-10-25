@@ -1,17 +1,20 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from data.models.user import User_Fisioterapeuta, User_Paciente  # Importar ambos modelos
-from config.security import hash_password, verify_password  # Activar hashing
+from app.data.models.user import User_Fisioterapeuta, User_Paciente
+from app.config.security import hash_password, verify_password
+from app.logic.email_service import send_recovery_email
+from app.logic.utils import generar_contrasena_aleatoria  # ✅ AGREGAR ESTE IMPORT
 
-def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, estado: str, telefono: str):
+
+def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, telefono: str):
     try:
+        # Hashear contraseña
         contrasena_hash = hash_password(contrasena)
         fisio = User_Fisioterapeuta(
             cedula=cedula, 
             nombre=nombre, 
             correo=correo, 
-            contrasena=contrasena_hash,  
-            estado=estado,
+            contrasena=contrasena_hash,
             telefono=telefono
         )
         db.add(fisio)
@@ -24,7 +27,10 @@ def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, con
 
 
 def authenticate_user(db: Session, email: str, password: str):
-
+    """
+    Autentica usuario y retorna tipo si es válido.
+    Busca en ambas tablas (Fisioterapeuta y Paciente).
+    """
     # Buscar en Fisioterapeuta
     fisio = db.query(User_Fisioterapeuta).filter(User_Fisioterapeuta.correo == email).first()
     if fisio and verify_password(password, fisio.contrasena):
@@ -40,7 +46,19 @@ def authenticate_user(db: Session, email: str, password: str):
 
 def recuperar_contrasena(db: Session, email: str):
     """
-    Busca el usuario por email y envía contraseña temporal por correo.
+    Busca el usuario por email y envía su contraseña por correo.
+    Busca en ambas tablas (Fisioterapeuta y Paciente).
+    
+    Args:
+        db: Sesión de la base de datos
+        email: Email del usuario
+        
+    Returns:
+        dict con información del resultado
+        
+    Raises:
+        ValueError: Si el usuario no existe
+        Exception: Si hay error al enviar el email
     """
     # Buscar en Fisioterapeuta
     fisio = db.query(User_Fisioterapeuta).filter(
@@ -54,7 +72,7 @@ def recuperar_contrasena(db: Session, email: str):
         
         db.commit()
         
-        # Enviar email
+        # Enviar email con la nueva contraseña
         send_recovery_email(
             to=fisio.correo,
             contrasena=nueva_contrasena,
@@ -80,7 +98,7 @@ def recuperar_contrasena(db: Session, email: str):
         
         db.commit()
         
-        # Enviar email
+        # Enviar email con la nueva contraseña
         send_recovery_email(
             to=paciente.correo,
             contrasena=nueva_contrasena,
@@ -96,3 +114,79 @@ def recuperar_contrasena(db: Session, email: str):
     
     # No se encontró el usuario
     raise ValueError("No existe una cuenta registrada con ese correo electrónico")
+
+
+def cambiar_contrasena(db: Session, email: str, contrasena_actual: str, contrasena_nueva: str):
+    """
+    Cambia la contraseña de un usuario (fisioterapeuta o paciente)
+    
+    Args:
+        db: Sesión de base de datos
+        email: Email del usuario
+        contrasena_actual: Contraseña actual para verificar
+        contrasena_nueva: Nueva contraseña a establecer
+    
+    Returns:
+        Dict con información del usuario actualizado
+    
+    Raises:
+        ValueError: Si el usuario no existe o la contraseña actual es incorrecta
+    """
+    print(f"🔐 Intentando cambiar contraseña para: {email}")
+    
+    # Buscar en Fisioterapeuta
+    fisio = db.query(User_Fisioterapeuta).filter(User_Fisioterapeuta.correo == email).first()
+    if fisio:
+        print(f"✅ Usuario encontrado en tabla Fisioterapeuta")
+        
+        # Verificar contraseña actual
+        if not verify_password(contrasena_actual, fisio.contrasena):
+            print(f"❌ Contraseña actual incorrecta")
+            raise ValueError("La contraseña actual es incorrecta")
+        
+        # Validar que la nueva contraseña sea diferente
+        if verify_password(contrasena_nueva, fisio.contrasena):
+            raise ValueError("La nueva contraseña debe ser diferente a la actual")
+        
+        # Actualizar contraseña
+        fisio.contrasena = hash_password(contrasena_nueva)
+        db.commit()
+        db.refresh(fisio)
+        
+        print(f"✅ Contraseña actualizada exitosamente para fisioterapeuta")
+        return {
+            "tipo": "fisio",
+            "nombre": fisio.nombre,
+            "email": fisio.correo
+        }
+    
+    # Buscar en Paciente
+    paciente = db.query(User_Paciente).filter(User_Paciente.correo == email).first()
+    if paciente:
+        print(f"✅ Usuario encontrado en tabla Paciente")
+        
+        # Verificar contraseña actual
+        if not verify_password(contrasena_actual, paciente.contrasena):
+            print(f"❌ Contraseña actual incorrecta")
+            raise ValueError("La contraseña actual es incorrecta")
+        
+        # Validar que la nueva contraseña sea diferente
+        if verify_password(contrasena_nueva, paciente.contrasena):
+            raise ValueError("La nueva contraseña debe ser diferente a la actual")
+        
+        # Actualizar contraseña
+        paciente.contrasena = hash_password(contrasena_nueva)
+        db.commit()
+        db.refresh(paciente)
+        
+        print(f"✅ Contraseña actualizada exitosamente para paciente")
+        return {
+            "tipo": "paciente",
+            "nombre": paciente.nombre,
+            "email": paciente.correo
+        }
+    
+    # No se encontró el usuario
+    print(f"❌ Usuario no encontrado")
+    raise ValueError("Usuario no encontrado")
+

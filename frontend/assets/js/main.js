@@ -2,17 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');  
     const errorDiv = document.getElementById('error-message');  
 
-    // --- Verificar si el usuario ya tiene sesión activa ---
-    const token = localStorage.getItem('token');
-    const tipo = localStorage.getItem('tipo_usuario');
-    if (token && tipo) {
-        if (tipo === 'fisio') {
-            window.location.href = 'dashboard_fisio.html';
-        } else if (tipo === 'paciente') {
-            window.location.href = 'dashboard_paciente.html';
-        }
-        return;
-    }
+    // --- NOTA: NO verificar sesión previa aquí ---
+    // Esto permite que el usuario siempre vea el login primero
 
     // --- Manejador del formulario de login ---
     loginForm.addEventListener('submit', async function(e) {
@@ -31,29 +22,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: usuario,      // Asegúrate de que tu backend espere "correo"
+                    email: usuario,
                     contrasena: contrasena
                 })
             });
 
             const data = await response.json();
 
-          if (response.ok) {
-    // --- Guardar token y datos ---
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('tipo_usuario', data.tipo_usuario);
-    localStorage.setItem('nombre', data.nombre || 'Usuario');
+            if (response.ok) {
+                // --- Guardar token y datos ---
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('tipo_usuario', data.tipo_usuario);
+                localStorage.setItem('nombre', data.nombre || 'Usuario');
 
-    // --- Redirigir según tipo ---
-    if (data.tipo_usuario === 'fisio') {
-        window.location.href = 'dashboard_fisio.html';
-    } else if (data.tipo_usuario === 'paciente') {
-        window.location.href = 'dashboard_paciente.html';
-    } else {
-        showError('Tipo de usuario no reconocido.');
-    }
-}
-
+                // --- Redirigir según tipo ---
+                if (data.tipo_usuario === 'fisio') {
+                    window.location.href = 'dashboard_fisio.html';
+                } else if (data.tipo_usuario === 'paciente') {
+                    window.location.href = 'dashboard_paciente.html';
+                } else {
+                    showError('Tipo de usuario no reconocido.');
+                }
+            } else {
+                showError(data.detail || 'Credenciales incorrectas');
+            }
 
         } catch (error) {
             console.error('Error de conexión:', error);

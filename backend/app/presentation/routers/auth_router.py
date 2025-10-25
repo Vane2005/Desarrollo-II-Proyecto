@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse
-from data.db import get_db 
-from logic.auth_service import crear_fisioterapeuta, authenticate_user
-from config.jwt_config import create_access_token
+from app.presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse, CambiarContrasenaRequest, CambiarContrasenaResponse
+from app.data.db import get_db 
+from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena, cambiar_contrasena
+from app.config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from config.jwt_config import SECRET_KEY, ALGORITHM
+from app.config.jwt_config import SECRET_KEY, ALGORITHM
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -157,4 +157,63 @@ def recuperar_contrasena_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al procesar la solicitud: {str(e)}"
+        )
+
+
+@router.post("/cambiar-contrasena", response_model=CambiarContrasenaResponse)
+def cambiar_contrasena_endpoint(
+    datos: CambiarContrasenaRequest,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    """
+    Cambia la contraseña de un usuario autenticado.
+    Requiere token JWT válido y contraseña actual correcta.
+    """
+    try:
+        # Verificar token y obtener email del usuario
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido: email no encontrado",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        print(f"📧 Usuario autenticado: {email}")
+        
+        # Cambiar contraseña
+        resultado = cambiar_contrasena(
+            db=db,
+            email=email,
+            contrasena_actual=datos.contrasena_actual,
+            contrasena_nueva=datos.contrasena_nueva
+        )
+        
+        return {
+            "mensaje": "Contraseña actualizada exitosamente",
+            "email": resultado["email"]
+        }
+    
+    except ValueError as e:
+        # Errores de validación (contraseña incorrecta, usuario no encontrado, etc.)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    except Exception as e:
+        print("ERROR EN CAMBIAR CONTRASEÑA:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al cambiar contraseña: {str(e)}"
         )

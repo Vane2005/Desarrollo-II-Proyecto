@@ -119,6 +119,7 @@ function filtrarEjercicios(parte, boton) {
 // Cerrar sesión (ejemplo)
 function logout() {
     if (confirm("¿Seguro que deseas cerrar sesión?")) {
+        localStorage.clear(); 
         window.location.href = "index.html";
     }
 }
