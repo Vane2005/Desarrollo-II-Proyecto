@@ -1,3 +1,4 @@
+# backend/app/presentation/schemas/payment_schema.py
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -22,16 +23,3 @@ class PaymentIntentResponse(BaseModel):
     publishable_key: str
     amount: int
     currency: str
-
-class PaymentConfirmRequest(BaseModel):
-    #Schema para confirmar pago y activar usuario
-    payment_intent_id: str = Field(..., description="ID del PaymentIntent de Stripe")
-    cedula: str = Field(..., description="Cédula del fisioterapeuta a activar")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "payment_intent_id": "pi_1234567890",
-                "cedula": "1234567890"
-            }
-        }

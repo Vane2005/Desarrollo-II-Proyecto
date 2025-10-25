@@ -1,7 +1,8 @@
+# backend/app/presentation/schemas/usuario_schema.py
 from pydantic import BaseModel, EmailStr, Field
 
 class FisioCreate(BaseModel):
-    """Schema para crear un fisioterapeuta"""
+    #Schema para crear un fisioterapeuta
     cedula: str = Field(..., min_length=6, max_length=20, description="Cédula del fisioterapeuta")
     email: EmailStr = Field(..., description="Email del usuario")
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
@@ -20,7 +21,7 @@ class FisioCreate(BaseModel):
         }
 
 class FisioResponse(BaseModel):
-    """Schema para respuesta del fisioterapeuta"""
+    #Schema para respuesta del fisioterapeuta
     id: str
     email: str
     nombre: str
@@ -35,7 +36,6 @@ class LoginCreate(BaseModel):
     """Schema para login - ahora usa cédula en lugar de email"""
     cedula: str = Field(..., min_length=6, max_length=20, description="Cédula del usuario")
     contrasena: str = Field(..., min_length=4, description="Contraseña")
-    
     class Config:
         json_schema_extra = {
             "example": {
@@ -51,16 +51,15 @@ class LoginResponse(BaseModel):
     tipo_usuario: str  # "fisio" o "paciente"
     nombre: str
     email: str
-    estado: str = "activo" 
-    
     class Config:
         from_attributes = True     
 
 class PacienteCreate(BaseModel):
-    """Schema para crear un paciente"""
+    #Schema para crear un fisioterapeuta
     cedula: str = Field(..., min_length=6, max_length=20, description="Cédula")
-    email: EmailStr = Field(..., description="Email")
+    email: EmailStr = Field(..., description="Email ")
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
+   
     telefono: str = Field(..., min_length=7, max_length=15, description="Número de teléfono")
 
     class Config:
@@ -69,12 +68,14 @@ class PacienteCreate(BaseModel):
                 "cedula": "1234567890",
                 "email": "paciente@ejemplo.com",
                 "nombre": "Juan Pérez",
+            
                 "telefono": "3001234567"
             }
         }   
 
+
 class RecuperarContrasenaRequest(BaseModel):
-    """Schema para solicitud de recuperación de contraseña"""
+    #Schema para solicitud de recuperación de contraseña
     email: EmailStr = Field(..., description="Email del usuario")
     
     class Config:
@@ -85,24 +86,6 @@ class RecuperarContrasenaRequest(BaseModel):
         }
 
 class RecuperarContrasenaResponse(BaseModel):
-    """Schema para respuesta de recuperación de contraseña"""
-    mensaje: str
-    email: str
-
-class CambiarContrasenaRequest(BaseModel):
-    """Schema para solicitud de cambio de contraseña"""
-    contrasena_actual: str = Field(..., min_length=4, description="Contraseña actual")
-    contrasena_nueva: str = Field(..., min_length=8, description="Nueva contraseña (mínimo 8 caracteres)")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "contrasena_actual": "password123",
-                "contrasena_nueva": "newPassword456"
-            }
-        }
-
-class CambiarContrasenaResponse(BaseModel):
-    """Schema para respuesta de cambio de contraseña"""
+    #Schema para respuesta de recuperación de contraseña
     mensaje: str
     email: str

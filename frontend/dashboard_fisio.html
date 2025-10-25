@@ -17,7 +17,7 @@
       </button>
 
       <div class="sidebar-header">
-        <h2>TerapiaFisica+</h2>
+        <h2>FisioApp</h2>
       </div>
       <nav class="sidebar-nav">
         <button class="nav-item active" data-section="informacion-personal">
@@ -47,50 +47,35 @@
       </header>
 
       <!-- ================== INFORMACIÓN PERSONAL ================== -->
-      <!-- Información Personal Section -->
       <section id="informacion-personal" class="content-section active">
-          <div class="info-card">
-              <div class="card-header">
-                  <h3>Título Profesional: Fisioterapeuta</h3>
-                  <div class="header-actions">
-                      <button class="btn-edit">Guardar Cambios</button>
-                  </div>
-              </div>
-              <div class="info-grid">
-                  <div class="info-item">
-                      <label>Nombre</label>
-                      <input type="text" class="info-input" id="inputNombre" value="Nombre fisio">
-                  </div>
-                  <div class="info-item">
-                      <label>Apellido</label>
-                      <input type="text" class="info-input" id="inputApellido" value="Apellido fisio">
-                  </div>
-                  <div class="info-item">
-                      <label>Documento De Identidad</label>
-                      <input type="text" class="info-input" id="inputDocumento" value="documento fisio" readonly>
-                  </div>
-                  <div class="info-item">
-                      <label>Correo Electrónico</label>
-                      <input type="email" class="info-input" id="inputCorreo" value="correo fisio">
-                  </div>
-                  <div class="info-item">
-                      <label>Teléfono</label>
-                      <input type="tel" class="info-input" id="inputTelefono" value="telefono fisio">
-                  </div>
-              </div>
-
-              <!-- Sección de Acciones Adicionales -->
-              <div class="additional-actions">
-                  <button class="btn-action-secondary btn-payment" id="btnRealizarPago">
-                      <span class="btn-icon">💳</span>
-                      Realizar Pago
-                  </button>
-                  <button class="btn-action-secondary btn-change-password" id="btnCambiarContrasena">
-                      <span class="btn-icon">🔒</span>
-                      Cambiar Contraseña
-                  </button>
-              </div>
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Título Profesional: Fisioterapeuta</h3>
+            <button class="btn-edit">Guardar Cambios</button>
           </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nombre</label>
+              <input type="text" class="info-input" value="Nombre fisio">
+            </div>
+            <div class="info-item">
+              <label>Apellido</label>
+              <input type="text" class="info-input" value="Apellido fisio">
+            </div>
+            <div class="info-item">
+              <label>Documento De Identidad</label>
+              <input type="text" class="info-input" value="documento fisio">
+            </div>
+            <div class="info-item">
+              <label>Correo Electrónico</label>
+              <input type="email" class="info-input" value="correo fisio">
+            </div>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <input type="tel" class="info-input" value="telefono fisio">
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ================== ASIGNAR EJERCICIOS ================== -->
@@ -151,28 +136,6 @@
     </main>
   </div>
 
-  <script>
-    // Verificar acceso antes de cargar el dashboard
-      (function verificarAcceso() {
-          const token = localStorage.getItem('token');
-          const tipo = localStorage.getItem('tipo_usuario');
-          const estado = localStorage.getItem('estado');
-          
-          if (!token || tipo !== 'fisio') {
-              alert('⚠️ Debes iniciar sesión para acceder');
-              window.location.href = 'index.html';
-              return;
-          }
-          
-          if (estado === 'inactivo') {
-              alert('⚠️ Debes completar el pago para activar tu cuenta');
-              window.location.href = 'pago.html';
-              return;
-          }
-
-          console.log('✅ Acceso permitido al dashboard');
-      })();
-  </script>
   <script src="assets/js/dashboard_fisio.js"></script>
 </body>
 </html>

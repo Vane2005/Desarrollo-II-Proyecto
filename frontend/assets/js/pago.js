@@ -1,3 +1,4 @@
+// frontend/assets/js/pago.js
 const API_URL = 'http://localhost:8000';
 
 let stripe;
@@ -6,31 +7,10 @@ let cardElement;
 
 // Configuración de pago para Colombia
 const PAYMENT_CONFIG = {
-    amount: 19999900,  // $199,999 COP en centavos
+    amount: 19999900,  // $15,999 COP en centavos (15999 * 100)  
     currency: 'cop', 
     displayAmount: '$199,999 COP'  
 };
-
-// Verificar si el usuario está logueado y es fisioterapeuta
-function verificarUsuario() {
-    const email = localStorage.getItem('email');
-    const tipo = localStorage.getItem('tipo_usuario');
-    const estado = localStorage.getItem('estado');
-    
-    if (!email || tipo !== 'fisio') {
-        alert('⚠️ Debes estar registrado como fisioterapeuta para acceder a esta página');
-        window.location.href = 'index.html';
-        return false;
-    }
-    
-    if (estado === 'activo') {
-        alert('✅ Tu cuenta ya está activa');
-        window.location.href = 'dashboard_fisio.html';
-        return false;
-    }
-    
-    return true;
-}
 
 // Inicializar Stripe
 async function inicializarStripe() {
@@ -82,7 +62,8 @@ async function inicializarStripe() {
 
 // Función para crear el PaymentIntent
 async function crearPaymentIntent() {
-    const userEmail = localStorage.getItem('email') || 'cliente@ejemplo.com';
+    // Obtener email del usuario (del localStorage o sessionStorage)
+    const userEmail = localStorage.getItem('userEmail') || 'cliente@ejemplo.com';
     
     const response = await fetch(`${API_URL}/payments/create-payment-intent`, {
         method: 'POST',
@@ -92,7 +73,7 @@ async function crearPaymentIntent() {
         body: JSON.stringify({
             amount: PAYMENT_CONFIG.amount,  
             currency: PAYMENT_CONFIG.currency,  
-            description: 'Activación de cuenta TerapiaFisica+',
+            description: 'Suscripción mensual TerapiaFisica+',
             customer_email: userEmail
         })
     });
@@ -100,43 +81,6 @@ async function crearPaymentIntent() {
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Error al crear el intento de pago');
-    }
-    
-    return await response.json();
-}
-
-// Función para activar la cuenta después del pago
-async function activarCuenta(paymentIntentId) {
-    const userEmail = localStorage.getItem('email');
-    
-    // Primero obtener la cédula del usuario desde el backend
-    const token = localStorage.getItem('token');
-    
-    // Decodificar el payload del JWT para obtener info adicional
-    // O hacer una petición al backend para obtener la cédula
-    
-    // Por simplicidad, asumimos que guardamos la cédula en el registro
-    const cedula = localStorage.getItem('cedula');
-    
-    if (!cedula) {
-        // Si no tenemos la cédula, la obtenemos del token o backend
-        throw new Error('No se pudo obtener la cédula del usuario');
-    }
-    
-    const response = await fetch(`${API_URL}/payments/confirm-payment`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            payment_intent_id: paymentIntentId,
-            cedula: cedula
-        })
-    });
-    
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Error al activar la cuenta');
     }
     
     return await response.json();
@@ -163,7 +107,7 @@ async function procesarPago(event) {
             payment_method: {
                 card: cardElement,
                 billing_details: {
-                    email: localStorage.getItem('email') || 'cliente@ejemplo.com'
+                    email: localStorage.getItem('userEmail') || 'cliente@ejemplo.com'
                 }
             }
         });
@@ -172,29 +116,18 @@ async function procesarPago(event) {
             // Mostrar error
             mostrarMensaje('error', `Error: ${error.message}`);
         } else if (paymentIntent.status === 'succeeded') {
-            console.log('✅ Pago exitoso, activando cuenta...');
+            // Pago exitoso
+            mostrarMensaje('exito', `¡Pago de ${PAYMENT_CONFIG.displayAmount} exitoso! Redirigiendo...`);  // 👈 Cambio
             
-            // Activar la cuenta en el backend
-            try {
-                const resultado = await activarCuenta(paymentIntent.id);
-                
-                console.log('Cuenta activada:', resultado);
-                
-                // Actualizar el estado en localStorage
-                localStorage.setItem('estado', 'activo');
-                
-                // Mostrar mensaje de éxito
-                mostrarMensaje('exito', `¡Pago exitoso y cuenta activada! Redirigiendo al dashboard...`);
-                
-                // Redirigir al dashboard después de 2 segundos
-                setTimeout(() => {
-                    window.location.href = 'dashboard_fisio.html';
-                }, 2000);
-                
-            } catch (activationError) {
-                console.error('Error al activar cuenta:', activationError);
-                mostrarMensaje('error', `Pago exitoso pero error al activar cuenta: ${activationError.message}. Por favor contacta a soporte.`);
-            }
+            // Guardar info del pago (opcional)
+            localStorage.setItem('payment_status', 'completed');
+            localStorage.setItem('payment_id', paymentIntent.id);
+            localStorage.setItem('payment_amount', PAYMENT_CONFIG.displayAmount);
+            
+            // Redirigir al dashboard después de 2 segundos
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
         }
         
     } catch (error) {
@@ -218,11 +151,6 @@ function mostrarMensaje(tipo, contenido) {
 
 // Inicializar cuando cargue la página
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar usuario antes de cargar Stripe
-    if (!verificarUsuario()) {
-        return;
-    }
-    
     inicializarStripe();
     
     // Actualizar el texto del botón con el monto correcto
@@ -233,4 +161,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('payment-form').addEventListener('submit', procesarPago);
 });
 
-console.log('Script de pago cargado correctamente');
+console.log('✅ Script de pago cargado correctamente');
