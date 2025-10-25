@@ -2,9 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');  
     const errorDiv = document.getElementById('error-message');  
 
-    // --- NOTA: NO verificar sesión previa aquí ---
-    // Esto permite que el usuario siempre vea el login primero
-
     // --- Manejador del formulario de login ---
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -34,10 +31,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('token', data.access_token);
                 localStorage.setItem('tipo_usuario', data.tipo_usuario);
                 localStorage.setItem('nombre', data.nombre || 'Usuario');
+                localStorage.setItem('email', data.email);
+                localStorage.setItem('estado', data.estado || 'activo');
 
-                // --- Redirigir según tipo ---
+                // --- Verificar estado y redirigir ---
                 if (data.tipo_usuario === 'fisio') {
-                    window.location.href = 'dashboard_fisio.html';
+                    // Si el fisioterapeuta está inactivo, redirigir a pago
+                    if (data.estado === 'inactivo') {
+                        console.log('⚠️ Usuario inactivo, redirigiendo a pago...');
+                        window.location.href = 'pago.html';
+                    } else {
+                        console.log('✅ Usuario activo, accediendo al dashboard...');
+                        window.location.href = 'dashboard_fisio.html';
+                    }
                 } else if (data.tipo_usuario === 'paciente') {
                     window.location.href = 'dashboard_paciente.html';
                 } else {

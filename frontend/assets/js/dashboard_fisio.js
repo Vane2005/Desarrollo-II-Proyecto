@@ -1,7 +1,5 @@
 const API_URL = 'http://localhost:8000';
-// ===============================
-// DASHBOARD FISIO JS COMPLETO
-// ===============================
+
 document.addEventListener("DOMContentLoaded", () => {
   const API_URL = "http://localhost:8000/paciente";
 
@@ -174,7 +172,7 @@ if (assignBtn) {
 
 // Manejo del botón Realizar Pago
 document.getElementById('btnRealizarPago')?.addEventListener('click', () => {
-  if (confirm('¿Desea proceder con el pago de su suscripción mensual?')) {
+  if (confirm('¿Desea proceder con el pago de nuestro servisio?')) {
     console.log('[v0] Redirigiendo a página de pago...')
     // Aquí puedes redirigir a tu página de pagos
     window.location.href = 'pago.html'

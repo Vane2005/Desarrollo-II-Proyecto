@@ -1,4 +1,3 @@
-// frontend/assets/js/registro.js
 const API_URL = 'http://localhost:8000';
 
 // Función para mostrar mensajes
@@ -133,9 +132,10 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         
         const resultado = await registrarFisioterapeuta(datos);
 
-        // Guardar el email y nombre para usarlo en el pago
+        // Guardar datos importantes para el flujo de pago
         localStorage.setItem('userEmail', datos.email);
         localStorage.setItem('userName', datos.nombre);
+        localStorage.setItem('cedula', datos.cedula);
 
         mostrarMensaje('exito', `
             <strong>✅ Registro exitoso</strong><br>
