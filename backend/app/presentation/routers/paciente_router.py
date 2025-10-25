@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from app.presentation.schemas.usuario_schema import PacienteCreate
-from app.data.db import get_db
+from presentation.schemas.usuario_schema import PacienteCreate
+from data.db import get_db
 from sqlalchemy import text
-from app.logic.paciente_service import crear
+from logic.paciente_service import crear
 from datetime import datetime
 import traceback
 

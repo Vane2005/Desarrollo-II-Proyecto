@@ -27,8 +27,13 @@
                     <span class="nav-icon">💪</span>
                     <span>Ejercicios Asignados</span>
                 </button>
+                <!-- Agregado botón para Ejercicios Realizados -->
+                <button class="nav-item" data-section="ejercicios-realizados">
+                    <span class="nav-icon">✅</span>
+                    <span>Ejercicios Realizados</span>
+                </button>
             </nav>
-            <button class="btn-logout" onclick="logout()">
+            <button class="btn-logout" onclick="cerrarSesion()">
                 <span class="nav-icon">🚪</span>
                 <span>Cerrar Sesión</span>
             </button>
@@ -57,6 +62,27 @@
                 <div class="no-results" id="noResults" style="display: none;">
                     <h3>No se encontraron ejercicios</h3>
                     <p>Intenta seleccionar otra extremidad</p>
+                </div>
+            </section>
+
+            <!-- Nueva sección para Ejercicios Realizados -->
+            <section id="ejercicios-realizados" class="content-section">
+                <div class="library-header">
+                    <h2>Ejercicios Realizados</h2>
+                    <p>Historial de ejercicios que has completado</p>
+                </div>
+
+                <div class="filters" id="filtersRealizados">
+                    <!-- Filtros dinámicos para ejercicios realizados -->
+                </div>
+
+                <div class="exercises-grid" id="exercisesGridRealizados">
+                    <!-- Ejercicios realizados dinámicos -->
+                </div>
+
+                <div class="no-results" id="noResultsRealizados" style="display: none;">
+                    <h3>No se encontraron ejercicios realizados</h3>
+                    <p>Aún no has completado ningún ejercicio</p>
                 </div>
             </section>
         </main>
