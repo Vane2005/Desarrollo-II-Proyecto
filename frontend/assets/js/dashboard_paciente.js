@@ -81,7 +81,7 @@ function mostrarEjercicios(lista) {
   if (lista.length === 0) {
     noResults.style.display = "block"
     return
-  }
+    }
 
   noResults.style.display = "none"
 
@@ -89,7 +89,7 @@ function mostrarEjercicios(lista) {
     const card = document.createElement("div")
     card.classList.add("exercise-card")
 
-    card.innerHTML = `
+        card.innerHTML = `
             <img src="${e.imagen}" alt="${e.nombre}" class="exercise-image">
             <div class="exercise-content">
                 <span class="exercise-body-part">${e.parteCuerpo}</span>
@@ -274,11 +274,11 @@ function cargarFiltros() {
 
   filtersContainer.innerHTML = extremidades
     .map(
-      (ext) => `
-        <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
+    (ext) => `
+      <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
                 onclick="filtrarEjerciciosAsignados('${ext}')">
-            ${ext}
-        </button>
+          ${ext}
+      </button>
     `,
     )
     .join("")
@@ -360,11 +360,11 @@ function cargarFiltrosRealizados() {
 
   filtersContainer.innerHTML = extremidades
     .map(
-      (ext) => `
-        <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
+    (ext) => `
+      <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
                 onclick="filtrarEjerciciosRealizados('${ext}')">
-            ${ext}
-        </button>
+          ${ext}
+      </button>
     `,
     )
     .join("")
@@ -429,14 +429,14 @@ function filtrarEjerciciosRealizados(extremidad) {
 function marcarComoRealizado(id) {
   const ejercicio = ejerciciosAsignados.find((ej) => ej.id === id)
   if (ejercicio) {
-    const ejercicioRealizado = {
-      ...ejercicio,
-      fechaRealizacion: new Date().toISOString().split("T")[0],
-      completado: true,
-    }
-    ejerciciosRealizados.unshift(ejercicioRealizado)
+  const ejercicioRealizado = {
+    ...ejercicio,
+    fechaRealizacion: new Date().toISOString().split("T")[0],
+    completado: true,
+  }
+  ejerciciosRealizados.unshift(ejercicioRealizado)
     cargarFiltrosRealizados()
-    cargarEjerciciosRealizados()
+  cargarEjerciciosRealizados()
     alert("¡Ejercicio marcado como realizado!")
   }
 }
@@ -464,4 +464,3 @@ function cerrarSesion() {
   }
   window.location.replace('index.html');
 };
-
