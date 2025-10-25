@@ -1,4 +1,3 @@
-# backend/app/utils/security.py
 import bcrypt
 
 def hash_password(password: str) -> str:
@@ -6,7 +5,7 @@ def hash_password(password: str) -> str:
     Hashea una contraseña usando bcrypt.
     IMPORTANTE: Trunca a 72 caracteres antes de hashear.
     """
-    # Truncar ANTES de pasar a passlib
+    # Truncar ANTES de pasar a bcrypt
     password_truncated = password[:72] if len(password) > 72 else password
     return bcrypt.hashpw(password_truncated.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
