@@ -1,3 +1,5 @@
+from logic.email_service import send_recovery_email
+from logic.utils import generar_contrasena_aleatoria
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.data.models.user import User_Fisioterapeuta, User_Paciente
@@ -42,8 +44,8 @@ def authenticate_user(db: Session, email: str, password: str):
             "estado": fisio.estado  # 👈 IMPORTANTE: Incluir estado
         }
     
-    # Buscar en Paciente
-    paciente = db.query(User_Paciente).filter(User_Paciente.correo == email).first()
+    # Buscar en Paciente por cédula
+    paciente = db.query(User_Paciente).filter(User_Paciente.cedula == cedula).first()
     if paciente and verify_password(password, paciente.contrasena):
         # Los pacientes no tienen campo estado, siempre activos
         return {

@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');  
-    const errorDiv = document.getElementById('error-message');  
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm")
+  const errorDiv = document.getElementById("error-message")
 
     // --- Manejador del formulario de login ---
     loginForm.addEventListener('submit', async function(e) {
@@ -24,7 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json();
+    if (!cedula || !contrasena) {
+      showError("Por favor, completa todos los campos.")
+      return
+    }
 
             if (response.ok) {
                 // --- Guardar token y datos ---
@@ -32,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('tipo_usuario', data.tipo_usuario);
                 localStorage.setItem('nombre', data.nombre || 'Usuario');
                 localStorage.setItem('email', data.email);
+              localStorage.setItem('cedula', data.cedula);
                 localStorage.setItem('estado', data.estado || 'activo');
 
                 // --- Verificar estado y redirigir ---
@@ -53,32 +57,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(data.detail || 'Credenciales incorrectas');
             }
 
-        } catch (error) {
-            console.error('Error de conexión:', error);
-            showError('No se pudo conectar con el servidor. Verifica que esté corriendo.');
-        }
-    });
-
-    // --- Link "Recuperar contraseña" ---
-    document.querySelector('.forgot-password').addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = 'recuperar-contrasena.html';
-    });
-
-    // --- Link "Registrarse" ---
-    document.querySelector('.register-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = 'registro.html';
-    });
-
-    // --- Mostrar mensajes de error ---
-    function showError(message) {
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            errorDiv.style.color = 'red';
+        // --- Redirigir según tipo ---
+        if (data.tipo_usuario === "fisio") {
+          window.location.href = "dashboard_fisio.html"
+        } else if (data.tipo_usuario === "paciente") {
+          window.location.href = "dashboard_paciente.html"
         } else {
-            alert(message);
+          showError("Tipo de usuario no reconocido.")
         }
+      } else {
+        // Mostrar error del servidor
+        showError(data.detail || "Cédula o contraseña incorrecta.")
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error)
+      showError("No se pudo conectar con el servidor. Verifica que esté corriendo.")
     }
-});
+  })
+
+  // --- Link "Recuperar contraseña" ---
+  document.querySelector(".forgot-password").addEventListener("click", (e) => {
+    e.preventDefault()
+    window.location.href = "recuperar-contrasena.html"
+  })
+
+  // --- Link "Registrarse" ---
+  document.querySelector(".register-link").addEventListener("click", (e) => {
+    e.preventDefault()
+    window.location.href = "registro.html"
+  })
+
+  // --- Mostrar mensajes de error ---
+  function showError(message) {
+    if (errorDiv) {
+      errorDiv.textContent = message
+      errorDiv.style.display = "block"
+      errorDiv.style.color = "red"
+    } else {
+      alert(message)
+    }
+  }
+})

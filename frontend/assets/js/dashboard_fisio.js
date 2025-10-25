@@ -34,10 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // === Logout CORREGIDO ===
+  
   logoutBtn.addEventListener("click", () => {
     if (confirm("¿Desea cerrar sesión?")) {
-      // 🔴 IMPORTANTE: Limpiar TODO el localStorage
+      //  IMPORTANTE: Limpiar TODO el localStorage
       localStorage.clear();
       
       // Redirigir al login

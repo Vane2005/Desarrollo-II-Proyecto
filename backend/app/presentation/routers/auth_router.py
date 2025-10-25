@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from app.presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse, CambiarContrasenaRequest, CambiarContrasenaResponse
-from app.data.db import get_db 
-from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena, cambiar_contrasena
-from app.config.jwt_config import create_access_token
+from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse, CambiarContrasenaRequest, CambiarContrasenaResponse
+from data.db import get_db 
+from logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena, cambiar_contrasena
+from config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
@@ -61,12 +61,12 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
     Inicia sesión y verifica tipo de usuario y estado de pago.
     """
     try:
-        # Autenticar
-        user_data = authenticate_user(db, datos.email, datos.contrasena)
+        # Autenticar por cédula
+        user_data = authenticate_user(db, datos.cedula, datos.contrasena)
         if not user_data:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciales inválidas",
+                detail="Cédula o contraseña incorrecta",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
@@ -76,7 +76,8 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
             data={
                 "sub": user_data["email"], 
                 "tipo": user_data["tipo"],
-                "estado": user_data.get("estado", "activo")  # Incluir estado
+                "estado": user_data.get("estado", "activo"),  # Incluir estado
+                "cedula": user_data["id"]
             }, 
             expires_delta=access_token_expires
         )
@@ -87,6 +88,7 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
             "tipo_usuario": user_data["tipo"],
             "nombre": user_data["nombre"],
             "email": user_data["email"],
+            "cedula": user_data["cedula"],
             "estado": user_data.get("estado", "activo")  # Devolver estado
         }
     
