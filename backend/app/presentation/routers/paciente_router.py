@@ -56,13 +56,13 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
 @router.get("/ejercicios")
 def obtener_ejercicios(db: Session = Depends(get_db)):
     """
-    Devuelve todos los ejercicios disponibles (de cualquier paciente)
+    Devuelve todos los ejercicios disponibles con sus videos
     """
-    print(" Se llamó a /paciente/ejercicios")
     try:
         query = text("""
-            SELECT id_ejercicio, nombre, descripcion, categoria
-            FROM Ejercicio
+            SELECT e.id_ejercicio, e.nombre, e.descripcion, e.repeticion, e.url, ext.nombre as extremidad
+            FROM Ejercicio e
+            LEFT JOIN Extremidad ext ON e.id_extremidad = ext.id_extremidad
         """)
         ejercicios = db.execute(query).fetchall()
 
@@ -70,16 +70,17 @@ def obtener_ejercicios(db: Session = Depends(get_db)):
             print(" No hay ejercicios en la base de datos.")
             return []
 
-        print(" Ejercicios encontrados:", ejercicios)
         return [
             {
                 "id_ejercicio": e[0],
                 "nombre": e[1],
                 "descripcion": e[2],
-                "categoria": e[3]
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General"
             }
             for e in ejercicios
-            ]
+        ]
     except Exception as e:
         import traceback, sys
         print(" ERROR EN /paciente/ejercicios:")
@@ -230,4 +231,3 @@ def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error al obtener ejercicios completados: {str(e)}"
         )
-
