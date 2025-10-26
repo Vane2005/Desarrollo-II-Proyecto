@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSidebar()
   initNavigation()
   cargarFiltros()
-  cargarEjercicios()
+  cargarEjerciciosAsignadosDesdeAPI()
   cargarFiltrosRealizados()
   cargarEjerciciosRealizadosDesdeAPI()
 })
@@ -125,53 +125,12 @@ function filtrarEjercicios(parte, boton) {
 }
 
 // Datos de ejemplo para ejercicios asignados
-const ejerciciosAsignados = [
-  {
-    id: 1,
-    nombre: "Flexión de Rodilla",
-    extremidad: "Rodilla",
-    descripcion: "Ejercicio para fortalecer los músculos de la rodilla",
-    repeticiones: 10,
-    imagen: "/knee-flexion-exercise.jpg",
-  },
-  {
-    id: 2,
-    nombre: "Elevación de Brazo",
-    extremidad: "Brazo",
-    descripcion: "Ejercicio para mejorar la movilidad del hombro",
-    repeticiones: 15,
-    imagen: "/arm-elevation-exercise.jpg",
-  },
-  {
-    id: 3,
-    nombre: "Rotación de Cuello",
-    extremidad: "Cervical",
-    descripcion: "Ejercicio para mejorar la movilidad cervical",
-    repeticiones: 10,
-    imagen: "/neck-rotation-exercise.png",
-  },
-  {
-    id: 4,
-    nombre: "Extensión de Tobillo",
-    extremidad: "Tobillo",
-    descripcion: "Ejercicio para fortalecer los músculos del tobillo",
-    repeticiones: 12,
-    imagen: "/ankle-extension-exercise.jpg",
-  },
-  {
-    id: 5,
-    nombre: "Flexión de Codo",
-    extremidad: "Codo",
-    descripcion: "Ejercicio para fortalecer el bíceps",
-    repeticiones: 10,
-    imagen: "/elbow-flexion-exercise.jpg",
-  },
-]
+const ejerciciosAsignados = []
 
 // Datos de ejemplo para ejercicios realizados
 const ejerciciosRealizados = []
 
-let filtroActual = "Todos"
+const filtroActual = "Todos"
 let filtroRealizadosActual = "Todos"
 
 // Funcionalidad del sidebar
@@ -252,57 +211,47 @@ function cargarFiltros() {
 }
 
 // Cargar ejercicios asignados
-function cargarEjercicios() {
-  const grid = document.getElementById("exercisesGrid")
-  const noResults = document.getElementById("noResults")
+async function cargarEjerciciosAsignadosDesdeAPI() {
+  try {
+    // Get patient cedula from localStorage
+    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
 
-  const ejerciciosFiltrados =
-    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+    if (!cedula) {
+      console.error("No se encontró la cédula del paciente")
+      mostrarMensajeErrorAsignados("No se pudo identificar al paciente")
+      return
+    }
 
-  if (ejerciciosFiltrados.length === 0) {
-    grid.style.display = "none"
-    noResults.style.display = "block"
-    return
-  }
+    const response = await fetch(`${API_URL}/ejercicios-asignados/${cedula}`)
 
-  grid.style.display = "grid"
-  noResults.style.display = "none"
+    if (!response.ok) {
+      throw new Error(`Error al cargar ejercicios: ${response.status}`)
+    }
 
-  grid.innerHTML = ejerciciosFiltrados
-    .map(
-      (ejercicio) => `
-        <div class="exercise-card">
-            <div class="exercise-image">
-                <img src="${ejercicio.imagen}" alt="${ejercicio.nombre}">
-            </div>
-            <div class="exercise-content">
-                <h3 class="exercise-title">${ejercicio.nombre}</h3>
-                <span class="exercise-category">${ejercicio.extremidad}</span>
-                <p class="exercise-description">${ejercicio.descripcion}</p>
-                <div class="exercise-details">
-                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
-                </div>
-                <button class="btn-primary" onclick="marcarComoRealizado(${ejercicio.id})">
-                    Marcar como Realizado
-                </button>
-            </div>
-        </div>
-    `,
+    const ejerciciosAsignadosAPI = await response.json()
+
+    console.log("[v0] Ejercicios asignados recibidos de la API:", ejerciciosAsignadosAPI)
+
+    // Update the global variable with real data
+    ejerciciosAsignados.length = 0 // Clear array
+    ejerciciosAsignados.push(
+      ...ejerciciosAsignadosAPI.map((ej) => ({
+        id: ej.id_ejercicio,
+        nombre: ej.nombre,
+        extremidad: ej.extremidad,
+        descripcion: ej.descripcion,
+        repeticiones: ej.repeticiones,
+        urlVideo: ej.url_video,
+        imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
+      })),
     )
-    .join("")
-}
 
-// Filtrar ejercicios asignados
-function filtrarEjerciciosAsignados(extremidad) {
-  filtroActual = extremidad
 
-  // Actualizar botones activos
-  document.querySelectorAll("#filters .filter-btn").forEach((btn) => {
-    btn.classList.remove("active")
-  })
-  event.target.classList.add("active")
-
-  cargarEjercicios()
+    cargarEjercicios()
+  } catch (error) {
+    console.error("Error al cargar ejercicios asignados:", error)
+    mostrarMensajeErrorAsignados("Error al cargar los ejercicios asignados")
+  }
 }
 
 // Cargar filtros para ejercicios realizados
@@ -493,6 +442,17 @@ function mostrarMensajeError(mensaje) {
   }
 }
 
+function mostrarMensajeErrorAsignados(mensaje) {
+  const grid = document.getElementById("exercisesGrid")
+  if (grid) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+        <p style="color: #e74c3c; font-size: 1.1rem;">${mensaje}</p>
+      </div>
+    `
+  }
+}
+
 // Cerrar sesión
 function cerrarSesion() {
   if (!confirm("¿Desea cerrar sesión?")) return
@@ -507,4 +467,63 @@ function cerrarSesion() {
     console.warn("Error limpiando localStorage al cerrar sesión", e)
   }
   window.location.replace("index.html")
+}
+
+// Función para cargar ejercicios asignados en la interfaz
+function cargarEjercicios() {
+  const grid = document.getElementById("exercisesGrid")
+  const noResults = document.getElementById("noResults")
+
+  const ejerciciosFiltrados =
+    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+
+  console.log("[v0] Ejercicios filtrados para mostrar:", ejerciciosFiltrados)
+  console.log(
+    "[v0] URLs de video:",
+    ejerciciosFiltrados.map((e) => ({ nombre: e.nombre, url: e.urlVideo })),
+  )
+
+  if (ejerciciosFiltrados.length === 0) {
+    grid.style.display = "none"
+    noResults.style.display = "block"
+    return
+  }
+
+  grid.style.display = "grid"
+  noResults.style.display = "none"
+
+  grid.innerHTML = ejerciciosFiltrados
+    .map(
+      (ejercicio) => `
+        <div class="exercise-card">
+            ${
+              ejercicio.urlVideo
+                ? `
+              <div class="exercise-video">
+                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                  <source src="${ejercicio.urlVideo}" type="video/mp4">
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              </div>
+            `
+                : `
+              <div class="exercise-image">
+                <img src="${ejercicio.imagen || "/placeholder.svg?height=200&width=300"}" alt="${ejercicio.nombre}">
+              </div>
+            `
+            }
+            <div class="exercise-content">
+                <h3 class="exercise-title">${ejercicio.nombre}</h3>
+                <span class="exercise-category">${ejercicio.extremidad}</span>
+                <p class="exercise-description">${ejercicio.descripcion}</p>
+                <div class="exercise-details">
+                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
+                </div>
+                <button onclick="marcarComoRealizado(${ejercicio.id})" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s;">Marcar como Realizado</button>
+            </div>
+        </div>
+    `,
+    )
+    .join("")
+
 }
