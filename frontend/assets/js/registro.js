@@ -92,7 +92,6 @@ async function registrarFisioterapeuta(datos) {
     }
 }
 
-// Manejar el formulario
 document.getElementById('registroForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -133,13 +132,16 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         
         const resultado = await registrarFisioterapeuta(datos);
 
-        // Guardar el email y nombre para usarlo en el pago
+        // Guardar cédula para usarla después del pago
+        localStorage.setItem('cedula_pendiente', datos.cedula);
         localStorage.setItem('userEmail', datos.email);
         localStorage.setItem('userName', datos.nombre);
 
         mostrarMensaje('exito', `
             <strong>✅ Registro exitoso</strong><br>
             ${resultado.mensaje}<br>
+            <strong>Tu cuenta está en estado "Inactivo"</strong><br>
+            Completa el pago para activarla.<br>
             Redirigiendo al pago...
         `);
 
