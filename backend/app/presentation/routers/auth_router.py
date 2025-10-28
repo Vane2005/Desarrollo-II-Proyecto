@@ -1,14 +1,15 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse
-from data.db import get_db 
-from logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
-from config.jwt_config import create_access_token
+from app.presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse
+from app.data.db import get_db 
+from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
+from app.config.jwt_config import create_access_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from config.jwt_config import SECRET_KEY, ALGORITHM
+from app.config.jwt_config import SECRET_KEY, ALGORITHM
+from app.data.models.user import User_Fisioterapeuta
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -64,7 +65,7 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
 def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
     """
     Inicia sesión verificando la cédula en las tablas Fisioterapeuta y Paciente.
-    Redirige al dashboard correspondiente según el tipo de usuario.
+    Valida que el fisioterapeuta esté activo antes de permitir el acceso.
     """
     try:
         # Autenticar por cédula
@@ -76,10 +77,26 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
+        # Validar estado del fisioterapeuta
+        if user_data["tipo"] == "fisio":
+            fisio = db.query(User_Fisioterapeuta).filter(
+                User_Fisioterapeuta.cedula == user_data["id"]
+            ).first()
+            
+            if fisio.estado.lower() != "activo":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Tu cuenta está inactiva. Por favor, completa el proceso de pago para activarla."
+                )
+        
         # Crear token JWT con tipo de usuario
         access_token_expires = timedelta(minutes=30)
         access_token = create_access_token(
-            data={"sub": user_data["email"], "tipo": user_data["tipo"], "cedula": user_data["id"]}, 
+            data={
+                "sub": user_data["email"], 
+                "tipo": user_data["tipo"], 
+                "cedula": user_data["id"]
+            }, 
             expires_delta=access_token_expires
         )
         
@@ -111,7 +128,7 @@ def get_current_user(token: str):
                 detail="Token inválido: tipo de usuario no encontrado",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        # Puedes retornar un objeto o dict con tipo_usuario
+        
         class User:
             def __init__(self, tipo_usuario):
                 self.tipo_usuario = tipo_usuario

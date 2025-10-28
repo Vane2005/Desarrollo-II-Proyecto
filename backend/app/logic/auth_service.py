@@ -1,9 +1,9 @@
-from logic.email_service import send_recovery_email
-from logic.utils import generar_contrasena_aleatoria
+from ..logic.email_service import send_recovery_email
+from ..logic.utils import generar_contrasena_aleatoria
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from data.models.user import User_Fisioterapeuta, User_Paciente  # Importar ambos modelos
-from config.security import hash_password, verify_password  # Activar hashing
+from app.data.models.user import User_Fisioterapeuta, User_Paciente  # Importar ambos modelos
+from ..config.security import hash_password, verify_password  # Activar hashing
 
 def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, estado: str, telefono: str):
     try:

@@ -1,4 +1,3 @@
-// frontend/assets/js/pago.js
 const API_URL = 'http://localhost:8000';
 
 let stripe;
@@ -86,12 +85,22 @@ async function crearPaymentIntent() {
     return await response.json();
 }
 
-// Función para procesar el pago
+
 async function procesarPago(event) {
     event.preventDefault();
     
     const submitButton = document.getElementById('submit-button');
     const spinner = document.getElementById('spinner');
+    
+    // Obtener la cédula del fisioterapeuta (guardada en registro)
+    const cedulaFisio = localStorage.getItem('cedula_pendiente');
+    
+    console.log('🔍 Cédula recuperada del localStorage:', cedulaFisio);
+    
+    if (!cedulaFisio) {
+        mostrarMensaje('error', 'Error: No se encontró la información del fisioterapeuta. Por favor, regístrese nuevamente.');
+        return;
+    }
     
     // Deshabilitar botón y mostrar spinner
     submitButton.disabled = true;
@@ -99,10 +108,15 @@ async function procesarPago(event) {
     spinner.style.display = 'block';
     
     try {
-        // Crear el PaymentIntent
+        console.log('💳 Paso 1: Creando PaymentIntent...');
+        
+        // 1. Crear el PaymentIntent
         const { client_secret } = await crearPaymentIntent();
         
-        // Confirmar el pago con Stripe
+        console.log('✅ PaymentIntent creado');
+        console.log('💳 Paso 2: Confirmando pago con Stripe...');
+        
+        // 2. Confirmar el pago con Stripe
         const { error, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
             payment_method: {
                 card: cardElement,
@@ -113,25 +127,95 @@ async function procesarPago(event) {
         });
         
         if (error) {
-            // Mostrar error
+            console.error('❌ Error en el pago:', error);
             mostrarMensaje('error', `Error: ${error.message}`);
-        } else if (paymentIntent.status === 'succeeded') {
-            // Pago exitoso
-            mostrarMensaje('exito', `¡Pago de ${PAYMENT_CONFIG.displayAmount} exitoso! Redirigiendo...`);  // 👈 Cambio
+            return;
+        } 
+        
+        console.log('✅ Pago confirmado por Stripe');
+        console.log('   Payment Intent ID:', paymentIntent.id);
+        console.log('   Status:', paymentIntent.status);
+        
+        if (paymentIntent.status === 'succeeded') {
+            console.log('🔄 Paso 3: Activando cuenta del fisioterapeuta...');
             
-            // Guardar info del pago (opcional)
-            localStorage.setItem('payment_status', 'completed');
-            localStorage.setItem('payment_id', paymentIntent.id);
-            localStorage.setItem('payment_amount', PAYMENT_CONFIG.displayAmount);
-            
-            // Redirigir al dashboard después de 2 segundos
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
+            // 3. Activar el fisioterapeuta
+            try {
+                const activacionResponse = await fetch(`${API_URL}/payments/activate-fisioterapeuta`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payment_intent_id: paymentIntent.id,
+                        cedula: cedulaFisio
+                    })
+                });
+                
+                console.log('📡 Respuesta del servidor:', activacionResponse.status);
+                
+                // Leer la respuesta como texto primero para debugging
+                const responseText = await activacionResponse.text();
+                console.log('📄 Respuesta cruda:', responseText);
+                
+                let activacionData;
+                try {
+                    activacionData = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('❌ Error parseando JSON:', e);
+                    throw new Error('Respuesta inválida del servidor');
+                }
+                
+                if (!activacionResponse.ok) {
+                    console.error('❌ Error en activación:', activacionData);
+                    throw new Error(activacionData.detail || 'Error al activar cuenta');
+                }
+                
+                console.log('✅ Cuenta activada exitosamente:', activacionData);
+                
+                // Pago exitoso y cuenta activada
+                mostrarMensaje('exito', `
+                    ✅ ¡Pago de ${PAYMENT_CONFIG.displayAmount} exitoso!<br>
+                    <strong>Tu cuenta ha sido activada.</strong><br>
+                    Redirigiendo al inicio de sesión...
+                `);
+                
+                // Guardar info del pago
+                localStorage.setItem('payment_status', 'completed');
+                localStorage.setItem('payment_id', paymentIntent.id);
+                localStorage.setItem('fisio_estado', 'Activo');
+                
+                // Limpiar datos temporales
+                localStorage.removeItem('cedula_pendiente');
+                localStorage.removeItem('userEmail');
+                
+                // Redirigir al login después de 3 segundos
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+                
+            } catch (activacionError) {
+                console.error('❌ Error al activar cuenta:', activacionError);
+                console.error('   Mensaje:', activacionError.message);
+                
+                // El pago fue exitoso pero hubo error en la activación
+                mostrarMensaje('error', `
+                    <strong>⚠️ Pago procesado correctamente</strong><br>
+                    Sin embargo, hubo un problema al activar tu cuenta.<br>
+                    Error: ${activacionError.message}<br>
+                    <br>
+                    Por favor, contacta a soporte con este ID de pago: <strong>${paymentIntent.id}</strong><br>
+                    Tu cuenta será activada manualmente.
+                `);
+                
+                // Guardar info para soporte
+                localStorage.setItem('payment_id_pending_activation', paymentIntent.id);
+                localStorage.setItem('cedula_pending_activation', cedulaFisio);
+            }
         }
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error general:', error);
         mostrarMensaje('error', `Error al procesar el pago: ${error.message}`);
     } finally {
         // Rehabilitar botón y ocultar spinner
