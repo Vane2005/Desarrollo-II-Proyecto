@@ -1,9 +1,17 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from app.presentation.schemas.usuario_schema import FisioCreate, LoginCreate, LoginResponse, RecuperarContrasenaRequest, RecuperarContrasenaResponse
+from app.presentation.schemas.usuario_schema import (
+    FisioCreate, LoginCreate, LoginResponse, 
+    RecuperarContrasenaRequest, RecuperarContrasenaResponse,
+    CambiarContrasenaRequest, InfoFisioterapeutaResponse
+)
 from app.data.db import get_db 
-from app.logic.auth_service import crear_fisioterapeuta, authenticate_user, recuperar_contrasena
-from app.config.jwt_config import create_access_token
+from app.logic.auth_service import (
+    crear_fisioterapeuta, authenticate_user, 
+    recuperar_contrasena, cambiar_contrasena, 
+    obtener_info_fisioterapeuta
+)
+from app.config.jwt_config import create_access_token, verify_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
@@ -16,9 +24,25 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+def get_current_user_cedula(token: str = Depends(oauth2_scheme)):
+    """
+    Obtiene la cédula del usuario actual desde el token JWT
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        cedula = payload.get("cedula")
+        if cedula is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido: cédula no encontrada"
+            )
+        return cedula
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido"
+        )
 
-router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
@@ -46,7 +70,6 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
         }
     
     except ValueError as e:
-        # Errores de validación
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -65,10 +88,9 @@ def registrar_fisioterapeuta(datos: FisioCreate, db: Session = Depends(get_db)):
 def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
     """
     Inicia sesión verificando la cédula en las tablas Fisioterapeuta y Paciente.
-    Valida que el fisioterapeuta esté activo antes de permitir el acceso.
+    Permite el acceso a fisioterapeutas inactivos para que puedan realizar el pago.
     """
     try:
-        # Autenticar por cédula
         user_data = authenticate_user(db, datos.cedula, datos.contrasena)
         if not user_data:
             raise HTTPException(
@@ -77,25 +99,22 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        # Validar estado del fisioterapeuta
+        # Obtener estado del fisioterapeuta (pero NO bloquear el acceso)
+        estado = "activo"  # Por defecto para pacientes
         if user_data["tipo"] == "fisio":
             fisio = db.query(User_Fisioterapeuta).filter(
                 User_Fisioterapeuta.cedula == user_data["id"]
             ).first()
-            
-            if fisio.estado.lower() != "activo":
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Tu cuenta está inactiva. Por favor, completa el proceso de pago para activarla."
-                )
+            estado = fisio.estado.lower()
         
-        # Crear token JWT con tipo de usuario
+        # Crear token JWT con tipo de usuario y estado
         access_token_expires = timedelta(minutes=30)
         access_token = create_access_token(
             data={
                 "sub": user_data["email"], 
                 "tipo": user_data["tipo"], 
-                "cedula": user_data["id"]
+                "cedula": user_data["id"],
+                "estado": estado
             }, 
             expires_delta=access_token_expires
         )
@@ -140,9 +159,10 @@ def get_current_user(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 @router.get("/verify")
-async def verify_token(token: str = Depends(oauth2_scheme)):  # Usa OAuth2PasswordBearer de FastAPI
-    return {"message": "Token válido", "tipo_usuario": get_current_user(token).tipo_usuario}  # Implementa get_current_user con jwt.decode
+async def verify_token_endpoint(token: str = Depends(oauth2_scheme)):
+    return {"message": "Token válido", "tipo_usuario": get_current_user(token).tipo_usuario}
 
 
 @router.post("/recuperar-contrasena", response_model=RecuperarContrasenaResponse)
@@ -163,16 +183,73 @@ def recuperar_contrasena_endpoint(
         }
     
     except ValueError as e:
-        # Usuario no encontrado
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
     
     except Exception as e:
-        # Error al enviar email u otro error
         print("ERROR EN RECUPERAR CONTRASEÑA:", traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al procesar la solicitud: {str(e)}"
+        )
+
+
+@router.post("/cambiar-contrasena")
+def cambiar_contrasena_endpoint(
+    datos: CambiarContrasenaRequest,
+    cedula: str = Depends(get_current_user_cedula),
+    db: Session = Depends(get_db)
+):
+    """
+    Cambia la contraseña del fisioterapeuta autenticado
+    """
+    try:
+        resultado = cambiar_contrasena(
+            db=db,
+            cedula=cedula,
+            contrasena_actual=datos.contrasena_actual,
+            nueva_contrasena=datos.nueva_contrasena
+        )
+        
+        return {
+            "mensaje": resultado["mensaje"],
+            "email": resultado["email"]
+        }
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR EN CAMBIAR CONTRASEÑA:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al cambiar la contraseña"
+        )
+
+
+@router.get("/info-fisioterapeuta", response_model=InfoFisioterapeutaResponse)
+def obtener_info_fisioterapeuta_endpoint(
+    cedula: str = Depends(get_current_user_cedula),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene la información del fisioterapeuta autenticado
+    """
+    try:
+        info = obtener_info_fisioterapeuta(db, cedula)
+        return info
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR AL OBTENER INFO:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener información"
         )
