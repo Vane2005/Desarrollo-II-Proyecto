@@ -316,3 +316,7 @@ def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error al obtener ejercicios asignados: {str(e)}"
         )
+    
+
+
+
