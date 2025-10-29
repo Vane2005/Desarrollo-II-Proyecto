@@ -7,6 +7,20 @@ from config.security import hash_password, verify_password  # Activar hashing
 
 def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, estado: str, telefono: str):
     try:
+        fisio_existente = db.query(User_Fisioterapeuta).filter(
+            User_Fisioterapeuta.cedula == cedula
+        ).first()
+        
+        if fisio_existente:
+            raise ValueError("La cédula ingresada ya se encuentra registrada")
+        
+        correo_existente = db.query(User_Fisioterapeuta).filter(
+            User_Fisioterapeuta.correo == correo
+        ).first()
+        
+        if correo_existente:
+            raise ValueError("El correo electrónico ingresado ya se encuentra registrado")
+        
         contrasena_hash = hash_password(contrasena)
         fisio = User_Fisioterapeuta(
             cedula=cedula, 
@@ -20,6 +34,9 @@ def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, con
         db.commit()
         db.refresh(fisio)
         return fisio
+    except ValueError:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise e
