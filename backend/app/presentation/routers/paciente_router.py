@@ -56,13 +56,13 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
 @router.get("/ejercicios")
 def obtener_ejercicios(db: Session = Depends(get_db)):
     """
-    Devuelve todos los ejercicios disponibles (de cualquier paciente)
+    Devuelve todos los ejercicios disponibles con sus videos
     """
-    print(" Se llamó a /paciente/ejercicios")
     try:
         query = text("""
-            SELECT id_ejercicio, nombre, descripcion, categoria
-            FROM Ejercicio
+            SELECT e.id_ejercicio, e.nombre, e.descripcion, e.repeticion, e.url, ext.nombre as extremidad
+            FROM Ejercicio e
+            LEFT JOIN Extremidad ext ON e.id_extremidad = ext.id_extremidad
         """)
         ejercicios = db.execute(query).fetchall()
 
@@ -70,16 +70,17 @@ def obtener_ejercicios(db: Session = Depends(get_db)):
             print(" No hay ejercicios en la base de datos.")
             return []
 
-        print(" Ejercicios encontrados:", ejercicios)
         return [
             {
                 "id_ejercicio": e[0],
                 "nombre": e[1],
                 "descripcion": e[2],
-                "categoria": e[3]
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General"
             }
             for e in ejercicios
-            ]
+        ]
     except Exception as e:
         import traceback, sys
         print(" ERROR EN /paciente/ejercicios:")
@@ -206,5 +207,112 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
 
 
 
+# ============================================================
+# 5️⃣ OBTENER EJERCICIOS COMPLETADOS DE UN PACIENTE
+# ============================================================
+@router.get("/ejercicios-completados/{cedula}")
+def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios completados de un paciente específico
+    incluyendo la URL del video de Cloudinary
+    """
+    try:
+        query = text("""
+            SELECT 
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Fecha_realizacion,
+                ta.Observaciones
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado = 'Completado'
+            ORDER BY ta.Fecha_realizacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return []
+        
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General",
+                "fecha_realizacion": e[6].isoformat() if e[6] else None,
+                "observaciones": e[7]
+            }
+            for e in ejercicios
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/ejercicios-completados:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener ejercicios completados: {str(e)}"
+        )
 
-
+# ============================================================
+# 6️⃣ OBTENER EJERCICIOS ASIGNADOS DE UN PACIENTE
+# ============================================================
+@router.get("/ejercicios-asignados/{cedula}")
+def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios asignados (estado Pendiente) de un paciente específico
+    incluyendo la URL del video de Cloudinary
+    """
+    try:
+        query = text("""
+            SELECT 
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Fecha_asignacion,
+                ta.Id_terapia
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado = 'Pendiente'
+            ORDER BY ta.Fecha_asignacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return []
+        
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General",
+                "fecha_asignacion": e[6].isoformat() if e[6] else None,
+                "id_terapia": e[7]
+            }
+            for e in ejercicios
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/ejercicios-asignados:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener ejercicios asignados: {str(e)}"
+        )
