@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.presentation.routers.auth_router import router as auth_router  
 from app.presentation.routers.payment_router import router as payment_router
 from app.presentation.routers.paciente_router import router as paciente_router
+from app.presentation.routers.terapia_router import router as terapia_router
 from app.config import jwt_config  # Asegura que la configuración JWT se cargue
 
 app = FastAPI()
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(payment_router)
 app.include_router(paciente_router)
+app.include_router(terapia_router)
 
 @app.get("/")
 def read_root():

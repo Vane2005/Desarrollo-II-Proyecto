@@ -236,7 +236,8 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
     ejerciciosAsignados.length = 0 // Clear array
     ejerciciosAsignados.push(
       ...ejerciciosAsignadosAPI.map((ej) => ({
-        id: ej.id_ejercicio,
+        id_terapia: ej.id_terapia,
+        id_ejercicio: ej.id_ejercicio,
         nombre: ej.nombre,
         extremidad: ej.extremidad,
         descripcion: ej.descripcion,
@@ -309,6 +310,7 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
     ejerciciosRealizados.length = 0 // Clear array
     ejerciciosRealizados.push(
       ...ejerciciosCompletados.map((ej) => ({
+        
         id: ej.id_ejercicio,
         nombre: ej.nombre,
         extremidad: ej.extremidad,
@@ -405,21 +407,40 @@ function filtrarEjerciciosRealizados(extremidad) {
   cargarEjerciciosRealizados()
 }
 
-// Marcar ejercicio como realizado
-function marcarComoRealizado(id) {
-  const ejercicio = ejerciciosAsignados.find((ej) => ej.id === id)
-  if (ejercicio) {
-    const ejercicioRealizado = {
-      ...ejercicio,
-      fechaRealizacion: new Date().toISOString().split("T")[0],
-      completado: true,
+async function marcarComoRealizado(idTerapia) {
+  try {
+    // Llamar al endpoint correcto del backend
+    const response = await fetch(`http://127.0.0.1:8000/paciente/marcar-realizado/${idTerapia}`, {
+      method: "PUT",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al marcar como realizado (${response.status})`);
     }
-    ejerciciosRealizados.unshift(ejercicioRealizado)
-    cargarFiltrosRealizados()
-    cargarEjerciciosRealizados()
-    alert("¡Ejercicio marcado como realizado!")
+
+    const data = await response.json();
+    alert(data.message || " Ejercicio marcado como realizado");
+
+    // 🔄 Actualizar la interfaz
+    const boton = document.querySelector(`button[onclick="marcarComoRealizado(${idTerapia})"]`);
+    if (boton) {
+      boton.textContent = "Completado ";
+      boton.style.background = "#2ecc71";
+      boton.disabled = true;
+    }
+
+    // Recargar listas desde el backend
+    await cargarEjerciciosAsignadosDesdeAPI();
+    await cargarEjerciciosRealizadosDesdeAPI();
+
+  } catch (error) {
+    console.error("Error al marcar como realizado:", error);
+    alert(" No se pudo marcar el ejercicio como realizado");
   }
 }
+
+
+
 
 // Formatear fecha
 function formatearFecha(fecha) {
@@ -519,7 +540,7 @@ function cargarEjercicios() {
                 <div class="exercise-details">
                     <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
                 </div>
-                <button onclick="marcarComoRealizado(${ejercicio.id})" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s;">Marcar como Realizado</button>
+                <button onclick="marcarComoRealizado(${ejercicio.id_terapia})" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s;">Marcar como Realizado</button>
             </div>
         </div>
     `,

@@ -173,6 +173,36 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
         db.rollback()
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al asignar ejercicios: {str(e)}")
+    
+        # ============================================================
+    # OBTENER EJERCICIOS ASIGNADOS A UN PACIENTE
+    # ============================================================
+    @router.get("/{cedula}/ejercicios-asignados")
+    def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
+        try:
+            print(f"[DEBUG] solicitando ejercicios asignados para cedula={cedula}")
+            query = text("""
+                SELECT E.id_ejercicio, E.nombre, E.descripcion, E.categoria
+                FROM Ejercicio E
+                INNER JOIN Terapia_Asignada T
+                    ON E.id_ejercicio = T.Id_ejercicio
+                WHERE T.Cedula_paciente = :cedula
+            """)
+            resultados = db.execute(query, {"cedula": cedula}).fetchall()
+            print("[DEBUG] resultados:", resultados)
+            if not resultados:
+                return []
+            return [
+                {"id_ejercicio": r[0], "nombre": r[1], "descripcion": r[2], "categoria": r[3]}
+                for r in resultados
+            ]
+        except Exception as e:
+            import traceback, sys
+            print("ERROR en /{cedula}/ejercicios-asignados:", repr(e))
+            traceback.print_exc(file=sys.stdout)
+            raise HTTPException(status_code=500, detail=str(e))
+
+    
 
 
 
@@ -286,3 +316,7 @@ def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error al obtener ejercicios asignados: {str(e)}"
         )
+    
+
+
+
