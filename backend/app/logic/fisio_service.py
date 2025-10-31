@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from data.models.user import User_Fisioterapeuta
+from app.data.models.user import User_Fisioterapeuta
 
 
 def actualizar_estado_fisioterapeuta(db: Session, cedula: str, nuevo_estado: str):

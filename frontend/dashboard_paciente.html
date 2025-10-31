@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Paciente - Ejercicios Asignados</title>
+    <title>Dashboard Paciente - TerapiaFisica+</title>
 
     <!-- Estilos base del dashboard -->
     <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
@@ -23,11 +23,17 @@
                 <h2>TerapiaFisica+</h2>
             </div>
             <nav class="sidebar-nav">
-                <button class="nav-item active" data-section="ejercicios-asignados">
+                <!-- NUEVO: Panel de Información Personal como primero -->
+                <button class="nav-item active" data-section="informacion-personal">
+                    <span class="nav-icon">👤</span>
+                    <span>Información Personal</span>
+                </button>
+                
+                <button class="nav-item" data-section="ejercicios-asignados">
                     <span class="nav-icon">💪</span>
                     <span>Ejercicios Asignados</span>
                 </button>
-                <!-- Agregado botón para Ejercicios Realizados -->
+                
                 <button class="nav-item" data-section="ejercicios-realizados">
                     <span class="nav-icon">✅</span>
                     <span>Ejercicios Realizados</span>
@@ -42,10 +48,43 @@
         <!-- Main content -->
         <main class="main-content">
             <header class="content-header">
-                <h1 id="section-title">Ejercicios Asignados</h1>
+                <h1 id="section-title">Información Personal</h1>
             </header>
 
-            <section id="ejercicios-asignados" class="content-section active">
+            <!-- ================== NUEVA SECCIÓN: INFORMACIÓN PERSONAL ================== -->
+            <section id="informacion-personal" class="content-section active">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3>Perfil del Paciente</h3>
+                        <div class="header-buttons">
+                            <button class="btn-change-password" id="btnChangePasswordPaciente">
+                                Cambiar Contraseña
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Nombre Completo</label>
+                            <input type="text" class="info-input" id="inputNombrePaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Documento De Identidad</label>
+                            <input type="text" class="info-input" id="inputDocumentoPaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Correo Electrónico</label>
+                            <input type="email" class="info-input" id="inputCorreoPaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Teléfono</label>
+                            <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================== EJERCICIOS ASIGNADOS ================== -->
+            <section id="ejercicios-asignados" class="content-section">
                 <div class="library-header">
                     <h2>Biblioteca de Ejercicios</h2>
                     <p>Selecciona una extremidad para filtrar tus ejercicios asignados</p>
@@ -65,7 +104,7 @@
                 </div>
             </section>
 
-            <!-- Nueva sección para Ejercicios Realizados -->
+            <!-- ================== EJERCICIOS REALIZADOS ================== -->
             <section id="ejercicios-realizados" class="content-section">
                 <div class="library-header">
                     <h2>Ejercicios Realizados</h2>
@@ -86,6 +125,36 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- ================== MODAL CAMBIAR CONTRASEÑA ================== -->
+    <div class="modal" id="changePasswordModalPaciente">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cambiar Contraseña</h3>
+                <button class="close-btn" id="closePasswordModalPaciente">&times;</button>
+            </div>
+            <form id="changePasswordFormPaciente" class="modal-form">
+                <div class="form-group">
+                    <label for="currentPasswordPaciente">Contraseña Actual</label>
+                    <input type="password" id="currentPasswordPaciente" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordPaciente">Nueva Contraseña</label>
+                    <input type="password" id="newPasswordPaciente" required minlength="8" maxlength="72">
+                    <small>Mínimo 8 caracteres</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPasswordPaciente">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmPasswordPaciente" required minlength="8" maxlength="72">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelPasswordChangePaciente">Cancelar</button>
+                    <button type="submit" class="btn-submit">Cambiar Contraseña</button>
+                </div>
+                <div id="passwordMessagePaciente" class="form-message"></div>
+            </form>
+        </div>
     </div>
 
     <script src="assets/js/dashboard_paciente.js"></script>
