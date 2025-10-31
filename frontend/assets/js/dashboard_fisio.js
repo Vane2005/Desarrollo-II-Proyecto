@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token")
     if (!token) {
       console.error("No hay token de autenticación")
-      window.location.replace("index.html")
+      clearSessionAndRedirect()
       return
     }
 
@@ -67,17 +67,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${AUTH_API_URL}/info-fisioterapeuta`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Token inválido o expirado")
+          clearSessionAndRedirect()
+          return
+        }
         throw new Error("Error al obtener información del fisioterapeuta")
       }
 
       const data = await response.json()
-      
+
       // Llenar los campos del formulario
       document.getElementById("inputNombre").value = data.nombre
       document.getElementById("inputDocumento").value = data.cedula
@@ -91,12 +96,21 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         btnRealizarPago.style.display = "none"
       }
-
     } catch (error) {
       console.error("Error al cargar información:", error)
-      alert("❌ Error al cargar tu información. Por favor, inicia sesión nuevamente.")
-      window.location.replace("index.html")
+      clearSessionAndRedirect()
     }
+  }
+
+  function clearSessionAndRedirect() {
+    // Clear all authentication data
+    localStorage.removeItem("token")
+    localStorage.removeItem("tipo_usuario")
+    localStorage.removeItem("nombre")
+    localStorage.removeItem("cedula")
+
+    // Redirect to login page
+    window.location.replace("index.html")
   }
 
   // Cargar información al iniciar
@@ -110,11 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
     btnRealizarPago.addEventListener("click", () => {
       const cedula = document.getElementById("inputDocumento").value
       const email = document.getElementById("inputCorreo").value
-      
+
       // Guardar datos para el proceso de pago
       localStorage.setItem("cedula_pendiente", cedula)
       localStorage.setItem("userEmail", email)
-      
+
       // Redirigir a página de pago
       window.location.href = "pago.html"
     })
@@ -155,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Validar contraseñas en tiempo real
-  document.getElementById("confirmPassword").addEventListener("input", function() {
+  document.getElementById("confirmPassword").addEventListener("input", function () {
     const newPassword = document.getElementById("newPassword").value
     const confirmPassword = this.value
 
@@ -203,13 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${AUTH_API_URL}/cambiar-contrasena`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contrasena_actual: currentPassword,
-          nueva_contrasena: newPassword
-        })
+          nueva_contrasena: newPassword,
+        }),
       })
 
       const data = await response.json()
@@ -219,12 +233,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       mostrarMensaje("success", `✅ ${data.mensaje}<br>Se ha enviado una notificación a tu correo.`)
-      
+
       // Cerrar modal después de 2 segundos
       setTimeout(() => {
         closeModal()
       }, 2000)
-
     } catch (error) {
       console.error("Error al cambiar contraseña:", error)
       mostrarMensaje("error", error.message)
@@ -240,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================
-  // 🔍 BUSCAR PACIENTE POR CÉDULA
+  // BUSCAR PACIENTE POR CÉDULA
   // ==========================================
   const btnBuscar = document.getElementById("btnBuscarCedula")
   if (btnBuscar) {
@@ -332,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarEjercicios()
 
   // ==========================================
-  // ✅ ASIGNAR EJERCICIOS A PACIENTE
+  // ASIGNAR EJERCICIOS A PACIENTE
   // ==========================================
   const assignBtn = document.getElementById("assignSelectedExercises")
   if (assignBtn) {
@@ -371,6 +384,144 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("❌ Error al asignar ejercicios:", error)
         alert("❌ Error al asignar ejercicios")
+      }
+    })
+  }
+
+  // ==========================================
+  // AVANCE PACIENTE - BUSCAR POR CÉDULA
+  // ==========================================
+
+  async function calcularAvancePaciente(cedula) {
+    try {
+      // Fetch patient info
+      const pacienteRes = await fetch(`${PACIENTE_API_URL}/${cedula}`)
+      if (!pacienteRes.ok) {
+        throw new Error("Paciente no encontrado")
+      }
+      const pacienteData = await pacienteRes.json()
+
+      // Fetch completed therapies
+      const completadosRes = await fetch(`${PACIENTE_API_URL}/ejercicios-completados/${cedula}`)
+      const completados = await completadosRes.json()
+      const numCompletados = Array.isArray(completados) ? completados.length : 0
+
+      // Fetch pending therapies
+      const asignadosRes = await fetch(`${PACIENTE_API_URL}/ejercicios-asignados/${cedula}`)
+      const asignados = await asignadosRes.json()
+      const numAsignados = Array.isArray(asignados) ? asignados.length : 0
+
+      // Calculate total and percentage
+      const totalTerapias = numCompletados + numAsignados
+      const porcentaje = totalTerapias > 0 ? Math.round((numCompletados / totalTerapias) * 100) : 0
+
+      return {
+        cedula: cedula,
+        nombre: pacienteData.nombre,
+        porcentaje: porcentaje,
+        completados: numCompletados,
+        pendientes: numAsignados,
+        total: totalTerapias,
+      }
+    } catch (error) {
+      console.error("Error calculando avance:", error)
+      throw error
+    }
+  }
+
+  function mostrarAvancePaciente(pacienteInfo) {
+    const container = document.getElementById("patientProgressList")
+
+    const progressItem = document.createElement("div")
+    progressItem.classList.add("patient-progress-item")
+    progressItem.innerHTML = `
+      <div class="progress-info">
+        <p class="patient-name">${pacienteInfo.nombre}</p>
+        <p class="progress-label">
+          Avance: <span class="progress-percentage">${pacienteInfo.porcentaje}%</span>
+          <span style="font-size: 0.9em; color: #666; margin-left: 10px;">
+            (${pacienteInfo.completados} completados / ${pacienteInfo.total} total)
+          </span>
+        </p>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${pacienteInfo.porcentaje}%"></div>
+      </div>
+      <div class="patient-actions">
+        <button class="btn-action btn-details" data-cedula="${pacienteInfo.cedula}">Ver Detalles</button>
+        <button class="btn-action btn-edit-paciente" data-cedula="${pacienteInfo.cedula}">Editar Paciente</button>
+        <button class="btn-action btn-disable" data-cedula="${pacienteInfo.cedula}">Inhabilitar Paciente</button>
+      </div>
+    `
+
+    container.appendChild(progressItem)
+  }
+
+  const btnBuscarAvance = document.getElementById("btnBuscarAvance")
+  if (btnBuscarAvance) {
+    btnBuscarAvance.addEventListener("click", async () => {
+      const cedula = document.getElementById("cedulaAvanceInput").value.trim()
+      if (!cedula) {
+        alert("Por favor ingrese una cédula")
+        return
+      }
+
+      const container = document.getElementById("patientProgressList")
+      container.innerHTML = '<p style="text-align: center; color: #666;">Cargando...</p>'
+
+      try {
+        const pacienteInfo = await calcularAvancePaciente(cedula)
+        container.innerHTML = ""
+        mostrarAvancePaciente(pacienteInfo)
+      } catch (error) {
+        console.error("Error buscando paciente:", error)
+        container.innerHTML =
+          '<p style="text-align: center; color: #ff4444;">❌ Paciente no encontrado o sin terapias asignadas</p>'
+      }
+    })
+  }
+
+  const btnMostrarTodos = document.getElementById("btnMostrarTodos")
+  if (btnMostrarTodos) {
+    btnMostrarTodos.addEventListener("click", async () => {
+      const container = document.getElementById("patientProgressList")
+      container.innerHTML = '<p style="text-align: center; color: #666;">Cargando todos los pacientes...</p>'
+
+      try {
+        // Fetch all patients from backend
+        const response = await fetch(`${PACIENTE_API_URL}/todos`)
+        if (!response.ok) {
+          throw new Error("Error al obtener lista de pacientes")
+        }
+
+        const pacientes = await response.json()
+
+        if (!Array.isArray(pacientes) || pacientes.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #666;">No hay pacientes registrados</p>'
+          return
+        }
+
+        container.innerHTML = ""
+
+        // Calculate and display progress for each patient
+        for (const paciente of pacientes) {
+          try {
+            const pacienteInfo = await calcularAvancePaciente(paciente.cedula)
+            mostrarAvancePaciente(pacienteInfo)
+          } catch (error) {
+            console.error(`Error calculando avance para paciente ${paciente.cedula}:`, error)
+            // Continue with next patient even if one fails
+          }
+        }
+
+        if (container.children.length === 0) {
+          container.innerHTML =
+            '<p style="text-align: center; color: #666;">No se pudo cargar información de pacientes</p>'
+        }
+      } catch (error) {
+        console.error("Error mostrando todos los pacientes:", error)
+        container.innerHTML =
+          '<p style="text-align: center; color: #ff4444;">❌ Error al cargar la lista de pacientes</p>'
       }
     })
   }

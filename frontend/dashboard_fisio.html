@@ -105,28 +105,18 @@
       <!-- ================== AVANCE PACIENTE ================== -->
       <section id="avance-paciente" class="content-section">
         <div class="search-card">
-          <h3>Buscar Paciente Por Nombre:</h3>
+          <h3>Buscar Paciente Por Cédula:</h3>
           <div class="search-bar">
-            <input type="text" placeholder="Escriba el nombre del paciente a buscar">
-            <button class="btn-search">Buscar</button>
+            <input type="text" id="cedulaAvanceInput" placeholder="Ingrese la cédula del paciente">
+            <button class="btn-search" id="btnBuscarAvance">Buscar</button>
+            <button class="btn-search" id="btnMostrarTodos" style="margin-left: 10px;">Mostrar Todos</button>
           </div>
         </div>
 
         <div class="patients-card">
           <h3>Lista Pacientes Encontrados:</h3>
-          <div class="patient-progress-item">
-            <div class="progress-info">
-              <p class="patient-name">Nombre Paciente</p>
-              <p class="progress-label">Avance: <span class="progress-percentage">75%</span></p>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 75%"></div>
-            </div>
-            <div class="patient-actions">
-              <button class="btn-action btn-details">Ver Detalles</button>
-              <button class="btn-action btn-edit-paciente">Editar Paciente</button>
-              <button class="btn-action btn-disable">Inhabilitar Paciente</button>
-            </div>
+          <div id="patientProgressList">
+            <p style="text-align: center; color: #666;">Busque un paciente por cédula o muestre todos los pacientes</p>
           </div>
         </div>
       </section>
