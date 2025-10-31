@@ -8,7 +8,7 @@ import string
 
 
 # ----------------------------------------------------------
-# 🔹 Función: Generar una contraseña aleatoria segura
+#  Función: Generar una contraseña aleatoria segura
 # ----------------------------------------------------------
 def generar_contrasena(longitud=10):
     """

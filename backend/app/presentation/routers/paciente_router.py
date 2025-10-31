@@ -10,7 +10,7 @@ import traceback
 router = APIRouter(prefix="/paciente", tags=["Paciente"])
 
 # ============================================================
-# 1️⃣ REGISTRAR PACIENTE
+# 1 REGISTRAR PACIENTE
 # ============================================================
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
@@ -49,7 +49,7 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
 
 
 # ============================================================
-# 3️⃣ OBTENER LISTA DE EJERCICIOS
+# 2 OBTENER LISTA DE EJERCICIOS
 # ============================================================
 
 
@@ -90,7 +90,46 @@ def obtener_ejercicios(db: Session = Depends(get_db)):
 
 
 # ============================================================
-# 2️⃣ BUSCAR PACIENTE POR CÉDULA
+# 3 OBTENER TODOS LOS PACIENTES
+# ============================================================
+@router.get("/todos")
+def obtener_todos_pacientes(db: Session = Depends(get_db)):
+    """
+    Obtiene la lista de todos los pacientes registrados en el sistema
+    """
+    try:
+        query = text("""
+            SELECT cedula, nombre, correo, telefono, estado
+            FROM Paciente
+            ORDER BY nombre
+        """)
+        
+        pacientes = db.execute(query).fetchall()
+        
+        if not pacientes:
+            return []
+        
+        return [
+            {
+                "cedula": p[0],
+                "nombre": p[1],
+                "correo": p[2],
+                "telefono": p[3],
+                "estado": p[4]
+            }
+            for p in pacientes
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/todos:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener lista de pacientes: {str(e)}"
+        )
+
+# ============================================================
+# 4 BUSCAR PACIENTE POR CÉDULA
 # ============================================================
 @router.get("/{cedula}")
 def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
@@ -140,7 +179,7 @@ def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
 
 
 # ============================================================
-# 4️⃣ ASIGNAR EJERCICIOS A PACIENTE
+# 5 ASIGNAR EJERCICIOS A PACIENTE
 # ============================================================
 @router.post("/asignar-ejercicio")
 def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
@@ -208,7 +247,7 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
 
 
 # ============================================================
-# 5️⃣ OBTENER EJERCICIOS COMPLETADOS DE UN PACIENTE
+# 6 OBTENER EJERCICIOS COMPLETADOS DE UN PACIENTE
 # ============================================================
 @router.get("/ejercicios-completados/{cedula}")
 def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
@@ -263,7 +302,7 @@ def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
         )
 
 # ============================================================
-# 6️⃣ OBTENER EJERCICIOS ASIGNADOS DE UN PACIENTE
+# 7 OBTENER EJERCICIOS ASIGNADOS DE UN PACIENTE
 # ============================================================
 @router.get("/ejercicios-asignados/{cedula}")
 def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
@@ -316,7 +355,3 @@ def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error al obtener ejercicios asignados: {str(e)}"
         )
-    
-
-
-
