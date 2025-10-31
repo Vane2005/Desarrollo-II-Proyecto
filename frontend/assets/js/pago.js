@@ -72,7 +72,7 @@ async function crearPaymentIntent() {
         body: JSON.stringify({
             amount: PAYMENT_CONFIG.amount,  
             currency: PAYMENT_CONFIG.currency,  
-            description: 'Suscripción mensual TerapiaFisica+',
+            description: 'Suscripción TerapiaFisica+',
             customer_email: userEmail
         })
     });
@@ -95,7 +95,7 @@ async function procesarPago(event) {
     // Obtener la cédula del fisioterapeuta (guardada en registro)
     const cedulaFisio = localStorage.getItem('cedula_pendiente');
     
-    console.log('🔍 Cédula recuperada del localStorage:', cedulaFisio);
+    console.log(' Cédula recuperada del localStorage:', cedulaFisio);
     
     if (!cedulaFisio) {
         mostrarMensaje('error', 'Error: No se encontró la información del fisioterapeuta. Por favor, regístrese nuevamente.');
@@ -175,8 +175,8 @@ async function procesarPago(event) {
                 
                 // Pago exitoso y cuenta activada
                 mostrarMensaje('exito', `
-                    ✅ ¡Pago de ${PAYMENT_CONFIG.displayAmount} exitoso!<br>
-                    <strong>Tu cuenta ha sido activada.</strong><br>
+                    ✅ ¡Pago de ${PAYMENT_CONFIG.displayAmount} exitoso!
+                    Tu cuenta ha sido activada.
                     Redirigiendo al inicio de sesión...
                 `);
                 
@@ -200,11 +200,11 @@ async function procesarPago(event) {
                 
                 // El pago fue exitoso pero hubo error en la activación
                 mostrarMensaje('error', `
-                    <strong>⚠️ Pago procesado correctamente</strong><br>
-                    Sin embargo, hubo un problema al activar tu cuenta.<br>
-                    Error: ${activacionError.message}<br>
-                    <br>
-                    Por favor, contacta a soporte con este ID de pago: <strong>${paymentIntent.id}</strong><br>
+                    ⚠️ Pago procesado correctamente
+                    Sin embargo, hubo un problema al activar tu cuenta
+                    Error: ${activacionError.message}
+                    
+                    Por favor, contacta a soporte con este ID de pago: ${paymentIntent.id}
                     Tu cuenta será activada manualmente.
                 `);
                 
