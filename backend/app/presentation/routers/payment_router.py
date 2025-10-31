@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.payment_schema import PaymentIntentCreate, PaymentIntentResponse
-from logic.payment_service import crear_payment_intent, confirmar_pago
-from config.stripe_config import get_stripe_publishable_key
-from data.db import get_db 
-from logic.fisio_service import actualizar_estado_fisioterapeuta
+from app.presentation.schemas.payment_schema import PaymentIntentCreate, PaymentIntentResponse
+from app.logic.payment_service import crear_payment_intent, confirmar_pago
+from app.config.stripe_config import get_stripe_publishable_key
+from app.data.db import get_db 
+from app.logic.fisio_service import actualizar_estado_fisioterapeuta
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/payments", tags=["Pagos"])

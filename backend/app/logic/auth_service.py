@@ -1,9 +1,9 @@
-from logic.email_service import send_recovery_email, send_password_change_notification
-from logic.utils import generar_contrasena_aleatoria
+from app.logic.email_service import send_recovery_email, send_password_change_notification
+from app.logic.utils import generar_contrasena_aleatoria
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from data.models.user import User_Fisioterapeuta, User_Paciente
-from config.security import hash_password, verify_password
+from app.data.models.user import User_Fisioterapeuta, User_Paciente
+from app.config.security import hash_password, verify_password
 
 def crear_fisioterapeuta(db: Session, cedula: str, correo: str, nombre: str, contrasena: str, estado: str, telefono: str):
     try:
@@ -121,41 +121,67 @@ def recuperar_contrasena(db: Session, email: str):
 
 
 def cambiar_contrasena(db: Session, cedula: str, contrasena_actual: str, nueva_contrasena: str):
-    """
-    Cambia la contraseña del fisioterapeuta verificando la contraseña actual.
-    """
-    # Buscar fisioterapeuta
+    # Cambia la contraseña del usuario (fisioterapeuta o paciente) verificando la contraseña actual.
+
+    # Primero buscar en Fisioterapeuta
     fisio = db.query(User_Fisioterapeuta).filter(
         User_Fisioterapeuta.cedula == cedula
     ).first()
     
-    if not fisio:
-        raise ValueError("Fisioterapeuta no encontrado")
+    if fisio:
+        # Verificar contraseña actual
+        if not verify_password(contrasena_actual, fisio.contrasena):
+            raise ValueError("La contraseña actual es incorrecta")
+        
+        # Actualizar contraseña
+        fisio.contrasena = hash_password(nueva_contrasena)
+        db.commit()
+        
+        # Enviar notificación por email
+        send_password_change_notification(
+            to=fisio.correo,
+            nombre=fisio.nombre
+        )
+        
+        return {
+            "mensaje": "Contraseña actualizada exitosamente",
+            "email": fisio.correo,
+            "tipo": "fisioterapeuta"
+        }
     
-    # Verificar contraseña actual
-    if not verify_password(contrasena_actual, fisio.contrasena):
-        raise ValueError("La contraseña actual es incorrecta")
+    # Si no se encuentra, buscar en Paciente
+    paciente = db.query(User_Paciente).filter(
+        User_Paciente.cedula == cedula
+    ).first()
     
-    # Actualizar contraseña
-    fisio.contrasena = hash_password(nueva_contrasena)
-    db.commit()
+    if paciente:
+        # Verificar contraseña actual
+        if not verify_password(contrasena_actual, paciente.contrasena):
+            raise ValueError("La contraseña actual es incorrecta")
+        
+        # Actualizar contraseña
+        paciente.contrasena = hash_password(nueva_contrasena)
+        db.commit()
+        
+        # Enviar notificación por email
+        send_password_change_notification(
+            to=paciente.correo,
+            nombre=paciente.nombre
+        )
+        
+        return {
+            "mensaje": "Contraseña actualizada exitosamente",
+            "email": paciente.correo,
+            "tipo": "paciente"
+        }
     
-    # Enviar notificación por email
-    send_password_change_notification(
-        to=fisio.correo,
-        nombre=fisio.nombre
-    )
-    
-    return {
-        "mensaje": "Contraseña actualizada exitosamente",
-        "email": fisio.correo
-    }
+    # No se encontró el usuario en ninguna tabla
+    raise ValueError("Usuario no encontrado")
 
 
 def obtener_info_fisioterapeuta(db: Session, cedula: str):
-    """
-    Obtiene la información completa del fisioterapeuta por cédula.
-    """
+    # Obtiene la información completa del fisioterapeuta por cédula.
+   
     fisio = db.query(User_Fisioterapeuta).filter(
         User_Fisioterapeuta.cedula == cedula
     ).first()

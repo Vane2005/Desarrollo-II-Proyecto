@@ -1,139 +1,184 @@
-// ===============================
-// DASHBOARD PACIENTE JS
-// ===============================
+const ejercicios = []
+const ejerciciosAsignados = []
+const ejerciciosRealizados = []
 
-// Simulación de ejercicios (puedes reemplazar esto con datos del backend)
-const ejercicios = [
-  {
-    id: 1,
-    nombre: "Elevación de pierna",
-    descripcion: "Fortalece los músculos del muslo y mejora la movilidad de la pierna.",
-    parteCuerpo: "Pierna",
-    imagen: "assets/img/ejercicios/pierna1.jpg",
-  },
-  {
-    id: 2,
-    nombre: "Flexión de rodilla",
-    descripcion: "Ejercicio suave para fortalecer la articulación de la rodilla.",
-    parteCuerpo: "Pierna",
-    imagen: "assets/img/ejercicios/pierna2.jpg",
-  },
-  {
-    id: 3,
-    nombre: "Rotación de hombros",
-    descripcion: "Mejora la movilidad y flexibilidad del hombro.",
-    parteCuerpo: "Brazo",
-    imagen: "assets/img/ejercicios/brazo1.jpg",
-  },
-  {
-    id: 4,
-    nombre: "Extensión de codo",
-    descripcion: "Fortalece los músculos del brazo y el antebrazo.",
-    parteCuerpo: "Brazo",
-    imagen: "assets/img/ejercicios/brazo2.jpg",
-  },
-  {
-    id: 5,
-    nombre: "Torsión de tronco",
-    descripcion: "Ayuda a la movilidad del torso y la columna.",
-    parteCuerpo: "Tronco",
-    imagen: "assets/img/ejercicios/tronco1.jpg",
-  },
-]
-
-// Elementos del DOM
-const filtersContainer = document.getElementById("filters")
-const exercisesGrid = document.getElementById("exercisesGrid")
-const noResults = document.getElementById("noResults")
+let filtroActual = "Todos"
+let filtroRealizadosActual = "Todos"
 
 const API_URL = "http://localhost:8000/paciente"
+const AUTH_API_URL = "http://localhost:8000/auth"
 
 // Inicializar
 document.addEventListener("DOMContentLoaded", () => {
-  generarFiltros()
-  mostrarEjercicios(ejercicios)
   initSidebar()
   initNavigation()
+  cargarInfoPaciente() // NUEVO: Cargar información del paciente
+  initCambiarContrasena() // NUEVO: Inicializar modal de cambio de contraseña
   cargarFiltros()
   cargarEjerciciosAsignadosDesdeAPI()
   cargarFiltrosRealizados()
   cargarEjerciciosRealizadosDesdeAPI()
 })
 
-// Generar los botones de filtro dinámicamente
-function generarFiltros() {
-  const partes = [...new Set(ejercicios.map((e) => e.parteCuerpo))]
-  filtersContainer.innerHTML = ""
 
-  // Botón "Todos"
-  const btnTodos = document.createElement("button")
-  btnTodos.textContent = "Todos"
-  btnTodos.classList.add("filter-btn", "active")
-  btnTodos.addEventListener("click", () => filtrarEjercicios(null, btnTodos))
-  filtersContainer.appendChild(btnTodos)
-
-  // Botones de cada parte del cuerpo
-  partes.forEach((parte) => {
-    const btn = document.createElement("button")
-    btn.textContent = parte
-    btn.classList.add("filter-btn")
-    btn.addEventListener("click", () => filtrarEjercicios(parte, btn))
-    filtersContainer.appendChild(btn)
-  })
-}
-
-// Mostrar ejercicios en la cuadrícula
-function mostrarEjercicios(lista) {
-  exercisesGrid.innerHTML = ""
-
-  if (lista.length === 0) {
-    noResults.style.display = "block"
+async function cargarInfoPaciente() {
+  const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+  
+  if (!cedula) {
+    console.error("No se encontró la cédula del paciente")
+    alert("Error: No se pudo cargar la información del paciente")
     return
   }
 
-  noResults.style.display = "none"
+  try {
+    console.log(`📋 Cargando información del paciente: ${cedula}`)
+    
+    const response = await fetch(`${API_URL}/${cedula}`)
+    
+    if (!response.ok) {
+      throw new Error(`Error al obtener información: ${response.status}`)
+    }
 
-  lista.forEach((e) => {
-    const card = document.createElement("div")
-    card.classList.add("exercise-card")
+    const data = await response.json()
+    
+    console.log("Información del paciente cargada:", data)
+    
+    // Llenar los campos del formulario
+    document.getElementById("inputNombrePaciente").value = data.nombre || "N/A"
+    document.getElementById("inputDocumentoPaciente").value = cedula
+    document.getElementById("inputCorreoPaciente").value = data.correo || "N/A"
+    document.getElementById("inputTelefonoPaciente").value = data.telefono || "N/A"
 
-    card.innerHTML = `
-      <img src="${e.imagen}" alt="${e.nombre}" class="exercise-image">
-      <div class="exercise-content">
-        <span class="exercise-body-part">${e.parteCuerpo}</span>
-        <h3 class="exercise-title">${e.nombre}</h3>
-        <p class="exercise-description">${e.descripcion}</p>
-      </div>
-    `
+  } catch (error) {
+    console.error("Error al cargar información del paciente:", error)
+    alert("Error al cargar tu información. Por favor, inicia sesión nuevamente.")
+  }
+}
 
-    exercisesGrid.appendChild(card)
+
+function initCambiarContrasena() {
+  const btnChangePassword = document.getElementById("btnChangePasswordPaciente")
+  const changePasswordModal = document.getElementById("changePasswordModalPaciente")
+  const closePasswordModal = document.getElementById("closePasswordModalPaciente")
+  const cancelPasswordChange = document.getElementById("cancelPasswordChangePaciente")
+  const changePasswordForm = document.getElementById("changePasswordFormPaciente")
+  const passwordMessage = document.getElementById("passwordMessagePaciente")
+
+  // Abrir modal
+  btnChangePassword.addEventListener("click", () => {
+    changePasswordModal.classList.add("active")
+    changePasswordForm.reset()
+    passwordMessage.classList.remove("visible")
+  })
+
+  // Cerrar modal
+  function closeModal() {
+    changePasswordModal.classList.remove("active")
+    changePasswordForm.reset()
+    passwordMessage.classList.remove("visible")
+  }
+
+  closePasswordModal.addEventListener("click", closeModal)
+  cancelPasswordChange.addEventListener("click", closeModal)
+
+  // Cerrar modal al hacer clic fuera
+  changePasswordModal.addEventListener("click", (e) => {
+    if (e.target === changePasswordModal) {
+      closeModal()
+    }
+  })
+
+  // Validar contraseñas en tiempo real
+  document.getElementById("confirmPasswordPaciente").addEventListener("input", function() {
+    const newPassword = document.getElementById("newPasswordPaciente").value
+    const confirmPassword = this.value
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      this.setCustomValidity("Las contraseñas no coinciden")
+      this.style.borderColor = "#ff4444"
+    } else {
+      this.setCustomValidity("")
+      this.style.borderColor = ""
+    }
+  })
+
+  // Enviar cambio de contraseña
+  changePasswordForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    const currentPassword = document.getElementById("currentPasswordPaciente").value
+    const newPassword = document.getElementById("newPasswordPaciente").value
+    const confirmPassword = document.getElementById("confirmPasswordPaciente").value
+
+    // Validar que las contraseñas coincidan
+    if (newPassword !== confirmPassword) {
+      mostrarMensajePassword("error", "Las contraseñas no coinciden")
+      return
+    }
+
+    // Validar longitud mínima
+    if (newPassword.length < 8) {
+      mostrarMensajePassword("error", "La nueva contraseña debe tener al menos 8 caracteres")
+      return
+    }
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      mostrarMensajePassword("error", "No hay sesión activa")
+      return
+    }
+
+    // Deshabilitar botón
+    const submitBtn = changePasswordForm.querySelector('button[type="submit"]')
+    submitBtn.disabled = true
+    submitBtn.textContent = "Cambiando..."
+
+    try {
+      const response = await fetch(`${AUTH_API_URL}/cambiar-contrasena`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contrasena_actual: currentPassword,
+          nueva_contrasena: newPassword
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al cambiar la contraseña")
+      }
+
+      mostrarMensajePassword("success", `✅ ${data.mensaje}<br>Se ha enviado una notificación a tu correo.`)
+      
+      // Cerrar modal después de 2 segundos
+      setTimeout(() => {
+        closeModal()
+      }, 2000)
+
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error)
+      mostrarMensajePassword("error", error.message)
+    } finally {
+      submitBtn.disabled = false
+      submitBtn.textContent = "Cambiar Contraseña"
+    }
   })
 }
 
-// Filtrar ejercicios según parte del cuerpo
-function filtrarEjercicios(parte, boton) {
-  document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"))
-  boton.classList.add("active")
-
-  if (!parte) {
-    mostrarEjercicios(ejercicios)
-    return
-  }
-
-  const filtrados = ejercicios.filter((e) => e.parteCuerpo === parte)
-  mostrarEjercicios(filtrados)
+function mostrarMensajePassword(tipo, contenido) {
+  const passwordMessage = document.getElementById("passwordMessagePaciente")
+  passwordMessage.className = `form-message ${tipo} visible`
+  passwordMessage.innerHTML = contenido
 }
 
-// Datos de ejemplo para ejercicios asignados
-const ejerciciosAsignados = []
+// ==========================================
+// NAVEGACIÓN Y SIDEBAR
+// ==========================================
 
-// Datos de ejemplo para ejercicios realizados
-const ejerciciosRealizados = []
-
-const filtroActual = "Todos"
-let filtroRealizadosActual = "Todos"
-
-// Funcionalidad del sidebar
 function initSidebar() {
   const toggleBtn = document.getElementById("toggleSidebar")
   const sidebar = document.getElementById("sidebar")
@@ -145,7 +190,6 @@ function initSidebar() {
   }
 }
 
-// Navegación entre secciones
 function initNavigation() {
   const navItems = document.querySelectorAll(".nav-item")
 
@@ -158,27 +202,28 @@ function initNavigation() {
 }
 
 function cambiarSeccion(sectionId) {
-  // Actualizar navegación activa
   document.querySelectorAll(".nav-item").forEach((item) => {
     item.classList.remove("active")
   })
   document.querySelector(`[data-section="${sectionId}"]`).classList.add("active")
 
-  // Actualizar secciones de contenido
   document.querySelectorAll(".content-section").forEach((section) => {
     section.classList.remove("active")
   })
   document.getElementById(sectionId).classList.add("active")
 
-  // Actualizar título
   const titles = {
+    "informacion-personal": "Información Personal",
     "ejercicios-asignados": "Ejercicios Asignados",
     "ejercicios-realizados": "Ejercicios Realizados",
   }
   document.getElementById("section-title").textContent = titles[sectionId]
 }
 
-// Cargar filtros para ejercicios asignados
+// ==========================================
+// EJERCICIOS ASIGNADOS - FILTRADO
+// ==========================================
+
 function cargarFiltros() {
   const filtersContainer = document.getElementById("filters")
   const extremidades = [
@@ -205,15 +250,26 @@ function cargarFiltros() {
                 onclick="filtrarEjerciciosAsignados('${ext}')">
           ${ext}
         </button>
-      `,
+      `
     )
     .join("")
 }
 
-// Cargar ejercicios asignados
+function filtrarEjerciciosAsignados(extremidad) {
+  filtroActual = extremidad
+
+  document.querySelectorAll("#filters .filter-btn").forEach((btn) => {
+    btn.classList.remove("active")
+    if (btn.textContent.trim() === extremidad) {
+      btn.classList.add("active")
+    }
+  })
+
+  cargarEjercicios()
+}
+
 async function cargarEjerciciosAsignadosDesdeAPI() {
   try {
-    // Get patient cedula from localStorage
     const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
 
     if (!cedula) {
@@ -230,10 +286,9 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
 
     const ejerciciosAsignadosAPI = await response.json()
 
-    console.log("[v0] Ejercicios asignados recibidos de la API:", ejerciciosAsignadosAPI)
+    console.log("Ejercicios asignados recibidos:", ejerciciosAsignadosAPI)
 
-    // Update the global variable with real data
-    ejerciciosAsignados.length = 0 // Clear array
+    ejerciciosAsignados.length = 0
     ejerciciosAsignados.push(
       ...ejerciciosAsignadosAPI.map((ej) => ({
         id_terapia: ej.id_terapia,
@@ -244,9 +299,8 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
         repeticiones: ej.repeticiones,
         urlVideo: ej.url_video,
         imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
-      })),
+      }))
     )
-
 
     cargarEjercicios()
   } catch (error) {
@@ -255,7 +309,71 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
   }
 }
 
-// Cargar filtros para ejercicios realizados
+function cargarEjercicios() {
+  const grid = document.getElementById("exercisesGrid")
+  const noResults = document.getElementById("noResults")
+
+  const ejerciciosFiltrados =
+    filtroActual === "Todos"
+      ? ejerciciosAsignados
+      : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+
+  console.log(`🔍 Filtro activo: ${filtroActual}`)
+  console.log(`📋 Ejercicios filtrados: ${ejerciciosFiltrados.length}`)
+
+  if (ejerciciosFiltrados.length === 0) {
+    grid.style.display = "none"
+    noResults.style.display = "block"
+    return
+  }
+
+  grid.style.display = "grid"
+  noResults.style.display = "none"
+
+  grid.innerHTML = ejerciciosFiltrados
+    .map(
+      (ejercicio) => `
+        <div class="exercise-card">
+            ${
+              ejercicio.urlVideo
+                ? `
+              <div class="exercise-video">
+                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                  <source src="${ejercicio.urlVideo}" type="video/mp4">
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              </div>
+            `
+                : `
+              <div class="exercise-image">
+                <img src="${ejercicio.imagen}" alt="${ejercicio.nombre}">
+              </div>
+            `
+            }
+            <div class="exercise-content">
+                <h3 class="exercise-title">${ejercicio.nombre}</h3>
+                <span class="exercise-category">${ejercicio.extremidad}</span>
+                <p class="exercise-description">${ejercicio.descripcion}</p>
+                <div class="exercise-details">
+                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
+                </div>
+                <button onclick="marcarComoRealizado(${ejercicio.id_terapia})" 
+                        style="margin-top: 12px; padding: 8px 16px; background: #667eea; 
+                               color: white; border: none; border-radius: 6px; cursor: pointer; 
+                               font-weight: 500; transition: all 0.3s;">
+                    Marcar como Realizado
+                </button>
+            </div>
+        </div>
+    `
+    )
+    .join("")
+}
+
+// ==========================================
+// EJERCICIOS REALIZADOS - FILTRADO
+// ==========================================
+
 function cargarFiltrosRealizados() {
   const filtersContainer = document.getElementById("filtersRealizados")
   const extremidades = [
@@ -282,14 +400,26 @@ function cargarFiltrosRealizados() {
                 onclick="filtrarEjerciciosRealizados('${ext}')">
           ${ext}
         </button>
-      `,
+      `
     )
     .join("")
 }
 
+function filtrarEjerciciosRealizados(extremidad) {
+  filtroRealizadosActual = extremidad
+
+  document.querySelectorAll("#filtersRealizados .filter-btn").forEach((btn) => {
+    btn.classList.remove("active")
+    if (btn.textContent.trim() === extremidad) {
+      btn.classList.add("active")
+    }
+  })
+
+  cargarEjerciciosRealizados()
+}
+
 async function cargarEjerciciosRealizadosDesdeAPI() {
   try {
-    // Get patient cedula from localStorage (assuming it's stored during login)
     const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
 
     if (!cedula) {
@@ -306,11 +436,9 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
 
     const ejerciciosCompletados = await response.json()
 
-    // Update the global variable with real data
-    ejerciciosRealizados.length = 0 // Clear array
+    ejerciciosRealizados.length = 0
     ejerciciosRealizados.push(
       ...ejerciciosCompletados.map((ej) => ({
-        
         id: ej.id_ejercicio,
         nombre: ej.nombre,
         extremidad: ej.extremidad,
@@ -320,10 +448,9 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
         completado: true,
         urlVideo: ej.url_video,
         observaciones: ej.observaciones,
-      })),
+      }))
     )
 
-    // Reload the UI with real data
     cargarEjerciciosRealizados()
   } catch (error) {
     console.error("Error al cargar ejercicios completados:", error)
@@ -389,60 +516,47 @@ function cargarEjerciciosRealizados() {
                 }
             </div>
         </div>
-    `,
+    `
     )
     .join("")
 }
 
-// Filtrar ejercicios realizados
-function filtrarEjerciciosRealizados(extremidad) {
-  filtroRealizadosActual = extremidad
-
-  // Actualizar botones activos
-  document.querySelectorAll("#filtersRealizados .filter-btn").forEach((btn) => {
-    btn.classList.remove("active")
-  })
-  event.target.classList.add("active")
-
-  cargarEjerciciosRealizados()
-}
+// ==========================================
+// MARCAR COMO REALIZADO
+// ==========================================
 
 async function marcarComoRealizado(idTerapia) {
   try {
-    // Llamar al endpoint correcto del backend
     const response = await fetch(`http://127.0.0.1:8000/paciente/marcar-realizado/${idTerapia}`, {
       method: "PUT",
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Error al marcar como realizado (${response.status})`);
+      throw new Error(`Error al marcar como realizado (${response.status})`)
     }
 
-    const data = await response.json();
-    alert(data.message || " Ejercicio marcado como realizado");
+    const data = await response.json()
+    alert(data.message || "Ejercicio marcado como realizado")
 
-    // 🔄 Actualizar la interfaz
-    const boton = document.querySelector(`button[onclick="marcarComoRealizado(${idTerapia})"]`);
+    const boton = document.querySelector(`button[onclick="marcarComoRealizado(${idTerapia})"]`)
     if (boton) {
-      boton.textContent = "Completado ";
-      boton.style.background = "#2ecc71";
-      boton.disabled = true;
+      boton.textContent = "✅ Completado"
+      boton.style.background = "#2ecc71"
+      boton.disabled = true
     }
 
-    // Recargar listas desde el backend
-    await cargarEjerciciosAsignadosDesdeAPI();
-    await cargarEjerciciosRealizadosDesdeAPI();
-
+    await cargarEjerciciosAsignadosDesdeAPI()
+    await cargarEjerciciosRealizadosDesdeAPI()
   } catch (error) {
-    console.error("Error al marcar como realizado:", error);
-    alert(" No se pudo marcar el ejercicio como realizado");
+    console.error("Error al marcar como realizado:", error)
+    alert("No se pudo marcar el ejercicio como realizado")
   }
 }
 
+// ==========================================
+// UTILIDADES
+// ==========================================
 
-
-
-// Formatear fecha
 function formatearFecha(fecha) {
   const date = new Date(fecha)
   return date.toLocaleDateString("es-ES", {
@@ -474,7 +588,6 @@ function mostrarMensajeErrorAsignados(mensaje) {
   }
 }
 
-// Cerrar sesión
 function cerrarSesion() {
   if (!confirm("¿Desea cerrar sesión?")) return
 
@@ -488,63 +601,4 @@ function cerrarSesion() {
     console.warn("Error limpiando localStorage al cerrar sesión", e)
   }
   window.location.replace("index.html")
-}
-
-// Función para cargar ejercicios asignados en la interfaz
-function cargarEjercicios() {
-  const grid = document.getElementById("exercisesGrid")
-  const noResults = document.getElementById("noResults")
-
-  const ejerciciosFiltrados =
-    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
-
-  console.log("[v0] Ejercicios filtrados para mostrar:", ejerciciosFiltrados)
-  console.log(
-    "[v0] URLs de video:",
-    ejerciciosFiltrados.map((e) => ({ nombre: e.nombre, url: e.urlVideo })),
-  )
-
-  if (ejerciciosFiltrados.length === 0) {
-    grid.style.display = "none"
-    noResults.style.display = "block"
-    return
-  }
-
-  grid.style.display = "grid"
-  noResults.style.display = "none"
-
-  grid.innerHTML = ejerciciosFiltrados
-    .map(
-      (ejercicio) => `
-        <div class="exercise-card">
-            ${
-              ejercicio.urlVideo
-                ? `
-              <div class="exercise-video">
-                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
-                  <source src="${ejercicio.urlVideo}" type="video/mp4">
-                  Tu navegador no soporta el elemento de video.
-                </video>
-              </div>
-            `
-                : `
-              <div class="exercise-image">
-                <img src="${ejercicio.imagen || "/placeholder.svg?height=200&width=300"}" alt="${ejercicio.nombre}">
-              </div>
-            `
-            }
-            <div class="exercise-content">
-                <h3 class="exercise-title">${ejercicio.nombre}</h3>
-                <span class="exercise-category">${ejercicio.extremidad}</span>
-                <p class="exercise-description">${ejercicio.descripcion}</p>
-                <div class="exercise-details">
-                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
-                </div>
-                <button onclick="marcarComoRealizado(${ejercicio.id_terapia})" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s;">Marcar como Realizado</button>
-            </div>
-        </div>
-    `,
-    )
-    .join("")
-
 }
