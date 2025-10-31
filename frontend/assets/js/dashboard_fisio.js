@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleSidebarBtn = document.getElementById("toggleSidebar")
   const sidebar = document.getElementById("sidebar")
 
+  let estadoFisioterapeuta = "activo"
+
   const sectionTitles = {
     "informacion-personal": "Información Personal",
     "asignar-ejercicios": "Asignar Ejercicios",
@@ -28,6 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
   navItems.forEach((item) => {
     item.addEventListener("click", function () {
       const targetSection = this.getAttribute("data-section")
+
+      if (estadoFisioterapeuta.toLowerCase() === "inactivo" && targetSection !== "informacion-personal") {
+        alert(
+          "⚠️ Debe realizar el pago para acceder a esta funcionalidad.\n\nPor favor, vaya a 'Información Personal' y haga clic en 'Realizar Pago'.",
+        )
+        return
+      }
+
       navItems.forEach((nav) => nav.classList.remove("active"))
       sections.forEach((section) => section.classList.remove("active"))
 
@@ -83,23 +93,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json()
 
+      estadoFisioterapeuta = data.estado
+
       // Llenar los campos del formulario
       document.getElementById("inputNombre").value = data.nombre
       document.getElementById("inputDocumento").value = data.cedula
       document.getElementById("inputCorreo").value = data.correo
       document.getElementById("inputTelefono").value = data.telefono
 
-      // Mostrar/ocultar botón de pago según el estado
-      const btnRealizarPago = document.getElementById("btnRealizarPago")
-      if (data.estado.toLowerCase() === "inactivo") {
-        btnRealizarPago.style.display = "inline-block"
+      if (estadoFisioterapeuta.toLowerCase() === "inactivo") {
+        aplicarRestriccionesPorPago()
+        // Mostrar botón de pago
+        document.getElementById("btnRealizarPago").style.display = "inline-block"
       } else {
-        btnRealizarPago.style.display = "none"
+        removerRestriccionesPorPago()
+        // Ocultar botón de pago
+        document.getElementById("btnRealizarPago").style.display = "none"
       }
     } catch (error) {
       console.error("Error al cargar información:", error)
       clearSessionAndRedirect()
     }
+  }
+
+  function aplicarRestriccionesPorPago() {
+    // Deshabilitar visualmente los botones de navegación (excepto Información Personal)
+    navItems.forEach((item) => {
+      const section = item.getAttribute("data-section")
+      if (section !== "informacion-personal") {
+        item.style.opacity = "0.5"
+        item.style.cursor = "not-allowed"
+        item.title = "Debe realizar el pago para acceder"
+      }
+    })
+
+    // Agregar mensaje de advertencia en las secciones bloqueadas
+    const asignarSection = document.getElementById("asignar-ejercicios")
+    const avanceSection = document.getElementById("avance-paciente")
+
+    agregarMensajePago(asignarSection)
+    agregarMensajePago(avanceSection)
+  }
+
+  function removerRestriccionesPorPago() {
+    navItems.forEach((item) => {
+      item.style.opacity = "1"
+      item.style.cursor = "pointer"
+      item.title = ""
+    })
+
+    // Remover mensajes de advertencia
+    const mensajesPago = document.querySelectorAll(".mensaje-pago-requerido")
+    mensajesPago.forEach((msg) => msg.remove())
+  }
+
+  function agregarMensajePago(section) {
+    // Verificar si ya existe el mensaje
+    if (section.querySelector(".mensaje-pago-requerido")) return
+
+    const mensaje = document.createElement("div")
+    mensaje.className = "mensaje-pago-requerido"
+    mensaje.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `
+    mensaje.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; font-size: 1.3em;">⚠️ Pago Requerido</h3>
+      <p style="margin: 0 0 15px 0; font-size: 1.1em;">
+        Debe realizar el pago para acceder a esta funcionalidad.
+      </p>
+      <button onclick="document.querySelector('[data-section=\\"informacion-personal\\"]').click()" 
+              style="background: white; color: #667eea; border: none; padding: 10px 20px; 
+                     border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1em;">
+        Ir a Realizar Pago
+      </button>
+    `
+    section.insertBefore(mensaje, section.firstChild)
   }
 
   function clearSessionAndRedirect() {
@@ -253,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================
-  // BUSCAR PACIENTE POR CÉDULA
+  // 🔍 BUSCAR PACIENTE POR CÉDULA
   // ==========================================
   const btnBuscar = document.getElementById("btnBuscarCedula")
   if (btnBuscar) {
@@ -345,7 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarEjercicios()
 
   // ==========================================
-  // ASIGNAR EJERCICIOS A PACIENTE
+  // ✅ ASIGNAR EJERCICIOS A PACIENTE
   // ==========================================
   const assignBtn = document.getElementById("assignSelectedExercises")
   if (assignBtn) {
@@ -394,24 +468,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function calcularAvancePaciente(cedula) {
     try {
-      // Fetch patient info
       const pacienteRes = await fetch(`${PACIENTE_API_URL}/${cedula}`)
       if (!pacienteRes.ok) {
         throw new Error("Paciente no encontrado")
       }
       const pacienteData = await pacienteRes.json()
 
-      // Fetch completed therapies
       const completadosRes = await fetch(`${PACIENTE_API_URL}/ejercicios-completados/${cedula}`)
       const completados = await completadosRes.json()
       const numCompletados = Array.isArray(completados) ? completados.length : 0
 
-      // Fetch pending therapies
       const asignadosRes = await fetch(`${PACIENTE_API_URL}/ejercicios-asignados/${cedula}`)
       const asignados = await asignadosRes.json()
       const numAsignados = Array.isArray(asignados) ? asignados.length : 0
 
-      // Calculate total and percentage
       const totalTerapias = numCompletados + numAsignados
       const porcentaje = totalTerapias > 0 ? Math.round((numCompletados / totalTerapias) * 100) : 0
 
@@ -488,7 +558,6 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = '<p style="text-align: center; color: #666;">Cargando todos los pacientes...</p>'
 
       try {
-        // Fetch all patients from backend
         const response = await fetch(`${PACIENTE_API_URL}/todos`)
         if (!response.ok) {
           throw new Error("Error al obtener lista de pacientes")
@@ -503,14 +572,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         container.innerHTML = ""
 
-        // Calculate and display progress for each patient
         for (const paciente of pacientes) {
           try {
             const pacienteInfo = await calcularAvancePaciente(paciente.cedula)
             mostrarAvancePaciente(pacienteInfo)
           } catch (error) {
             console.error(`Error calculando avance para paciente ${paciente.cedula}:`, error)
-            // Continue with next patient even if one fails
+            
           }
         }
 
