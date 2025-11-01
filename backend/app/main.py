@@ -7,6 +7,8 @@ from presentation.routers.paciente_router import router as paciente_router
 from presentation.routers.terapia_router import router as terapia_router
 from config import jwt_config  # Asegura que la configuración JWT se cargue
 
+#PruebaAzure
+
 app = FastAPI()
 
 # CORS SETTINGS - Asegúrate de que esto esté antes de include_router
