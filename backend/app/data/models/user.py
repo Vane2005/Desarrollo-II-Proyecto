@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from app.data.db import Base
+from data.db import Base
 
 class User_Fisioterapeuta(Base):
     """
