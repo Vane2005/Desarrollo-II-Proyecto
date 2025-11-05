@@ -1,14 +1,53 @@
+/**
+ * ==========================================
+ * 📘 SISTEMA DE GESTIÓN DE EJERCICIOS PACIENTE
+ * ==========================================
+ * Este script maneja la interacción del paciente con la plataforma:
+ *  - Carga de información personal
+ *  - Visualización y filtrado de ejercicios asignados
+ *  - Visualización y filtrado de ejercicios realizados
+ *  - Cambio de contraseña
+ *  - Cierre de sesión
+
+ */
+
+// ==========================================
+// VARIABLES GLOBALES
+// ==========================================
+
+/** @type {Array} Lista de ejercicios disponibles en el sistema */
 const ejercicios = []
+
+/** @type {Array} Ejercicios asignados al paciente */
 const ejerciciosAsignados = []
+
+/** @type {Array} Ejercicios ya realizados por el paciente */
 const ejerciciosRealizados = []
 
+/** @type {string} Filtro actual para ejercicios asignados */
 let filtroActual = "Todos"
+
+/** @type {string} Filtro actual para ejercicios realizados */
 let filtroRealizadosActual = "Todos"
 
+/** @constant {string} URL base del API de pacientes */
 const API_URL = "http://localhost:8000/paciente"
+
+/** @constant {string} URL base del API de autenticación */
 const AUTH_API_URL = "http://localhost:8000/auth"
 
-// Inicializar
+
+// ==========================================
+// INICIALIZACIÓN DEL SISTEMA
+// ==========================================
+
+/**
+ * Ejecuta las funciones iniciales al cargar la página:
+ *  - Inicializa sidebar y navegación
+ *  - Carga datos del paciente
+ *  - Inicializa el modal de cambio de contraseña
+ *  - Carga filtros y ejercicios
+ */
 document.addEventListener("DOMContentLoaded", () => {
   initSidebar()
   initNavigation()
@@ -138,6 +177,13 @@ function initEditarPerfil() {
   }
 }
 
+// ==========================================
+// INFORMACIÓN DEL PACIENTE
+// ==========================================
+
+/**
+ * Carga la información del paciente desde la API y la muestra en el formulario.
+ */
 async function cargarInfoPaciente() {
   const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
 
@@ -186,28 +232,24 @@ function initCambiarContrasena() {
     passwordMessage.classList.remove("visible")
   })
 
-  // Cerrar modal
+  // Función para cerrar modal
   function closeModal() {
     changePasswordModal.classList.remove("active")
     changePasswordForm.reset()
     passwordMessage.classList.remove("visible")
   }
 
+  // Cerrar modal con botones o clic fuera
   closePasswordModal.addEventListener("click", closeModal)
   cancelPasswordChange.addEventListener("click", closeModal)
-
-  // Cerrar modal al hacer clic fuera
   changePasswordModal.addEventListener("click", (e) => {
-    if (e.target === changePasswordModal) {
-      closeModal()
-    }
+    if (e.target === changePasswordModal) closeModal()
   })
 
   // Validar contraseñas en tiempo real
   document.getElementById("confirmPasswordPaciente").addEventListener("input", function () {
     const newPassword = document.getElementById("newPasswordPaciente").value
     const confirmPassword = this.value
-
     if (confirmPassword && newPassword !== confirmPassword) {
       this.setCustomValidity("Las contraseñas no coinciden")
       this.style.borderColor = "#ff4444"
@@ -217,7 +259,7 @@ function initCambiarContrasena() {
     }
   })
 
-  // Enviar cambio de contraseña
+  // Envío del formulario
   changePasswordForm.addEventListener("submit", async (e) => {
     e.preventDefault()
 
@@ -225,13 +267,11 @@ function initCambiarContrasena() {
     const newPassword = document.getElementById("newPasswordPaciente").value
     const confirmPassword = document.getElementById("confirmPasswordPaciente").value
 
-    // Validar que las contraseñas coincidan
     if (newPassword !== confirmPassword) {
       mostrarMensajePassword("error", "Las contraseñas no coinciden")
       return
     }
 
-    // Validar longitud mínima
     if (newPassword.length < 8) {
       mostrarMensajePassword("error", "La nueva contraseña debe tener al menos 8 caracteres")
       return
@@ -243,7 +283,6 @@ function initCambiarContrasena() {
       return
     }
 
-    // Deshabilitar botón
     const submitBtn = changePasswordForm.querySelector('button[type="submit"]')
     submitBtn.disabled = true
     submitBtn.textContent = "Cambiando..."
@@ -262,10 +301,7 @@ function initCambiarContrasena() {
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Error al cambiar la contraseña")
-      }
+      if (!response.ok) throw new Error(data.detail || "Error al cambiar la contraseña")
 
       mostrarMensajePassword("success", `✅ ${data.mensaje}<br>Se ha enviado una notificación a tu correo.`)
 
@@ -283,16 +319,23 @@ function initCambiarContrasena() {
   })
 }
 
+/**
+ * Muestra un mensaje en el modal de cambio de contraseña.
+ * @param {"success"|"error"} tipo Tipo del mensaje
+ * @param {string} contenido Texto o HTML del mensaje
+ */
 function mostrarMensajePassword(tipo, contenido) {
   const passwordMessage = document.getElementById("passwordMessagePaciente")
   passwordMessage.className = `form-message ${tipo} visible`
   passwordMessage.innerHTML = contenido
 }
 
+
 // ==========================================
-// NAVEGACIÓN Y SIDEBAR
+// SIDEBAR Y NAVEGACIÓN
 // ==========================================
 
+/** Inicializa el comportamiento del sidebar (mostrar/ocultar) */
 function initSidebar() {
   const toggleBtn = document.getElementById("toggleSidebar")
   const sidebar = document.getElementById("sidebar")
@@ -304,6 +347,7 @@ function initSidebar() {
   }
 }
 
+/** Asocia los botones de navegación con sus secciones */
 function initNavigation() {
   const navItems = document.querySelectorAll(".nav-item")
 
@@ -315,15 +359,15 @@ function initNavigation() {
   })
 }
 
+/**
+ * Cambia entre las secciones visibles de la interfaz.
+ * @param {string} sectionId ID de la sección a mostrar
+ */
 function cambiarSeccion(sectionId) {
-  document.querySelectorAll(".nav-item").forEach((item) => {
-    item.classList.remove("active")
-  })
+  document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"))
   document.querySelector(`[data-section="${sectionId}"]`).classList.add("active")
 
-  document.querySelectorAll(".content-section").forEach((section) => {
-    section.classList.remove("active")
-  })
+  document.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"))
   document.getElementById(sectionId).classList.add("active")
 
   const titles = {
@@ -334,27 +378,19 @@ function cambiarSeccion(sectionId) {
   document.getElementById("section-title").textContent = titles[sectionId]
 }
 
+
 // ==========================================
-// EJERCICIOS ASIGNADOS - FILTRADO
+// EJERCICIOS ASIGNADOS
 // ==========================================
 
+/**
+ * Genera los botones de filtro por extremidad para ejercicios asignados.
+ */
 function cargarFiltros() {
   const filtersContainer = document.getElementById("filters")
   const extremidades = [
-    "Todos",
-    "Brazo",
-    "Hombro",
-    "Codo",
-    "Muñeca",
-    "Mano",
-    "Pierna",
-    "Rodilla",
-    "Tobillo",
-    "Pie",
-    "Cervical",
-    "Lumbar",
-    "Tronco",
-    "Cadera",
+    "Todos","Brazo","Hombro","Codo","Muñeca","Mano",
+    "Pierna","Rodilla","Tobillo","Pie","Cervical","Lumbar","Tronco","Cadera"
   ]
 
   filtersContainer.innerHTML = extremidades
@@ -369,39 +405,30 @@ function cargarFiltros() {
     .join("")
 }
 
+/**
+ * Filtra los ejercicios asignados según la extremidad seleccionada.
+ * @param {string} extremidad Nombre de la extremidad
+ */
 function filtrarEjerciciosAsignados(extremidad) {
   filtroActual = extremidad
-
   document.querySelectorAll("#filters .filter-btn").forEach((btn) => {
-    btn.classList.remove("active")
-    if (btn.textContent.trim() === extremidad) {
-      btn.classList.add("active")
-    }
+    btn.classList.toggle("active", btn.textContent.trim() === extremidad)
   })
-
   cargarEjercicios()
 }
 
+/**
+ * Obtiene los ejercicios asignados desde la API.
+ */
 async function cargarEjerciciosAsignadosDesdeAPI() {
   try {
     const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-
-    if (!cedula) {
-      console.error("No se encontró la cédula del paciente")
-      mostrarMensajeErrorAsignados("No se pudo identificar al paciente")
-      return
-    }
+    if (!cedula) throw new Error("No se encontró la cédula del paciente")
 
     const response = await fetch(`${API_URL}/ejercicios-asignados/${cedula}`)
-
-    if (!response.ok) {
-      throw new Error(`Error al cargar ejercicios: ${response.status}`)
-    }
+    if (!response.ok) throw new Error(`Error al cargar ejercicios: ${response.status}`)
 
     const ejerciciosAsignadosAPI = await response.json()
-
-    console.log("Ejercicios asignados recibidos:", ejerciciosAsignadosAPI)
-
     ejerciciosAsignados.length = 0
     ejerciciosAsignados.push(
       ...ejerciciosAsignadosAPI.map((ej) => ({
@@ -415,7 +442,6 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
         imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
       })),
     )
-
     cargarEjercicios()
   } catch (error) {
     console.error("Error al cargar ejercicios asignados:", error)
@@ -423,15 +449,15 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
   }
 }
 
+/**
+ * Muestra los ejercicios asignados filtrados.
+ */
 function cargarEjercicios() {
   const grid = document.getElementById("exercisesGrid")
   const noResults = document.getElementById("noResults")
 
   const ejerciciosFiltrados =
     filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
-
-  console.log(`🔍 Filtro activo: ${filtroActual}`)
-  console.log(`📋 Ejercicios filtrados: ${ejerciciosFiltrados.length}`)
 
   if (ejerciciosFiltrados.length === 0) {
     grid.style.display = "none"
@@ -482,27 +508,19 @@ function cargarEjercicios() {
     .join("")
 }
 
+
 // ==========================================
-// EJERCICIOS REALIZADOS - FILTRADO
+// EJERCICIOS REALIZADOS
 // ==========================================
 
+/**
+ * Genera los botones de filtro para ejercicios realizados.
+ */
 function cargarFiltrosRealizados() {
   const filtersContainer = document.getElementById("filtersRealizados")
   const extremidades = [
-    "Todos",
-    "Brazo",
-    "Hombro",
-    "Codo",
-    "Muñeca",
-    "Mano",
-    "Pierna",
-    "Rodilla",
-    "Tobillo",
-    "Pie",
-    "Cervical",
-    "Lumbar",
-    "Tronco",
-    "Cadera",
+    "Todos","Brazo","Hombro","Codo","Muñeca","Mano",
+    "Pierna","Rodilla","Tobillo","Pie","Cervical","Lumbar","Tronco","Cadera"
   ]
 
   filtersContainer.innerHTML = extremidades
@@ -517,37 +535,30 @@ function cargarFiltrosRealizados() {
     .join("")
 }
 
+/**
+ * Filtra los ejercicios realizados según extremidad.
+ * @param {string} extremidad
+ */
 function filtrarEjerciciosRealizados(extremidad) {
   filtroRealizadosActual = extremidad
-
   document.querySelectorAll("#filtersRealizados .filter-btn").forEach((btn) => {
-    btn.classList.remove("active")
-    if (btn.textContent.trim() === extremidad) {
-      btn.classList.add("active")
-    }
+    btn.classList.toggle("active", btn.textContent.trim() === extremidad)
   })
-
   cargarEjerciciosRealizados()
 }
 
+/**
+ * Carga los ejercicios realizados desde la API.
+ */
 async function cargarEjerciciosRealizadosDesdeAPI() {
   try {
     const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-
-    if (!cedula) {
-      console.error("No se encontró la cédula del paciente")
-      mostrarMensajeError("No se pudo identificar al paciente")
-      return
-    }
+    if (!cedula) throw new Error("No se encontró la cédula del paciente")
 
     const response = await fetch(`${API_URL}/ejercicios-completados/${cedula}`)
-
-    if (!response.ok) {
-      throw new Error(`Error al cargar ejercicios: ${response.status}`)
-    }
+    if (!response.ok) throw new Error(`Error al cargar ejercicios: ${response.status}`)
 
     const ejerciciosCompletados = await response.json()
-
     ejerciciosRealizados.length = 0
     ejerciciosRealizados.push(
       ...ejerciciosCompletados.map((ej) => ({
@@ -562,7 +573,6 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
         observaciones: ej.observaciones,
       })),
     )
-
     cargarEjerciciosRealizados()
   } catch (error) {
     console.error("Error al cargar ejercicios completados:", error)
@@ -570,6 +580,9 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
   }
 }
 
+/**
+ * Muestra la lista de ejercicios realizados en pantalla.
+ */
 function cargarEjerciciosRealizados() {
   const grid = document.getElementById("exercisesGridRealizados")
   const noResults = document.getElementById("noResultsRealizados")
@@ -633,19 +646,19 @@ function cargarEjerciciosRealizados() {
     .join("")
 }
 
+
 // ==========================================
 // MARCAR COMO REALIZADO
 // ==========================================
 
+/**
+ * Marca un ejercicio como realizado y actualiza las listas.
+ * @param {number} idTerapia ID de la terapia a marcar como realizada
+ */
 async function marcarComoRealizado(idTerapia) {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/paciente/marcar-realizado/${idTerapia}`, {
-      method: "PUT",
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error al marcar como realizado (${response.status})`)
-    }
+    const response = await fetch(`${API_URL}/marcar-realizado/${idTerapia}`, { method: "PUT" })
+    if (!response.ok) throw new Error(`Error al marcar como realizado (${response.status})`)
 
     const data = await response.json()
     alert(data.message || "Ejercicio marcado como realizado")
@@ -661,47 +674,48 @@ async function marcarComoRealizado(idTerapia) {
     await cargarEjerciciosRealizadosDesdeAPI()
   } catch (error) {
     console.error("Error al marcar como realizado:", error)
-    alert("No se pudo marcar el ejercicio como realizado")
+    alert("Error al marcar el ejercicio como realizado")
   }
 }
+
 
 // ==========================================
 // UTILIDADES
 // ==========================================
 
-function formatearFecha(fecha) {
-  const date = new Date(fecha)
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
-
-function mostrarMensajeError(mensaje) {
-  const grid = document.getElementById("exercisesGridRealizados")
-  if (grid) {
-    grid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-        <p style="color: #e74c3c; font-size: 1.1rem;">${mensaje}</p>
-      </div>
-    `
-  }
-}
-
+/**
+ * Muestra un mensaje de error en los ejercicios asignados.
+ * @param {string} mensaje Texto del error
+ */
 function mostrarMensajeErrorAsignados(mensaje) {
   const grid = document.getElementById("exercisesGrid")
-  if (grid) {
-    grid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-        <p style="color: #e74c3c; font-size: 1.1rem;">${mensaje}</p>
-      </div>
-    `
-  }
+  const noResults = document.getElementById("noResults")
+  grid.style.display = "none"
+  noResults.style.display = "block"
+  noResults.textContent = mensaje
 }
 
-function cerrarSesion() {
-  if (!confirm("¿Desea cerrar sesión?")) return
+/**
+ * Muestra un mensaje de error en los ejercicios realizados.
+ * @param {string} mensaje Texto del error
+ */
+function mostrarMensajeError(mensaje) {
+  const grid = document.getElementById("exercisesGridRealizados")
+  const noResults = document.getElementById("noResultsRealizados")
+  grid.style.display = "none"
+  noResults.style.display = "block"
+  noResults.textContent = mensaje
+}
+
+/**
+ * Da formato legible a una fecha ISO.
+ * @param {string} fecha Fecha ISO (YYYY-MM-DD)
+ * @returns {string} Fecha en formato "dd/mm/yyyy"
+ */
+function formatearFecha(fecha) {
+  return fecha ? new Date(fecha).toLocaleDateString("es-ES") : "Sin fecha"
+}
+
 
   try {
     localStorage.removeItem("token")
