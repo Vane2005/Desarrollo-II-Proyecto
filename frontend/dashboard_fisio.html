@@ -51,6 +51,7 @@
           <div class="card-header">
             <h3>Título Profesional: Fisioterapeuta</h3>
             <div class="header-buttons">
+              <button class="btn-edit-profile" id="btnEditProfile">Editar Perfil</button>
               <button class="btn-change-password" id="btnChangePassword">Cambiar Contraseña</button>
               <button class="btn-realizar-pago" id="btnRealizarPago" style="display: none;">Realizar Pago</button>
             </div>
@@ -72,6 +73,10 @@
               <label>Teléfono</label>
               <input type="tel" class="info-input" id="inputTelefono" readonly>
             </div>
+          </div>
+          <div class="profile-actions" id="profileActions" style="display: none; margin-top: 20px; text-align: right;">
+            <button class="btn-cancel" id="btnCancelEdit">Cancelar</button>
+            <button class="btn-submit" id="btnSaveProfile">Guardar Cambios</button>
           </div>
         </div>
       </section>

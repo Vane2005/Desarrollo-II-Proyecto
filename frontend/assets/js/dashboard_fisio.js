@@ -191,6 +191,124 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarInfoFisioterapeuta()
 
   // ==========================================
+  // EDITAR PERFIL FISIOTERAPEUTA
+  // ==========================================
+  const btnEditProfile = document.getElementById("btnEditProfile")
+  const btnSaveProfile = document.getElementById("btnSaveProfile")
+  const btnCancelEdit = document.getElementById("btnCancelEdit")
+  const profileActions = document.getElementById("profileActions")
+
+  let originalProfileData = {}
+
+  btnEditProfile.addEventListener("click", () => {
+    // Save original data
+    originalProfileData = {
+      nombre: document.getElementById("inputNombre").value,
+      correo: document.getElementById("inputCorreo").value,
+      telefono: document.getElementById("inputTelefono").value,
+    }
+
+    // Enable editing
+    document.getElementById("inputNombre").removeAttribute("readonly")
+    document.getElementById("inputCorreo").removeAttribute("readonly")
+    document.getElementById("inputTelefono").removeAttribute("readonly")
+
+    // Add editing styles
+    document.getElementById("inputNombre").style.borderColor = "#667eea"
+    document.getElementById("inputCorreo").style.borderColor = "#667eea"
+    document.getElementById("inputTelefono").style.borderColor = "#667eea"
+
+    // Show save/cancel buttons
+    profileActions.style.display = "block"
+    btnEditProfile.style.display = "none"
+  })
+
+  btnCancelEdit.addEventListener("click", () => {
+    // Restore original data
+    document.getElementById("inputNombre").value = originalProfileData.nombre
+    document.getElementById("inputCorreo").value = originalProfileData.correo
+    document.getElementById("inputTelefono").value = originalProfileData.telefono
+
+    // Disable editing
+    cancelProfileEdit()
+  })
+
+  btnSaveProfile.addEventListener("click", async () => {
+    const nombre = document.getElementById("inputNombre").value.trim()
+    const correo = document.getElementById("inputCorreo").value.trim()
+    const telefono = document.getElementById("inputTelefono").value.trim()
+
+    // Validate fields
+    if (!nombre || !correo || !telefono) {
+      alert("Por favor complete todos los campos")
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo)) {
+      alert("Por favor ingrese un correo electrónico válido")
+      return
+    }
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No hay sesión activa")
+      return
+    }
+
+    // Disable button
+    btnSaveProfile.disabled = true
+    btnSaveProfile.textContent = "Guardando..."
+
+    try {
+      const response = await fetch(`${AUTH_API_URL}/actualizar-perfil`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          correo: correo,
+          telefono: telefono,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al actualizar el perfil")
+      }
+
+      alert("✅ Perfil actualizado correctamente")
+      cancelProfileEdit()
+
+      // Reload profile data
+      await cargarInfoFisioterapeuta()
+    } catch (error) {
+      console.error("Error al actualizar perfil:", error)
+      alert(`❌ ${error.message}`)
+    } finally {
+      btnSaveProfile.disabled = false
+      btnSaveProfile.textContent = "Guardar Cambios"
+    }
+  })
+
+  function cancelProfileEdit() {
+    document.getElementById("inputNombre").setAttribute("readonly", true)
+    document.getElementById("inputCorreo").setAttribute("readonly", true)
+    document.getElementById("inputTelefono").setAttribute("readonly", true)
+
+    document.getElementById("inputNombre").style.borderColor = ""
+    document.getElementById("inputCorreo").style.borderColor = ""
+    document.getElementById("inputTelefono").style.borderColor = ""
+
+    profileActions.style.display = "none"
+    btnEditProfile.style.display = "inline-block"
+  }
+
+  // ==========================================
   // BOTÓN REALIZAR PAGO
   // ==========================================
   const btnRealizarPago = document.getElementById("btnRealizarPago")
@@ -578,7 +696,6 @@ document.addEventListener("DOMContentLoaded", () => {
             mostrarAvancePaciente(pacienteInfo)
           } catch (error) {
             console.error(`Error calculando avance para paciente ${paciente.cedula}:`, error)
-            
           }
         }
 

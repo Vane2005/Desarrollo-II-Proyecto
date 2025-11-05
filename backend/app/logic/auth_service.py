@@ -196,3 +196,43 @@ def obtener_info_fisioterapeuta(db: Session, cedula: str):
         "telefono": fisio.telefono,
         "estado": fisio.estado
     }
+
+
+def actualizar_perfil_fisioterapeuta(db: Session, cedula: str, nombre: str, correo: str, telefono: str):
+    """
+    Actualiza el perfil del fisioterapeuta (nombre, correo, teléfono).
+    Verifica que el nuevo correo no esté en uso por otro usuario.
+    """
+    # Buscar el fisioterapeuta
+    fisio = db.query(User_Fisioterapeuta).filter(
+        User_Fisioterapeuta.cedula == cedula
+    ).first()
+    
+    if not fisio:
+        raise ValueError("Fisioterapeuta no encontrado")
+    
+    # Verificar si el correo ya está en uso por otro fisioterapeuta
+    if correo != fisio.correo:
+        correo_existente = db.query(User_Fisioterapeuta).filter(
+            User_Fisioterapeuta.correo == correo,
+            User_Fisioterapeuta.cedula != cedula
+        ).first()
+        
+        if correo_existente:
+            raise ValueError("El correo electrónico ya está en uso por otro usuario")
+    
+    # Actualizar los datos
+    fisio.nombre = nombre
+    fisio.correo = correo
+    fisio.telefono = telefono
+    
+    db.commit()
+    db.refresh(fisio)
+    
+    return {
+        "cedula": fisio.cedula,
+        "nombre": fisio.nombre,
+        "correo": fisio.correo,
+        "telefono": fisio.telefono,
+        "estado": fisio.estado
+    }

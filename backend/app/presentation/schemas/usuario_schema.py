@@ -103,3 +103,42 @@ class InfoFisioterapeutaResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class ActualizarPerfilFisioterapeuta(BaseModel):
+    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
+    correo: EmailStr = Field(..., description="Email del fisioterapeuta")
+    telefono: str = Field(..., min_length=7, max_length=15, description="Número de teléfono")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "nombre": "Juan Pérez",
+                "correo": "fisio@ejemplo.com",
+                "telefono": "3001234567"
+            }
+        }
+
+
+class ActualizarPerfilPaciente(BaseModel):
+    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
+    correo: EmailStr = Field(..., description="Email del paciente")
+    telefono: str = Field(..., min_length=7, max_length=15, description="Número de teléfono")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "nombre": "María García",
+                "correo": "paciente@ejemplo.com",
+                "telefono": "3009876543"
+            }
+        }
+
+
+class InfoPacienteResponse(BaseModel):
+    cedula: str
+    nombre: str
+    correo: str
+    telefono: str
+    
+    class Config:
+        from_attributes = True

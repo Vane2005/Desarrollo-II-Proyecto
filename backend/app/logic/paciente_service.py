@@ -110,3 +110,61 @@ def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
         db.rollback()
         print(f" Error al crear paciente: {e}")
         raise e
+
+
+def obtener_info_paciente(db: Session, cedula: str):
+    """
+    Obtiene la información completa del paciente por cédula.
+    """
+    paciente = db.query(User_Paciente).filter(
+        User_Paciente.cedula == cedula
+    ).first()
+    
+    if not paciente:
+        raise ValueError("Paciente no encontrado")
+    
+    return {
+        "cedula": paciente.cedula,
+        "nombre": paciente.nombre,
+        "correo": paciente.correo,
+        "telefono": paciente.telefono
+    }
+
+
+def actualizar_perfil_paciente(db: Session, cedula: str, nombre: str, correo: str, telefono: str):
+    """
+    Actualiza el perfil del paciente (nombre, correo, teléfono).
+    Verifica que el nuevo correo no esté en uso por otro usuario.
+    """
+    # Buscar el paciente
+    paciente = db.query(User_Paciente).filter(
+        User_Paciente.cedula == cedula
+    ).first()
+    
+    if not paciente:
+        raise ValueError("Paciente no encontrado")
+    
+    # Verificar si el correo ya está en uso por otro paciente
+    if correo != paciente.correo:
+        correo_existente = db.query(User_Paciente).filter(
+            User_Paciente.correo == correo,
+            User_Paciente.cedula != cedula
+        ).first()
+        
+        if correo_existente:
+            raise ValueError("El correo electrónico ya está en uso por otro usuario")
+    
+    # Actualizar los datos
+    paciente.nombre = nombre
+    paciente.correo = correo
+    paciente.telefono = telefono
+    
+    db.commit()
+    db.refresh(paciente)
+    
+    return {
+        "cedula": paciente.cedula,
+        "nombre": paciente.nombre,
+        "correo": paciente.correo,
+        "telefono": paciente.telefono
+    }

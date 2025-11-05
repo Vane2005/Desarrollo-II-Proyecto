@@ -14,16 +14,133 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavigation()
   cargarInfoPaciente() // NUEVO: Cargar información del paciente
   initCambiarContrasena() // NUEVO: Inicializar modal de cambio de contraseña
+  initEditarPerfil() // Added profile editing initialization
   cargarFiltros()
   cargarEjerciciosAsignadosDesdeAPI()
   cargarFiltrosRealizados()
   cargarEjerciciosRealizadosDesdeAPI()
 })
 
+function initEditarPerfil() {
+  const btnEditProfile = document.getElementById("btnEditProfilePaciente")
+  const btnSaveProfile = document.getElementById("btnSaveProfilePaciente")
+  const btnCancelEdit = document.getElementById("btnCancelEditPaciente")
+  const profileActions = document.getElementById("profileActionsPaciente")
+
+  let originalProfileData = {}
+
+  btnEditProfile.addEventListener("click", () => {
+    // Save original data
+    originalProfileData = {
+      nombre: document.getElementById("inputNombrePaciente").value,
+      correo: document.getElementById("inputCorreoPaciente").value,
+      telefono: document.getElementById("inputTelefonoPaciente").value,
+    }
+
+    // Enable editing
+    document.getElementById("inputNombrePaciente").removeAttribute("readonly")
+    document.getElementById("inputCorreoPaciente").removeAttribute("readonly")
+    document.getElementById("inputTelefonoPaciente").removeAttribute("readonly")
+
+    // Add editing styles
+    document.getElementById("inputNombrePaciente").style.borderColor = "#667eea"
+    document.getElementById("inputCorreoPaciente").style.borderColor = "#667eea"
+    document.getElementById("inputTelefonoPaciente").style.borderColor = "#667eea"
+
+    // Show save/cancel buttons
+    profileActions.style.display = "block"
+    btnEditProfile.style.display = "none"
+  })
+
+  btnCancelEdit.addEventListener("click", () => {
+    // Restore original data
+    document.getElementById("inputNombrePaciente").value = originalProfileData.nombre
+    document.getElementById("inputCorreoPaciente").value = originalProfileData.correo
+    document.getElementById("inputTelefonoPaciente").value = originalProfileData.telefono
+
+    // Disable editing
+    cancelProfileEdit()
+  })
+
+  btnSaveProfile.addEventListener("click", async () => {
+    const nombre = document.getElementById("inputNombrePaciente").value.trim()
+    const correo = document.getElementById("inputCorreoPaciente").value.trim()
+    const telefono = document.getElementById("inputTelefonoPaciente").value.trim()
+
+    // Validate fields
+    if (!nombre || !correo || !telefono) {
+      alert("Por favor complete todos los campos")
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo)) {
+      alert("Por favor ingrese un correo electrónico válido")
+      return
+    }
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No hay sesión activa. Por favor inicie sesión nuevamente.")
+      return
+    }
+
+    // Disable button
+    btnSaveProfile.disabled = true
+    btnSaveProfile.textContent = "Guardando..."
+
+    try {
+      const response = await fetch(`${API_URL}/actualizar-perfil`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          correo: correo,
+          telefono: telefono,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al actualizar el perfil")
+      }
+
+      alert("✅ Perfil actualizado correctamente")
+      cancelProfileEdit()
+
+      // Reload profile data
+      await cargarInfoPaciente()
+    } catch (error) {
+      console.error("Error al actualizar perfil:", error)
+      alert(`❌ ${error.message}`)
+    } finally {
+      btnSaveProfile.disabled = false
+      btnSaveProfile.textContent = "Guardar Cambios"
+    }
+  })
+
+  function cancelProfileEdit() {
+    document.getElementById("inputNombrePaciente").setAttribute("readonly", true)
+    document.getElementById("inputCorreoPaciente").setAttribute("readonly", true)
+    document.getElementById("inputTelefonoPaciente").setAttribute("readonly", true)
+
+    document.getElementById("inputNombrePaciente").style.borderColor = ""
+    document.getElementById("inputCorreoPaciente").style.borderColor = ""
+    document.getElementById("inputTelefonoPaciente").style.borderColor = ""
+
+    profileActions.style.display = "none"
+    btnEditProfile.style.display = "inline-block"
+  }
+}
 
 async function cargarInfoPaciente() {
   const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-  
+
   if (!cedula) {
     console.error("No se encontró la cédula del paciente")
     alert("Error: No se pudo cargar la información del paciente")
@@ -32,29 +149,27 @@ async function cargarInfoPaciente() {
 
   try {
     console.log(`📋 Cargando información del paciente: ${cedula}`)
-    
+
     const response = await fetch(`${API_URL}/${cedula}`)
-    
+
     if (!response.ok) {
       throw new Error(`Error al obtener información: ${response.status}`)
     }
 
     const data = await response.json()
-    
+
     console.log("Información del paciente cargada:", data)
-    
+
     // Llenar los campos del formulario
     document.getElementById("inputNombrePaciente").value = data.nombre || "N/A"
     document.getElementById("inputDocumentoPaciente").value = cedula
     document.getElementById("inputCorreoPaciente").value = data.correo || "N/A"
     document.getElementById("inputTelefonoPaciente").value = data.telefono || "N/A"
-
   } catch (error) {
     console.error("Error al cargar información del paciente:", error)
     alert("Error al cargar tu información. Por favor, inicia sesión nuevamente.")
   }
 }
-
 
 function initCambiarContrasena() {
   const btnChangePassword = document.getElementById("btnChangePasswordPaciente")
@@ -89,7 +204,7 @@ function initCambiarContrasena() {
   })
 
   // Validar contraseñas en tiempo real
-  document.getElementById("confirmPasswordPaciente").addEventListener("input", function() {
+  document.getElementById("confirmPasswordPaciente").addEventListener("input", function () {
     const newPassword = document.getElementById("newPasswordPaciente").value
     const confirmPassword = this.value
 
@@ -137,13 +252,13 @@ function initCambiarContrasena() {
       const response = await fetch(`${AUTH_API_URL}/cambiar-contrasena`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contrasena_actual: currentPassword,
-          nueva_contrasena: newPassword
-        })
+          nueva_contrasena: newPassword,
+        }),
       })
 
       const data = await response.json()
@@ -153,12 +268,11 @@ function initCambiarContrasena() {
       }
 
       mostrarMensajePassword("success", `✅ ${data.mensaje}<br>Se ha enviado una notificación a tu correo.`)
-      
+
       // Cerrar modal después de 2 segundos
       setTimeout(() => {
         closeModal()
       }, 2000)
-
     } catch (error) {
       console.error("Error al cambiar contraseña:", error)
       mostrarMensajePassword("error", error.message)
@@ -250,7 +364,7 @@ function cargarFiltros() {
                 onclick="filtrarEjerciciosAsignados('${ext}')">
           ${ext}
         </button>
-      `
+      `,
     )
     .join("")
 }
@@ -299,7 +413,7 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
         repeticiones: ej.repeticiones,
         urlVideo: ej.url_video,
         imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
-      }))
+      })),
     )
 
     cargarEjercicios()
@@ -314,9 +428,7 @@ function cargarEjercicios() {
   const noResults = document.getElementById("noResults")
 
   const ejerciciosFiltrados =
-    filtroActual === "Todos"
-      ? ejerciciosAsignados
-      : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
 
   console.log(`🔍 Filtro activo: ${filtroActual}`)
   console.log(`📋 Ejercicios filtrados: ${ejerciciosFiltrados.length}`)
@@ -365,7 +477,7 @@ function cargarEjercicios() {
                 </button>
             </div>
         </div>
-    `
+    `,
     )
     .join("")
 }
@@ -400,7 +512,7 @@ function cargarFiltrosRealizados() {
                 onclick="filtrarEjerciciosRealizados('${ext}')">
           ${ext}
         </button>
-      `
+      `,
     )
     .join("")
 }
@@ -448,7 +560,7 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
         completado: true,
         urlVideo: ej.url_video,
         observaciones: ej.observaciones,
-      }))
+      })),
     )
 
     cargarEjerciciosRealizados()
@@ -516,7 +628,7 @@ function cargarEjerciciosRealizados() {
                 }
             </div>
         </div>
-    `
+    `,
     )
     .join("")
 }

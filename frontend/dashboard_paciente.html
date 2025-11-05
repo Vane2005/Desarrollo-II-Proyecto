@@ -57,6 +57,7 @@
                     <div class="card-header">
                         <h3>Perfil del Paciente</h3>
                         <div class="header-buttons">
+                            <button class="btn-edit-profile" id="btnEditProfilePaciente">Editar Perfil</button>
                             <button class="btn-change-password" id="btnChangePasswordPaciente">
                                 Cambiar Contraseña
                             </button>
@@ -79,6 +80,10 @@
                             <label>Teléfono</label>
                             <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly>
                         </div>
+                    </div>
+                    <div class="profile-actions" id="profileActionsPaciente" style="display: none; margin-top: 20px; text-align: right;">
+                        <button class="btn-cancel" id="btnCancelEditPaciente">Cancelar</button>
+                        <button class="btn-submit" id="btnSaveProfilePaciente">Guardar Cambios</button>
                     </div>
                 </div>
             </section>
