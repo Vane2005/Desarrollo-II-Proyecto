@@ -51,14 +51,131 @@ const AUTH_API_URL = "http://localhost:8000/auth"
 document.addEventListener("DOMContentLoaded", () => {
   initSidebar()
   initNavigation()
-  cargarInfoPaciente()
-  initCambiarContrasena()
+  cargarInfoPaciente() // NUEVO: Cargar información del paciente
+  initCambiarContrasena() // NUEVO: Inicializar modal de cambio de contraseña
+  initEditarPerfil() // Added profile editing initialization
   cargarFiltros()
   cargarEjerciciosAsignadosDesdeAPI()
   cargarFiltrosRealizados()
   cargarEjerciciosRealizadosDesdeAPI()
 })
 
+function initEditarPerfil() {
+  const btnEditProfile = document.getElementById("btnEditProfilePaciente")
+  const btnSaveProfile = document.getElementById("btnSaveProfilePaciente")
+  const btnCancelEdit = document.getElementById("btnCancelEditPaciente")
+  const profileActions = document.getElementById("profileActionsPaciente")
+
+  let originalProfileData = {}
+
+  btnEditProfile.addEventListener("click", () => {
+    // Save original data
+    originalProfileData = {
+      nombre: document.getElementById("inputNombrePaciente").value,
+      correo: document.getElementById("inputCorreoPaciente").value,
+      telefono: document.getElementById("inputTelefonoPaciente").value,
+    }
+
+    // Enable editing
+    document.getElementById("inputNombrePaciente").removeAttribute("readonly")
+    document.getElementById("inputCorreoPaciente").removeAttribute("readonly")
+    document.getElementById("inputTelefonoPaciente").removeAttribute("readonly")
+
+    // Add editing styles
+    document.getElementById("inputNombrePaciente").style.borderColor = "#667eea"
+    document.getElementById("inputCorreoPaciente").style.borderColor = "#667eea"
+    document.getElementById("inputTelefonoPaciente").style.borderColor = "#667eea"
+
+    // Show save/cancel buttons
+    profileActions.style.display = "block"
+    btnEditProfile.style.display = "none"
+  })
+
+  btnCancelEdit.addEventListener("click", () => {
+    // Restore original data
+    document.getElementById("inputNombrePaciente").value = originalProfileData.nombre
+    document.getElementById("inputCorreoPaciente").value = originalProfileData.correo
+    document.getElementById("inputTelefonoPaciente").value = originalProfileData.telefono
+
+    // Disable editing
+    cancelProfileEdit()
+  })
+
+  btnSaveProfile.addEventListener("click", async () => {
+    const nombre = document.getElementById("inputNombrePaciente").value.trim()
+    const correo = document.getElementById("inputCorreoPaciente").value.trim()
+    const telefono = document.getElementById("inputTelefonoPaciente").value.trim()
+
+    // Validate fields
+    if (!nombre || !correo || !telefono) {
+      alert("Por favor complete todos los campos")
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo)) {
+      alert("Por favor ingrese un correo electrónico válido")
+      return
+    }
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No hay sesión activa. Por favor inicie sesión nuevamente.")
+      return
+    }
+
+    // Disable button
+    btnSaveProfile.disabled = true
+    btnSaveProfile.textContent = "Guardando..."
+
+    try {
+      const response = await fetch(`${API_URL}/actualizar-perfil`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          correo: correo,
+          telefono: telefono,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al actualizar el perfil")
+      }
+
+      alert("✅ Perfil actualizado correctamente")
+      cancelProfileEdit()
+
+      // Reload profile data
+      await cargarInfoPaciente()
+    } catch (error) {
+      console.error("Error al actualizar perfil:", error)
+      alert(`❌ ${error.message}`)
+    } finally {
+      btnSaveProfile.disabled = false
+      btnSaveProfile.textContent = "Guardar Cambios"
+    }
+  })
+
+  function cancelProfileEdit() {
+    document.getElementById("inputNombrePaciente").setAttribute("readonly", true)
+    document.getElementById("inputCorreoPaciente").setAttribute("readonly", true)
+    document.getElementById("inputTelefonoPaciente").setAttribute("readonly", true)
+
+    document.getElementById("inputNombrePaciente").style.borderColor = ""
+    document.getElementById("inputCorreoPaciente").style.borderColor = ""
+    document.getElementById("inputTelefonoPaciente").style.borderColor = ""
+
+    profileActions.style.display = "none"
+    btnEditProfile.style.display = "inline-block"
+  }
+}
 
 // ==========================================
 // INFORMACIÓN DEL PACIENTE
@@ -69,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 async function cargarInfoPaciente() {
   const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-  
+
   if (!cedula) {
     console.error("No se encontró la cédula del paciente")
     alert("Error: No se pudo cargar la información del paciente")
@@ -78,33 +195,28 @@ async function cargarInfoPaciente() {
 
   try {
     console.log(`📋 Cargando información del paciente: ${cedula}`)
-    
+
     const response = await fetch(`${API_URL}/${cedula}`)
-    if (!response.ok) throw new Error(`Error al obtener información: ${response.status}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener información: ${response.status}`)
+    }
 
     const data = await response.json()
+
     console.log("Información del paciente cargada:", data)
-    
+
     // Llenar los campos del formulario
     document.getElementById("inputNombrePaciente").value = data.nombre || "N/A"
     document.getElementById("inputDocumentoPaciente").value = cedula
     document.getElementById("inputCorreoPaciente").value = data.correo || "N/A"
     document.getElementById("inputTelefonoPaciente").value = data.telefono || "N/A"
-
   } catch (error) {
     console.error("Error al cargar información del paciente:", error)
     alert("Error al cargar tu información. Por favor, inicia sesión nuevamente.")
   }
 }
 
-
-// ==========================================
-// CAMBIO DE CONTRASEÑA
-// ==========================================
-
-/**
- * Inicializa los eventos y validaciones del modal de cambio de contraseña.
- */
 function initCambiarContrasena() {
   const btnChangePassword = document.getElementById("btnChangePasswordPaciente")
   const changePasswordModal = document.getElementById("changePasswordModalPaciente")
@@ -134,8 +246,8 @@ function initCambiarContrasena() {
     if (e.target === changePasswordModal) closeModal()
   })
 
-  // Validación de coincidencia de contraseñas
-  document.getElementById("confirmPasswordPaciente").addEventListener("input", function() {
+  // Validar contraseñas en tiempo real
+  document.getElementById("confirmPasswordPaciente").addEventListener("input", function () {
     const newPassword = document.getElementById("newPasswordPaciente").value
     const confirmPassword = this.value
     if (confirmPassword && newPassword !== confirmPassword) {
@@ -179,21 +291,24 @@ function initCambiarContrasena() {
       const response = await fetch(`${AUTH_API_URL}/cambiar-contrasena`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contrasena_actual: currentPassword,
-          nueva_contrasena: newPassword
-        })
+          nueva_contrasena: newPassword,
+        }),
       })
 
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail || "Error al cambiar la contraseña")
 
       mostrarMensajePassword("success", `✅ ${data.mensaje}<br>Se ha enviado una notificación a tu correo.`)
-      
-      setTimeout(closeModal, 2000)
+
+      // Cerrar modal después de 2 segundos
+      setTimeout(() => {
+        closeModal()
+      }, 2000)
     } catch (error) {
       console.error("Error al cambiar contraseña:", error)
       mostrarMensajePassword("error", error.message)
@@ -285,7 +400,7 @@ function cargarFiltros() {
                 onclick="filtrarEjerciciosAsignados('${ext}')">
           ${ext}
         </button>
-      `
+      `,
     )
     .join("")
 }
@@ -325,7 +440,7 @@ async function cargarEjerciciosAsignadosDesdeAPI() {
         repeticiones: ej.repeticiones,
         urlVideo: ej.url_video,
         imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
-      }))
+      })),
     )
     cargarEjercicios()
   } catch (error) {
@@ -342,9 +457,7 @@ function cargarEjercicios() {
   const noResults = document.getElementById("noResults")
 
   const ejerciciosFiltrados =
-    filtroActual === "Todos"
-      ? ejerciciosAsignados
-      : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
 
   if (ejerciciosFiltrados.length === 0) {
     grid.style.display = "none"
@@ -359,21 +472,38 @@ function cargarEjercicios() {
     .map(
       (ejercicio) => `
         <div class="exercise-card">
-          ${ejercicio.urlVideo
-            ? `<div class="exercise-video"><video controls width="100%">
-                <source src="${ejercicio.urlVideo}" type="video/mp4"></video></div>`
-            : `<div class="exercise-image">
-                <img src="${ejercicio.imagen}" alt="${ejercicio.nombre}"></div>`}
-          <div class="exercise-content">
-            <h3>${ejercicio.nombre}</h3>
-            <span>${ejercicio.extremidad}</span>
-            <p>${ejercicio.descripcion}</p>
-            <div><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</div>
-            <button onclick="marcarComoRealizado(${ejercicio.id_terapia})">
-              Marcar como Realizado
-            </button>
-          </div>
-        </div>`
+            ${
+              ejercicio.urlVideo
+                ? `
+              <div class="exercise-video">
+                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                  <source src="${ejercicio.urlVideo}" type="video/mp4">
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              </div>
+            `
+                : `
+              <div class="exercise-image">
+                <img src="${ejercicio.imagen}" alt="${ejercicio.nombre}">
+              </div>
+            `
+            }
+            <div class="exercise-content">
+                <h3 class="exercise-title">${ejercicio.nombre}</h3>
+                <span class="exercise-category">${ejercicio.extremidad}</span>
+                <p class="exercise-description">${ejercicio.descripcion}</p>
+                <div class="exercise-details">
+                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
+                </div>
+                <button onclick="marcarComoRealizado(${ejercicio.id_terapia})" 
+                        style="margin-top: 12px; padding: 8px 16px; background: #667eea; 
+                               color: white; border: none; border-radius: 6px; cursor: pointer; 
+                               font-weight: 500; transition: all 0.3s;">
+                    Marcar como Realizado
+                </button>
+            </div>
+        </div>
+    `,
     )
     .join("")
 }
@@ -397,7 +527,10 @@ function cargarFiltrosRealizados() {
     .map(
       (ext) => `
         <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
-                onclick="filtrarEjerciciosRealizados('${ext}')">${ext}</button>`
+                onclick="filtrarEjerciciosRealizados('${ext}')">
+          ${ext}
+        </button>
+      `,
     )
     .join("")
 }
@@ -438,7 +571,7 @@ async function cargarEjerciciosRealizadosDesdeAPI() {
         completado: true,
         urlVideo: ej.url_video,
         observaciones: ej.observaciones,
-      }))
+      })),
     )
     cargarEjerciciosRealizados()
   } catch (error) {
@@ -472,23 +605,43 @@ function cargarEjerciciosRealizados() {
     .map(
       (ejercicio) => `
         <div class="exercise-card completed">
-          ${ejercicio.urlVideo
-            ? `<div class="exercise-video"><video controls width="100%">
-                <source src="${ejercicio.urlVideo}" type="video/mp4"></video></div>`
-            : `<div class="exercise-image">
-                <img src="${ejercicio.imagen || "/placeholder.svg"}" alt="${ejercicio.nombre}">
-                <div class="completed-badge">✓ Completado</div></div>`}
-          <div class="exercise-content">
-            <h3>${ejercicio.nombre}</h3>
-            <span>${ejercicio.extremidad}</span>
-            <p>${ejercicio.descripcion}</p>
-            <div><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</div>
-            <div><strong>Fecha:</strong> ${formatearFecha(ejercicio.fechaRealizacion)}</div>
-            ${ejercicio.observaciones
-              ? `<div><strong>Observaciones:</strong> ${ejercicio.observaciones}</div>`
-              : ""}
-          </div>
-        </div>`
+            ${
+              ejercicio.urlVideo
+                ? `
+              <div class="exercise-video">
+                <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                  <source src="${ejercicio.urlVideo}" type="video/mp4">
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              </div>
+            `
+                : `
+              <div class="exercise-image">
+                <img src="${ejercicio.imagen || "/placeholder.svg?height=200&width=300"}" alt="${ejercicio.nombre}">
+                <div class="completed-badge">✓ Completado</div>
+              </div>
+            `
+            }
+            <div class="exercise-content">
+                <h3 class="exercise-title">${ejercicio.nombre}</h3>
+                <span class="exercise-category">${ejercicio.extremidad}</span>
+                <p class="exercise-description">${ejercicio.descripcion}</p>
+                <div class="exercise-details">
+                    <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
+                    <span><strong>Fecha:</strong> ${formatearFecha(ejercicio.fechaRealizacion)}</span>
+                </div>
+                ${
+                  ejercicio.observaciones
+                    ? `
+                  <div class="exercise-observations">
+                    <strong>Observaciones:</strong> ${ejercicio.observaciones}
+                  </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+    `,
     )
     .join("")
 }
@@ -564,12 +717,14 @@ function formatearFecha(fecha) {
 }
 
 
-// ==========================================
-// CIERRE DE SESIÓN
-// ==========================================
-
-/** Cierra la sesión del usuario y redirige al login. */
-function cerrarSesion() {
-  localStorage.clear()
-  window.location.href = "../login.html"
+  try {
+    localStorage.removeItem("token")
+    localStorage.removeItem("tipo_usuario")
+    localStorage.removeItem("nombre")
+    localStorage.removeItem("cedula")
+    localStorage.removeItem("usuario_id")
+  } catch (e) {
+    console.warn("Error limpiando localStorage al cerrar sesión", e)
+  }
+  window.location.replace("index.html")
 }

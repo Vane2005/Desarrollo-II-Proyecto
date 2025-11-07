@@ -209,6 +209,124 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarInfoFisioterapeuta()
 
   // ==========================================
+  // EDITAR PERFIL FISIOTERAPEUTA
+  // ==========================================
+  const btnEditProfile = document.getElementById("btnEditProfile")
+  const btnSaveProfile = document.getElementById("btnSaveProfile")
+  const btnCancelEdit = document.getElementById("btnCancelEdit")
+  const profileActions = document.getElementById("profileActions")
+
+  let originalProfileData = {}
+
+  btnEditProfile.addEventListener("click", () => {
+    // Save original data
+    originalProfileData = {
+      nombre: document.getElementById("inputNombre").value,
+      correo: document.getElementById("inputCorreo").value,
+      telefono: document.getElementById("inputTelefono").value,
+    }
+
+    // Enable editing
+    document.getElementById("inputNombre").removeAttribute("readonly")
+    document.getElementById("inputCorreo").removeAttribute("readonly")
+    document.getElementById("inputTelefono").removeAttribute("readonly")
+
+    // Add editing styles
+    document.getElementById("inputNombre").style.borderColor = "#667eea"
+    document.getElementById("inputCorreo").style.borderColor = "#667eea"
+    document.getElementById("inputTelefono").style.borderColor = "#667eea"
+
+    // Show save/cancel buttons
+    profileActions.style.display = "block"
+    btnEditProfile.style.display = "none"
+  })
+
+  btnCancelEdit.addEventListener("click", () => {
+    // Restore original data
+    document.getElementById("inputNombre").value = originalProfileData.nombre
+    document.getElementById("inputCorreo").value = originalProfileData.correo
+    document.getElementById("inputTelefono").value = originalProfileData.telefono
+
+    // Disable editing
+    cancelProfileEdit()
+  })
+
+  btnSaveProfile.addEventListener("click", async () => {
+    const nombre = document.getElementById("inputNombre").value.trim()
+    const correo = document.getElementById("inputCorreo").value.trim()
+    const telefono = document.getElementById("inputTelefono").value.trim()
+
+    // Validate fields
+    if (!nombre || !correo || !telefono) {
+      alert("Por favor complete todos los campos")
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo)) {
+      alert("Por favor ingrese un correo electrónico válido")
+      return
+    }
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No hay sesión activa")
+      return
+    }
+
+    // Disable button
+    btnSaveProfile.disabled = true
+    btnSaveProfile.textContent = "Guardando..."
+
+    try {
+      const response = await fetch(`${AUTH_API_URL}/actualizar-perfil`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          correo: correo,
+          telefono: telefono,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al actualizar el perfil")
+      }
+
+      alert("✅ Perfil actualizado correctamente")
+      cancelProfileEdit()
+
+      // Reload profile data
+      await cargarInfoFisioterapeuta()
+    } catch (error) {
+      console.error("Error al actualizar perfil:", error)
+      alert(`❌ ${error.message}`)
+    } finally {
+      btnSaveProfile.disabled = false
+      btnSaveProfile.textContent = "Guardar Cambios"
+    }
+  })
+
+  function cancelProfileEdit() {
+    document.getElementById("inputNombre").setAttribute("readonly", true)
+    document.getElementById("inputCorreo").setAttribute("readonly", true)
+    document.getElementById("inputTelefono").setAttribute("readonly", true)
+
+    document.getElementById("inputNombre").style.borderColor = ""
+    document.getElementById("inputCorreo").style.borderColor = ""
+    document.getElementById("inputTelefono").style.borderColor = ""
+
+    profileActions.style.display = "none"
+    btnEditProfile.style.display = "inline-block"
+  }
+
+  // ==========================================
   // BOTÓN REALIZAR PAGO
   // ==========================================
   const btnRealizarPago = document.getElementById("btnRealizarPago")
@@ -341,5 +459,71 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `
     container.appendChild(progressItem)
+  }
+
+  const btnBuscarAvance = document.getElementById("btnBuscarAvance")
+  if (btnBuscarAvance) {
+    btnBuscarAvance.addEventListener("click", async () => {
+      const cedula = document.getElementById("cedulaAvanceInput").value.trim()
+      if (!cedula) {
+        alert("Por favor ingrese una cédula")
+        return
+      }
+
+      const container = document.getElementById("patientProgressList")
+      container.innerHTML = '<p style="text-align: center; color: #666;">Cargando...</p>'
+
+      try {
+        const pacienteInfo = await calcularAvancePaciente(cedula)
+        container.innerHTML = ""
+        mostrarAvancePaciente(pacienteInfo)
+      } catch (error) {
+        console.error("Error buscando paciente:", error)
+        container.innerHTML =
+          '<p style="text-align: center; color: #ff4444;">❌ Paciente no encontrado o sin terapias asignadas</p>'
+      }
+    })
+  }
+
+  const btnMostrarTodos = document.getElementById("btnMostrarTodos")
+  if (btnMostrarTodos) {
+    btnMostrarTodos.addEventListener("click", async () => {
+      const container = document.getElementById("patientProgressList")
+      container.innerHTML = '<p style="text-align: center; color: #666;">Cargando todos los pacientes...</p>'
+
+      try {
+        const response = await fetch(`${PACIENTE_API_URL}/todos`)
+        if (!response.ok) {
+          throw new Error("Error al obtener lista de pacientes")
+        }
+
+        const pacientes = await response.json()
+
+        if (!Array.isArray(pacientes) || pacientes.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #666;">No hay pacientes registrados</p>'
+          return
+        }
+
+        container.innerHTML = ""
+
+        for (const paciente of pacientes) {
+          try {
+            const pacienteInfo = await calcularAvancePaciente(paciente.cedula)
+            mostrarAvancePaciente(pacienteInfo)
+          } catch (error) {
+            console.error(`Error calculando avance para paciente ${paciente.cedula}:`, error)
+          }
+        }
+
+        if (container.children.length === 0) {
+          container.innerHTML =
+            '<p style="text-align: center; color: #666;">No se pudo cargar información de pacientes</p>'
+        }
+      } catch (error) {
+        console.error("Error mostrando todos los pacientes:", error)
+        container.innerHTML =
+          '<p style="text-align: center; color: #ff4444;">❌ Error al cargar la lista de pacientes</p>'
+      }
+    })
   }
 })

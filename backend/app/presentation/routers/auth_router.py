@@ -3,13 +3,15 @@ from sqlalchemy.orm import Session
 from presentation.schemas.usuario_schema import (
     FisioCreate, LoginCreate, LoginResponse, 
     RecuperarContrasenaRequest, RecuperarContrasenaResponse,
-    CambiarContrasenaRequest, InfoFisioterapeutaResponse
+    CambiarContrasenaRequest, InfoFisioterapeutaResponse,
+    ActualizarPerfilFisioterapeuta  # Import new schema
 )
 from data.db import get_db 
 from logic.auth_service import (
     crear_fisioterapeuta, authenticate_user, 
     recuperar_contrasena, cambiar_contrasena, 
-    obtener_info_fisioterapeuta
+    obtener_info_fisioterapeuta,
+    actualizar_perfil_fisioterapeuta  # Import new service function
 )
 from config.jwt_config import create_access_token, verify_token
 from datetime import timedelta
@@ -252,4 +254,37 @@ def obtener_info_fisioterapeuta_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error al obtener información"
+        )
+
+
+@router.put("/actualizar-perfil", response_model=InfoFisioterapeutaResponse)
+def actualizar_perfil_fisioterapeuta_endpoint(
+    datos: ActualizarPerfilFisioterapeuta,
+    cedula: str = Depends(get_current_user_cedula),
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza el perfil del fisioterapeuta autenticado (nombre, correo, teléfono)
+    """
+    try:
+        info_actualizada = actualizar_perfil_fisioterapeuta(
+            db=db,
+            cedula=cedula,
+            nombre=datos.nombre,
+            correo=datos.correo,
+            telefono=datos.telefono
+        )
+        
+        return info_actualizada
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR AL ACTUALIZAR PERFIL:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al actualizar el perfil"
         )
