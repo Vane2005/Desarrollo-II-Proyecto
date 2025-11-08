@@ -43,3 +43,47 @@ def marcar_ejercicio_realizado(id_terapia: int, db: Session = Depends(get_db)):
         print("ERROR en /paciente/marcar-realizado:")
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ejercicios-por-grupo/{cedula}")
+def obtener_ejercicios_por_grupo(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios de un paciente agrupados por número de grupo de terapia
+    """
+    try:
+        query = text("""
+            SELECT 
+                ta.Grupo_terapia,
+                COUNT(*) as total_ejercicios,
+                SUM(CASE WHEN ta.Estado = 'Completado' THEN 1 ELSE 0 END) as completados,
+                MIN(ta.Fecha_asignacion) as fecha_inicio,
+                MAX(ta.Fecha_realizacion) as fecha_fin
+            FROM Terapia_Asignada ta
+            WHERE ta.Cedula_paciente = :cedula
+            GROUP BY ta.Grupo_terapia
+            ORDER BY ta.Grupo_terapia DESC
+        """)
+        
+        grupos = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not grupos:
+            return []
+        
+        return [
+            {
+                "grupo_terapia": g[0],
+                "total_ejercicios": g[1],
+                "completados": g[2],
+                "pendientes": g[1] - g[2],
+                "progreso_porcentaje": round((g[2] / g[1]) * 100, 2) if g[1] > 0 else 0,
+                "fecha_inicio": g[3].isoformat() if g[3] else None,
+                "fecha_fin": g[4].isoformat() if g[4] else None,
+                "estado": "Completado" if g[2] == g[1] else "En Progreso"
+            }
+            for g in grupos
+        ]
+        
+    except Exception as e:
+        print("ERROR en /paciente/ejercicios-por-grupo:")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

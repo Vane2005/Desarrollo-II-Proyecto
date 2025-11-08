@@ -69,6 +69,7 @@ CREATE TABLE Sufre (
 
 CREATE TABLE Terapia_Asignada (
     Id_terapia SERIAL PRIMARY KEY,
+    Grupo_terapia INT NOT NULL default 1,
     Cedula_paciente VARCHAR(20) NOT NULL,
     Id_ejercicio INT NOT NULL,
     Estado VARCHAR(20) DEFAULT 'Pendiente' CHECK (Estado IN ('Pendiente', 'Completado')),
