@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 1. Meta charset -->
     <meta charset="UTF-8">
+    
+    <!-- 2. Meta viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 3. Title -->
     <title>Registro - TerapiaFisica+</title>
+    
+    <!-- 4. CSS externos -->
     <link rel="stylesheet" href="assets/css/registro.css">
 </head>
 <body>
@@ -29,19 +36,18 @@
                         type="text" 
                         id="cedula" 
                         name="cedula" 
-                        placeholder="cedula" 
+                        placeholder="Cédula (Ej: 1234567890)" 
                         required
                         minlength="6"
                         maxlength="20"
                         pattern="[0-9]+"
                         title="La cédula debe tener entre 6 y 20 dígitos"
-                        placeholder="Ej: 1234567890"
                     >
                     <input 
                         type="text" 
                         id="nombre" 
                         name="nombre" 
-                        placeholder="nombre" 
+                        placeholder="Nombre completo" 
                         required
                         minlength="2"
                         maxlength="100"
@@ -51,49 +57,50 @@
                         type="email" 
                         id="email" 
                         name="email" 
-                        title="Ingrese un email válido"
-                        placeholder="email" 
+                        placeholder="Email" 
                         required
+                        title="Ingrese un email válido"
                     >
                     <input 
                         type="tel" 
                         id="telefono" 
                         name="telefono" 
-                        placeholder="Telefono" 
+                        placeholder="Teléfono" 
                         required
                         minlength="7"
                         maxlength="15"
                         pattern="[0-9]+"
                         title="El teléfono debe tener entre 7 y 15 dígitos"
                     >
-                    
                     <input 
                         type="password" 
                         id="contrasena" 
                         name="contrasena" 
-                        placeholder="Contraseña" 
+                        placeholder="Contraseña (Mínimo 8 caracteres)" 
                         required
                         minlength="8"
                         maxlength="72"
                         title="La contraseña debe tener al menos 8 caracteres"
-                        placeholder="Mínimo 8 caracteres"
                     >
                     <input 
                         type="password" 
                         id="confirmarContrasena" 
                         name="confirmarContrasena" 
-                        placeholder="Conf. Contraseña" 
+                        placeholder="Confirmar Contraseña" 
                         required
                     >
                 </div>
 
                 <button type="submit" class="btn-confirmar">Registrar</button>
-                
             </form>
+            
             <p id="message"></p>
         </div>
     </div>
 
+    <!-- Scripts al final del body -->
     <script src="./assets/js/registro.js"></script>
+    <script src="assets/js/form-validator.js"></script>
+    <script src="assets/js/accessibility.js"></script>
 </body>
 </html>

@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 1. Meta charset -->
     <meta charset="UTF-8">
+    
+    <!-- 2. Meta viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - TerapiaFisica+</title>
+    
+    <!-- 3. Title -->
+    <title>Registro de Paciente - TerapiaFisica+</title>
+    
+    <!-- 4. CSS externos -->
     <link rel="stylesheet" href="assets/css/registro.css">
 </head>
 <body>
@@ -33,7 +40,6 @@
                         pattern="[0-9]+"
                         title="La cédula debe tener entre 6 y 20 dígitos y solo números"
                     >
-
                     <input 
                         type="text" 
                         id="nombre" 
@@ -44,7 +50,6 @@
                         maxlength="100"
                         title="El nombre debe tener al menos 2 caracteres"
                     >
-
                     <input 
                         type="email" 
                         id="email" 
@@ -53,7 +58,6 @@
                         required
                         title="Ingrese un email válido"
                     >
-
                     <input 
                         type="tel" 
                         id="telefono" 
@@ -74,6 +78,9 @@
         </div>
     </div>
 
+    <!-- Scripts al final del body -->
     <script src="./assets/js/registro_paciente.js"></script>
+    <script src="assets/js/form-validator.js"></script>
+    <script src="assets/js/accessibility.js"></script>
 </body>
 </html>

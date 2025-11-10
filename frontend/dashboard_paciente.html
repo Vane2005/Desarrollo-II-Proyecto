@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 1. Meta charset -->
     <meta charset="UTF-8">
+    
+    <!-- 2. Meta viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 3. Title -->
     <title>Dashboard Paciente - TerapiaFisica+</title>
 
+    <!-- 4. CSS externos -->
     <!-- Estilos base del dashboard -->
     <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
-
     <!-- Estilos específicos del paciente -->
     <link rel="stylesheet" href="assets/css/dashboard_paciente.css">
 </head>
@@ -22,8 +27,8 @@
             <div class="sidebar-header">
                 <h2>TerapiaFisica+</h2>
             </div>
+            
             <nav class="sidebar-nav">
-                <!-- NUEVO: Panel de Información Personal como primero -->
                 <button class="nav-item active" data-section="informacion-personal">
                     <span class="nav-icon">👤</span>
                     <span>Información Personal</span>
@@ -39,6 +44,7 @@
                     <span>Ejercicios Realizados</span>
                 </button>
             </nav>
+            
             <button class="btn-logout" onclick="cerrarSesion()">
                 <span class="nav-icon">🚪</span>
                 <span>Cerrar Sesión</span>
@@ -51,7 +57,7 @@
                 <h1 id="section-title">Información Personal</h1>
             </header>
 
-            <!-- ================== NUEVA SECCIÓN: INFORMACIÓN PERSONAL ================== -->
+            <!-- ================== INFORMACIÓN PERSONAL ================== -->
             <section id="informacion-personal" class="content-section active">
                 <div class="info-card">
                     <div class="card-header">
@@ -162,7 +168,9 @@
         </div>
     </div>
 
+    <!-- Scripts al final del body -->
     <script src="assets/js/dashboard_paciente.js"></script>
+    <script src="assets/js/form-validator.js"></script>
     <script src="assets/js/accessibility.js"></script>
 </body>
 </html>

@@ -1,11 +1,19 @@
-<!-- frontend/pago.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 1. Meta charset -->
     <meta charset="UTF-8">
+    
+    <!-- 2. Meta viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 3. Title -->
     <title>Pago - TerapiaFisica+</title>
+    
+    <!-- 4. Scripts externos que deben ir en head -->
     <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- 5. CSS inline -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -111,11 +119,10 @@
     <div class="payment-container">
         <h1>Completar Pago</h1>
         
-        <!-- frontend/pago.html -->
         <div class="plan-info">
             <h3>Compra única</h3>
             <p>Acceso completo a TerapiaFisica+</p>
-            <p class="price">$199,999 COP/mes</p>  
+            <p class="price">$199,999 COP</p>
         </div>
 
         <form id="payment-form">
@@ -134,6 +141,7 @@
         <div id="mensaje" class="mensaje"></div>
     </div>
 
+    <!-- Scripts al final del body -->
     <script src="./assets/js/pago.js"></script>
 </body>
 </html>
