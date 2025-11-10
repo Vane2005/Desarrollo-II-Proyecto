@@ -1,25 +1,25 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.usuario_schema import (
+from app.presentation.schemas.usuario_schema import (
     FisioCreate, LoginCreate, LoginResponse, 
     RecuperarContrasenaRequest, RecuperarContrasenaResponse,
     CambiarContrasenaRequest, InfoFisioterapeutaResponse,
     ActualizarPerfilFisioterapeuta  # Import new schema
 )
-from data.db import get_db 
-from logic.auth_service import (
+from app.data.db import get_db 
+from app.logic.auth_service import (
     crear_fisioterapeuta, authenticate_user, 
     recuperar_contrasena, cambiar_contrasena, 
     obtener_info_fisioterapeuta,
     actualizar_perfil_fisioterapeuta  # Import new service function
 )
-from config.jwt_config import create_access_token, verify_token
+from app.config.jwt_config import create_access_token, verify_token
 from datetime import timedelta
 import traceback 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from config.jwt_config import SECRET_KEY, ALGORITHM
-from data.models.user import User_Fisioterapeuta
+from app.config.jwt_config import SECRET_KEY, ALGORITHM
+from app.data.models.user import User_Fisioterapeuta
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

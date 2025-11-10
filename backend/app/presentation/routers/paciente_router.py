@@ -1,20 +1,20 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from presentation.schemas.usuario_schema import (
+from app.presentation.schemas.usuario_schema import (
     PacienteCreate, 
     ActualizarPerfilPaciente,  # Import new schema
     InfoPacienteResponse  # Import new schema
 )
-from data.db import get_db
+from app.data.db import get_db
 from sqlalchemy import text
-from logic.paciente_service import (
+from app.logic.paciente_service import (
     crear,
     obtener_info_paciente,  # Import new service function
     actualizar_perfil_paciente  # Import new service function
 )
 from datetime import datetime
 import traceback
-from presentation.routers.auth_router import get_current_user_cedula
+from app.presentation.routers.auth_router import get_current_user_cedula
 
 router = APIRouter(prefix="/paciente", tags=["Paciente"])
 
