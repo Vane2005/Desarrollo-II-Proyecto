@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else {
         // Mostrar error del servidor
-        showError(data.detail || "Cédula o contraseña incorrecta.")
+        showError(data.detail || "Cédula o contrase��a incorrecta.")
       }
     } catch (error) {
       console.error("Error de conexión:", error)
