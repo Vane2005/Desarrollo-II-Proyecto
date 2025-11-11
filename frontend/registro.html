@@ -5,6 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - TerapiaFisica+</title>
     <link rel="stylesheet" href="assets/css/registro.css">
+    <style>
+        /* Estilos de mensajes de error */
+        .error-message {
+            display: none;
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            padding: 6px 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-left: 3px solid #dc3545;
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .input-error {
+            border: 2px solid #dc3545 !important;
+            background-color: rgba(255, 220, 220, 0.3) !important;
+        }
+
+        .success-message, .error-message-general {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success-message.visible {
+            display: block;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message-general.visible {
+            display: block;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .form-grid > div {
+            position: relative;
+        }
+
+        #message {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -25,72 +110,87 @@
             
             <form id="registroForm" class="registro-form">
                 <div class="form-grid">
-                    <input 
-                        type="text" 
-                        id="cedula" 
-                        name="cedula" 
-                        placeholder="cedula" 
-                        required
-                        minlength="6"
-                        maxlength="20"
-                        pattern="[0-9]+"
-                        title="La cédula debe tener entre 6 y 20 dígitos"
-                        placeholder="Ej: 1234567890"
-                    >
-                    <input 
-                        type="text" 
-                        id="nombre" 
-                        name="nombre" 
-                        placeholder="nombre" 
-                        required
-                        minlength="2"
-                        maxlength="100"
-                        title="El nombre debe tener mínimo 2 caracteres"
-                    >
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        title="Ingrese un email válido"
-                        placeholder="email" 
-                        required
-                    >
-                    <input 
-                        type="tel" 
-                        id="telefono" 
-                        name="telefono" 
-                        placeholder="Telefono" 
-                        required
-                        minlength="7"
-                        maxlength="15"
-                        pattern="[0-9]+"
-                        title="El teléfono debe tener entre 7 y 15 dígitos"
-                    >
+                    <div>
+                        <input 
+                            type="text" 
+                            id="cedula" 
+                            name="cedula" 
+                            placeholder="Cédula (6-20 dígitos)" 
+                            required
+                            minlength="6"
+                            maxlength="20"
+                            pattern="[0-9]+"
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
                     
-                    <input 
-                        type="password" 
-                        id="contrasena" 
-                        name="contrasena" 
-                        placeholder="Contraseña" 
-                        required
-                        minlength="8"
-                        maxlength="72"
-                        title="La contraseña debe tener al menos 8 caracteres"
-                        placeholder="Mínimo 8 caracteres"
-                    >
-                    <input 
-                        type="password" 
-                        id="confirmarContrasena" 
-                        name="confirmarContrasena" 
-                        placeholder="Conf. Contraseña" 
-                        required
-                    >
+                    <div>
+                        <input 
+                            type="text" 
+                            id="nombre" 
+                            name="nombre" 
+                            placeholder="Nombre completo" 
+                            required
+                            minlength="2"
+                            maxlength="100"
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
+                    
+                    <div>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="Email (usuario@ejemplo.com)" 
+                            required
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
+                    
+                    <div>
+                        <input 
+                            type="tel" 
+                            id="telefono" 
+                            name="telefono" 
+                            placeholder="Teléfono (7-15 dígitos)" 
+                            required
+                            minlength="7"
+                            maxlength="15"
+                            pattern="[0-9]+"
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
+                    
+                    <div>
+                        <input 
+                            type="password" 
+                            id="contrasena" 
+                            name="contrasena" 
+                            placeholder="Contraseña (mínimo 8 caracteres)" 
+                            required
+                            minlength="8"
+                            maxlength="72"
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
+                    
+                    <div>
+                        <input 
+                            type="password" 
+                            id="confirmarContrasena" 
+                            name="confirmarContrasena" 
+                            placeholder="Confirmar Contraseña" 
+                            required
+                        >
+                        <div class="error-message" role="alert"></div>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-confirmar">Registrar</button>
                 
+                <div id="message" role="alert"></div>
             </form>
-            <p id="message"></p>
         </div>
     </div>
 
