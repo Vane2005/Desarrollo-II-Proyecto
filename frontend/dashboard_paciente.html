@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Paciente - TerapiaFisica+</title>
+
+    <!-- Estilos base del dashboard -->
+    <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
+
+    <!-- Estilos específicos del paciente -->
+    <link rel="stylesheet" href="assets/css/dashboard_paciente.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <span class="toggle-icon">☰</span>
+            </button>
+            
+            <div class="sidebar-header">
+                <h2>TerapiaFisica+</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- NUEVO: Panel de Información Personal como primero -->
+                <button class="nav-item active" data-section="informacion-personal">
+                    <span class="nav-icon">👤</span>
+                    <span>Información Personal</span>
+                </button>
+                
+                <button class="nav-item" data-section="ejercicios-asignados">
+                    <span class="nav-icon">💪</span>
+                    <span>Ejercicios Asignados</span>
+                </button>
+                
+                <button class="nav-item" data-section="ejercicios-realizados">
+                    <span class="nav-icon">✅</span>
+                    <span>Ejercicios Realizados</span>
+                </button>
+            </nav>
+            <button class="btn-logout" onclick="cerrarSesion()">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </button>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="section-title">Información Personal</h1>
+            </header>
+
+            <!-- ================== NUEVA SECCIÓN: INFORMACIÓN PERSONAL ================== -->
+            <section id="informacion-personal" class="content-section active">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3>Perfil del Paciente</h3>
+                        <div class="header-buttons">
+                            <button class="btn-edit-profile" id="btnEditProfilePaciente">Editar Perfil</button>
+                            <button class="btn-change-password" id="btnChangePasswordPaciente">
+                                Cambiar Contraseña
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Nombre Completo</label>
+                            <input type="text" class="info-input" id="inputNombrePaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Documento De Identidad</label>
+                            <input type="text" class="info-input" id="inputDocumentoPaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Correo Electrónico</label>
+                            <input type="email" class="info-input" id="inputCorreoPaciente" readonly>
+                        </div>
+                        <div class="info-item">
+                            <label>Teléfono</label>
+                            <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly>
+                        </div>
+                    </div>
+                    <div class="profile-actions" id="profileActionsPaciente" style="display: none; margin-top: 20px; text-align: right;">
+                        <button class="btn-cancel" id="btnCancelEditPaciente">Cancelar</button>
+                        <button class="btn-submit" id="btnSaveProfilePaciente">Guardar Cambios</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================== EJERCICIOS ASIGNADOS ================== -->
+            <section id="ejercicios-asignados" class="content-section">
+                <div class="library-header">
+                    <h2>Biblioteca de Ejercicios</h2>
+                    <p>Selecciona una extremidad para filtrar tus ejercicios asignados</p>
+                </div>
+
+                <div class="filters" id="filters">
+                    <!-- Filtros dinámicos -->
+                </div>
+
+                <div class="exercises-grid" id="exercisesGrid">
+                    <!-- Ejercicios dinámicos -->
+                </div>
+
+                <div class="no-results" id="noResults" style="display: none;">
+                    <h3>No se encontraron ejercicios</h3>
+                    <p>Intenta seleccionar otra extremidad</p>
+                </div>
+            </section>
+
+            <!-- ================== EJERCICIOS REALIZADOS ================== -->
+            <section id="ejercicios-realizados" class="content-section">
+                <div class="library-header">
+                    <h2>Ejercicios Realizados</h2>
+                    <p>Historial de ejercicios que has completado</p>
+                </div>
+
+                <div class="filters" id="filtersRealizados">
+                    <!-- Filtros dinámicos para ejercicios realizados -->
+                </div>
+
+                <div class="exercises-grid" id="exercisesGridRealizados">
+                    <!-- Ejercicios realizados dinámicos -->
+                </div>
+
+                <div class="no-results" id="noResultsRealizados" style="display: none;">
+                    <h3>No se encontraron ejercicios realizados</h3>
+                    <p>Aún no has completado ningún ejercicio</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ================== MODAL CAMBIAR CONTRASEÑA ================== -->
+    <div class="modal" id="changePasswordModalPaciente">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cambiar Contraseña</h3>
+                <button class="close-btn" id="closePasswordModalPaciente">&times;</button>
+            </div>
+            <form id="changePasswordFormPaciente" class="modal-form">
+                <div class="form-group">
+                    <label for="currentPasswordPaciente">Contraseña Actual</label>
+                    <input type="password" id="currentPasswordPaciente" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordPaciente">Nueva Contraseña</label>
+                    <input type="password" id="newPasswordPaciente" required minlength="8" maxlength="72">
+                    <small>Mínimo 8 caracteres</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPasswordPaciente">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmPasswordPaciente" required minlength="8" maxlength="72">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelPasswordChangePaciente">Cancelar</button>
+                    <button type="submit" class="btn-submit">Cambiar Contraseña</button>
+                </div>
+                <div id="passwordMessagePaciente" class="form-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/dashboard_paciente.js"></script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.orm import Session
+from presentation.schemas.usuario_schema import (
+    PacienteCreate, 
+    ActualizarPerfilPaciente,  # Import new schema
+    InfoPacienteResponse  # Import new schema
+)
+from data.db import get_db
+from sqlalchemy import text
+from logic.paciente_service import (
+    crear,
+    obtener_info_paciente,  # Import new service function
+    actualizar_perfil_paciente  # Import new service function
+)
+from datetime import datetime
+import traceback
+from presentation.routers.auth_router import get_current_user_cedula
+
+router = APIRouter(prefix="/paciente", tags=["Paciente"])
+
+# ============================================================
+# 1 REGISTRAR PACIENTE
+# ============================================================
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
+    """
+    Registra un nuevo Paciente en el sistema
+    """
+    try:
+        usuario, contrasena_generada = crear(
+            db=db,
+            cedula=datos.cedula,
+            correo=datos.email,
+            nombre=datos.nombre,
+            telefono=datos.telefono
+        )
+        
+        return {
+            "mensaje": f"Usuario {usuario.nombre} registrado correctamente",
+            "usuario": {
+                "id": usuario.cedula,
+                "nombre": usuario.nombre,
+                "email": usuario.correo
+            },
+            "credenciales": {
+                "correo": usuario.correo,
+                "contrasena": contrasena_generada
+            }
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        print("ERROR COMPLETO:")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al registrar usuario: {str(e)}")
+
+
+
+# ============================================================
+# 2 OBTENER LISTA DE EJERCICIOS
+# ============================================================
+
+
+@router.get("/ejercicios")
+def obtener_ejercicios(db: Session = Depends(get_db)):
+    """
+    Devuelve todos los ejercicios disponibles con sus videos
+    """
+    try:
+        query = text("""
+            SELECT e.id_ejercicio, e.nombre, e.descripcion, e.repeticion, e.url, ext.nombre as extremidad
+            FROM Ejercicio e
+            LEFT JOIN Extremidad ext ON e.id_extremidad = ext.id_extremidad
+        """)
+        ejercicios = db.execute(query).fetchall()
+
+        if not ejercicios:
+            print(" No hay ejercicios en la base de datos.")
+            return []
+
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General"
+            }
+            for e in ejercicios
+        ]
+    except Exception as e:
+        import traceback, sys
+        print(" ERROR EN /paciente/ejercicios:")
+        traceback.print_exc(file=sys.stdout)
+        return {"error_debug": repr(e)}
+
+
+
+# ============================================================
+# 3 OBTENER TODOS LOS PACIENTES
+# ============================================================
+@router.get("/todos")
+def obtener_todos_pacientes(db: Session = Depends(get_db)):
+    """
+    Obtiene la lista de todos los pacientes registrados en el sistema
+    """
+    try:
+        query = text("""
+            SELECT cedula, nombre, correo, telefono, estado
+            FROM Paciente
+            ORDER BY nombre
+        """)
+        
+        pacientes = db.execute(query).fetchall()
+        
+        if not pacientes:
+            return []
+        
+        return [
+            {
+                "cedula": p[0],
+                "nombre": p[1],
+                "correo": p[2],
+                "telefono": p[3],
+                "estado": p[4]
+            }
+            for p in pacientes
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/todos:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener lista de pacientes: {str(e)}"
+        )
+
+# ============================================================
+# 4 BUSCAR PACIENTE POR CÉDULA
+# ============================================================
+@router.get("/{cedula}")
+def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene la información de un paciente por su cédula
+    """
+    try:
+        query = text("""
+            SELECT nombre, correo, telefono
+            FROM Paciente
+            WHERE cedula = :cedula
+        """)
+        paciente = db.execute(query, {"cedula": cedula}).fetchone()
+
+        if not paciente:
+            raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+        # Ver cuántas columnas llegaron realmente
+        print("Resultado SQL:", paciente)
+
+        # Si solo tiene 2 columnas (nombre, correo)
+        if len(paciente) == 2:
+            return {
+                "nombre": paciente[0],
+                "correo": paciente[1],
+                "telefono": None
+            }
+
+        # Si tiene 3 columnas (nombre, correo, telefono)
+        return {
+            "nombre": paciente[0],
+            "correo": paciente[1],
+            "telefono": paciente[2]
+        }
+
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/info-paciente", response_model=InfoPacienteResponse)
+def obtener_info_paciente_endpoint(
+    cedula: str = Depends(get_current_user_cedula),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene la información del paciente autenticado
+    """
+    try:
+        info = obtener_info_paciente(db, cedula)
+        return info
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR AL OBTENER INFO PACIENTE:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener información del paciente"
+        )
+
+
+@router.put("/actualizar-perfil", response_model=InfoPacienteResponse)
+def actualizar_perfil_paciente_endpoint(
+    datos: ActualizarPerfilPaciente,
+    cedula: str = Depends(get_current_user_cedula),
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza el perfil del paciente autenticado (nombre, correo, teléfono)
+    """
+    try:
+        info_actualizada = actualizar_perfil_paciente(
+            db=db,
+            cedula=cedula,
+            nombre=datos.nombre,
+            correo=datos.correo,
+            telefono=datos.telefono
+        )
+        
+        return info_actualizada
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR AL ACTUALIZAR PERFIL PACIENTE:", traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al actualizar el perfil del paciente"
+        )
+
+# ============================================================
+# 5 ASIGNAR EJERCICIOS A PACIENTE
+# ============================================================
+@router.post("/asignar-ejercicio")
+def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
+    """
+    Asigna uno o varios ejercicios a un paciente con número de grupo de terapia automático
+    """
+    cedula = payload.get("cedula_paciente")
+    ejercicios = payload.get("ejercicios", [])
+
+    if not cedula:
+        raise HTTPException(status_code=400, detail="Debe proporcionar una cédula de paciente.")
+    if not ejercicios:
+        raise HTTPException(status_code=400, detail="Debe seleccionar al menos un ejercicio.")
+
+    try:
+        query_ultimo_grupo = text("""
+            SELECT COALESCE(MAX(Grupo_terapia), 0) as ultimo_grupo
+            FROM Terapia_Asignada
+            WHERE Cedula_paciente = :cedula
+        """)
+        resultado = db.execute(query_ultimo_grupo, {"cedula": cedula}).fetchone()
+        ultimo_grupo = resultado[0] if resultado else 0
+        
+        nuevo_grupo = ultimo_grupo + 1
+        
+        print(f"[DEBUG] Paciente {cedula}: Último grupo = {ultimo_grupo}, Nuevo grupo = {nuevo_grupo}")
+
+        for id_ejercicio in ejercicios:
+            query = text("""
+                INSERT INTO Terapia_Asignada (Grupo_terapia, Cedula_paciente, Id_ejercicio, Estado, Fecha_asignacion)
+                VALUES (:grupo, :cedula, :id_ejercicio, 'Pendiente', :fecha)
+            """)
+            db.execute(query, {
+                "grupo": nuevo_grupo,
+                "cedula": cedula,
+                "id_ejercicio": id_ejercicio,
+                "fecha": datetime.now().date()
+            })
+        db.commit()
+
+        return {
+            "mensaje": "Ejercicios asignados correctamente",
+            "grupo_terapia": nuevo_grupo,
+            "total_ejercicios": len(ejercicios)
+        }
+    except Exception as e:
+        db.rollback()
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error al asignar ejercicios: {str(e)}")
+
+# ============================================================
+# 6 OBTENER EJERCICIOS COMPLETADOS DE UN PACIENTE
+# ============================================================
+@router.get("/ejercicios-completados/{cedula}")
+def obtener_ejercicios_completados(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios completados de un paciente específico
+    incluyendo la URL del video de Cloudinary y el grupo de terapia
+    """
+    try:
+        query = text("""
+            SELECT 
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Fecha_realizacion,
+                ta.Observaciones,
+                ta.Grupo_terapia
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado = 'Completado'
+            ORDER BY ta.Grupo_terapia DESC, ta.Fecha_realizacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return []
+        
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General",
+                "fecha_realizacion": e[6].isoformat() if e[6] else None,
+                "observaciones": e[7],
+                "grupo_terapia": e[8]
+            }
+            for e in ejercicios
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/ejercicios-completados:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener ejercicios completados: {str(e)}"
+        )
+
+# ============================================================
+# 7 OBTENER EJERCICIOS ASIGNADOS DE UN PACIENTE
+# ============================================================
+@router.get("/ejercicios-asignados/{cedula}")
+def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios asignados (estado Pendiente) de un paciente específico
+    incluyendo la URL del video de Cloudinary y el grupo de terapia
+    """
+    try:
+        query = text("""
+            SELECT 
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Fecha_asignacion,
+                ta.Id_terapia,
+                ta.Grupo_terapia
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado = 'Pendiente'
+            ORDER BY ta.Grupo_terapia DESC, ta.Fecha_asignacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return []
+        
+        return [
+            {
+                "id_ejercicio": e[0],
+                "nombre": e[1],
+                "descripcion": e[2],
+                "repeticiones": e[3],
+                "url_video": e[4],
+                "extremidad": e[5] if e[5] else "General",
+                "fecha_asignacion": e[6].isoformat() if e[6] else None,
+                "id_terapia": e[7],
+                "grupo_terapia": e[8]
+            }
+            for e in ejercicios
+        ]
+        
+    except Exception as e:
+        print("ERROR EN /paciente/ejercicios-asignados:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al obtener ejercicios asignados: {str(e)}"
+        )

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Fisioterapeuta</title>
+  <link rel="stylesheet" href="assets/css/dashboard_fisio.css">
+</head>
+<body>
+  <div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="btn-toggle-sidebar" id="toggleSidebar">
+        <span class="toggle-icon">☰</span>
+      </button>
+
+      <div class="sidebar-header">
+        <h2>TerapiaFisica+</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="informacion-personal">
+          <span class="nav-icon">👤</span>
+          <span>Información Personal</span>
+        </button>
+        <button class="nav-item" data-section="asignar-ejercicios">
+          <span class="nav-icon">📋</span>
+          <span>Asignar Ejercicios</span>
+        </button>
+        <button class="nav-item" data-section="avance-paciente">
+          <span class="nav-icon">📊</span>
+          <span>Avance Paciente</span>
+        </button>
+      </nav>
+
+      <button class="btn-logout">
+        <span class="nav-icon">🚪</span>
+        <span>Cerrar Sesión</span>
+      </button>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+      <header class="content-header">
+        <h1 id="section-title">Información Personal</h1>
+      </header>
+
+      <!-- ================== INFORMACIÓN PERSONAL ================== -->
+      <section id="informacion-personal" class="content-section active">
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Título Profesional: Fisioterapeuta</h3>
+            <div class="header-buttons">
+              <button class="btn-edit-profile" id="btnEditProfile">Editar Perfil</button>
+              <button class="btn-change-password" id="btnChangePassword">Cambiar Contraseña</button>
+              <button class="btn-realizar-pago" id="btnRealizarPago" style="display: none;">Realizar Pago</button>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nombre</label>
+              <input type="text" class="info-input" id="inputNombre" readonly>
+            </div>
+            <div class="info-item">
+              <label>Documento De Identidad</label>
+              <input type="text" class="info-input" id="inputDocumento" readonly>
+            </div>
+            <div class="info-item">
+              <label>Correo Electrónico</label>
+              <input type="email" class="info-input" id="inputCorreo" readonly>
+            </div>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <input type="tel" class="info-input" id="inputTelefono" readonly>
+            </div>
+          </div>
+          <div class="profile-actions" id="profileActions" style="display: none; margin-top: 20px; text-align: right;">
+            <button class="btn-cancel" id="btnCancelEdit">Cancelar</button>
+            <button class="btn-submit" id="btnSaveProfile">Guardar Cambios</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== ASIGNAR EJERCICIOS ================== -->
+      <section id="asignar-ejercicios" class="content-section">
+        <div class="search-card">
+          <h3>Buscar Paciente Por Cédula:</h3>
+          <div class="search-bar">
+            <input type="text" id="cedulaInput" placeholder="Ingrese cédula del paciente">
+            <button id="btnBuscarCedula" class="btn-search">Buscar</button>
+          </div>
+
+          <div id="infoPaciente" class="info-card" style="display: none;">
+            <h3>Datos del Paciente</h3>
+            <p><strong>Nombre:</strong> <span id="pacienteNombre"></span></p>
+            <p><strong>Correo:</strong> <span id="pacienteCorreo"></span></p>
+          </div>
+
+          <button class="btn-assign-exercises" id="assignSelectedExercises">Asignar Ejercicios Seleccionados</button>
+        </div>
+
+        <div class="exercises-card">
+          <h3>Lista De Ejercicios Disponibles:</h3>
+          <div class="exercises-grid" id="exercisesGrid">
+            <p>Cargando ejercicios...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== AVANCE PACIENTE ================== -->
+      <section id="avance-paciente" class="content-section">
+        <div class="search-card">
+          <h3>Buscar Paciente Por Cédula:</h3>
+          <div class="search-bar">
+            <input type="text" id="cedulaAvanceInput" placeholder="Ingrese la cédula del paciente">
+            <button class="btn-search" id="btnBuscarAvance">Buscar</button>
+            <button class="btn-search" id="btnMostrarTodos" style="margin-left: 10px;">Mostrar Todos</button>
+          </div>
+        </div>
+
+        <div class="patients-card">
+          <h3>Lista Pacientes Encontrados:</h3>
+          <div id="patientProgressList">
+            <p style="text-align: center; color: #666;">Busque un paciente por cédula o muestre todos los pacientes</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal Cambiar Contraseña -->
+  <div class="modal" id="changePasswordModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cambiar Contraseña</h3>
+        <button class="close-btn" id="closePasswordModal">&times;</button>
+      </div>
+      <form id="changePasswordForm" class="modal-form">
+        <div class="form-group">
+          <label for="currentPassword">Contraseña Actual</label>
+          <input type="password" id="currentPassword" required minlength="4">
+        </div>
+        <div class="form-group">
+          <label for="newPassword">Nueva Contraseña</label>
+          <input type="password" id="newPassword" required minlength="8" maxlength="72">
+          <small>Mínimo 8 caracteres</small>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+          <input type="password" id="confirmPassword" required minlength="8" maxlength="72">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelPasswordChange">Cancelar</button>
+          <button type="submit" class="btn-submit">Cambiar Contraseña</button>
+        </div>
+        <div id="passwordMessage" class="form-message"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/dashboard_fisio.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+-- =========================================
+-- TERAPIAS ASIGNADAS (IDs ajustados)
+-- =========================================
+INSERT INTO Terapia_Asignada (Grupo_Terapia, Cedula_paciente, Id_ejercicio, Estado, Fecha_asignacion, Fecha_realizacion, Observaciones) VALUES
+
+-- Pedro Sánchez (Tendinitis Manguito Rotador) - Ejercicios de hombro
+(1,'1111111111', 36, 'Completado', '2025-10-01', '2025-10-01', 'Ejercicio realizado correctamente'),
+(1,'1111111111', 37, 'Completado', '2025-10-01', '2025-10-02', 'Buena técnica'),
+(2,'1111111111', 39, 'Pendiente', '2025-10-15', NULL, 'Iniciar con peso ligero'),
+
+-- Laura Ramírez (Esguince Tobillo) - Ejercicios de tobillo
+(1, '2222222222', 50, 'Completado', '2025-09-20', '2025-09-21', 'Sin dolor durante el ejercicio'),
+(1, '2222222222', 51, 'Completado', '2025-09-20', '2025-09-22', 'Progreso notable'),
+(2, '2222222222', 54, 'Completado', '2025-10-01', '2025-10-03', 'Excelente rango de movimiento'),
+(3, '2222222222', 55, 'Pendiente', '2025-10-20', NULL, 'Intentar con ojos cerrados'),
+
+-- Diego Morales (Hernia Discal Lumbar) - Ejercicios lumbares
+(1, '3333333333', 58, 'Completado', '2025-10-10', '2025-10-11', 'Dolor leve pero tolerable'),
+(1, '3333333333', 59, 'Completado', '2025-10-10', '2025-10-12', 'Mantiene bien la posición'),
+(2, '3333333333', 60, 'Pendiente', '2025-10-18', NULL, 'Iniciar con precaución'),
+
+-- Sofía Castro (Condromalacia Rotuliana) - Ejercicios de rodilla
+(1, '4444444444', 46, 'Completado', '2025-10-05', '2025-10-06', 'Buena activación del VMO'),
+(1, '4444444444', 47, 'Completado', '2025-10-05', '2025-10-07', 'Sin crepitación durante ejercicio'),
+(2, '4444444444', 48, 'Pendiente', '2025-10-22', NULL, 'Aumentar rango progresivamente'),
+
+-- Miguel Ángel (Epicondilitis) - Ejercicios de codo
+(1, '5555555555', 66, 'Completado', '2025-10-12', '2025-10-13', 'Dolor disminuyó después del ejercicio'),
+(2, '5555555555', 67, 'Pendiente', '2025-10-22', NULL, 'Enfatizar fase excéntrica'),
+
+-- Carolina Jiménez (Fascitis Plantar) - Ejercicios de pie
+(1, '6666666666', 70, 'Completado', '2025-09-15', '2025-09-16', 'Excelente respuesta al tratamiento'),
+(1, '6666666666', 54, 'Completado', '2025-09-15', '2025-09-17', 'Continuar con estiramientos'),
+(2, '6666666666', 55, 'Completado', '2025-10-01', '2025-10-02', 'Ya puede hacer con un solo pie'),
+
+-- Andrés Felipe (Lesión LCA) - Ejercicios de rodilla
+(1, '7777777777', 45, 'Completado', '2025-10-08', '2025-10-09', 'Buena activación del cuádriceps'),
+(1, '7777777777', 43, 'Completado', '2025-10-08', '2025-10-10', 'Rodilla estable a 60 grados'),
+(2, '7777777777', 44, 'Pendiente', '2025-10-20', NULL, 'Iniciar con ojos abiertos'),
+
+-- Valentina López (Cervicalgia) - Ejercicios cervicales (Inactiva)
+(1, '8888888888', 61, 'Pendiente', '2025-10-01', NULL, 'No ha asistido a terapia'),
+(1, '8888888888', 62, 'Pendiente', '2025-10-01', NULL, 'Paciente sin contacto'),
+
+-- Santiago Gutiérrez (Lumbalgia + Contractura) - Ejercicios lumbares
+(1, '9999999999', 57, 'Completado', '2025-10-14', '2025-10-15', 'Mejora en movilidad lumbar'),
+(1, '9999999999', 58, 'Completado', '2025-10-14', '2025-10-16', 'Fortalecimiento progresivo'),
+(2, '9999999999', 59, 'Pendiente', '2025-10-23', NULL, 'Mantener rodillas al pecho'),
+
+-- Isabella Fernández (Capsulitis Adhesiva) - Ejercicios de hombro
+(1, '1010101010', 40, 'Completado', '2025-09-25', '2025-09-26', 'Aumento notable del rango de movimiento'),
+(1, '1010101010', 41, 'Completado', '2025-09-25', '2025-09-28', 'Progreso marcado en pared'),
+(2, '1010101010', 36, 'Completado', '2025-10-10', '2025-10-11', 'Reducción de dolor'),
+(3, '1010101010', 37, 'Pendiente', '2025-10-24', NULL, 'Continuar con péndulos diariamente'); 

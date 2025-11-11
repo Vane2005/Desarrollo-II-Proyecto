@@ -1,0 +1,258 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 600px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.left-panel {
+  flex: 0 0 280px;
+  background-color: #d1d5db;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 30px;
+}
+
+.logo-placeholder {
+  width: 180px;
+  height: 180px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e5e7eb;
+}
+
+.logo-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: auto;
+}
+
+.login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.login-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.btn-ingresar {
+  background-color: #0d9488;
+  color: white;
+  border: none;
+  padding: 12px 40px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-ingresar:hover {
+  background-color: #0f766e;
+}
+
+.right-panel {
+  flex: 1;
+  background-color: #0d9488;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 50px;
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.registro-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-grid input {
+  padding: 14px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  background-color: white;
+  color: #1f2937;
+  outline: none;
+}
+
+.form-grid input::placeholder {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.form-grid input:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.form-grid input[type="date"] {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.form-grid input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
+.btn-confirmar {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 14px 50px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: center;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.btn-confirmar:hover {
+  background-color: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+    max-width: 500px;
+  }
+
+  .left-panel {
+    flex: none;
+    padding: 30px;
+  }
+
+  .logo-placeholder {
+    width: 120px;
+    height: 120px;
+  }
+
+  .right-panel {
+    padding: 30px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1000px;
+  }
+
+  .left-panel {
+    flex: 0 0 320px;
+  }
+
+  .logo-placeholder {
+    width: 400px;
+    height: 350px;
+  }
+
+/* Mensajes de éxito y error */
+#message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+#message.exito {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+  /* Estilos para inputs con error */
+  input:invalid:not(:placeholder-shown) {
+      border-color: #ff4444;
+  }
+
+  input:valid:not(:placeholder-shown) {
+      border-color: #4CAF50;
+  }
+
+  /* Deshabilitar botón mientras procesa */
+  button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+  }
+
+  /* Indicador visual de contraseñas que no coinciden */
+  input#confirmarContrasena:invalid {
+      border-color: #ff4444 !important;
+  }
+
+}
