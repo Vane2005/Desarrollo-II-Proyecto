@@ -1,5 +1,0 @@
--- =========================================
--- INSERCIÓN DE FISIOTERAPEUTA
--- =========================================
-INSERT INTO Fisioterapeuta (Cedula, Nombre, Correo, Contrasena, Estado, Telefono) VALUES
-('1234567890', 'Carlos Méndez Ruiz', 'carlos.mendez@fisioterapia.com', 'hashed_password_1', 'Activo', '3001234567');
