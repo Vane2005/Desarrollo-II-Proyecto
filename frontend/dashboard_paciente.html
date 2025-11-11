@@ -14,117 +14,134 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <button class="btn-toggle-sidebar" id="toggleSidebar">
-                <span class="toggle-icon">☰</span>
+        <!-- Added ARIA role, label, and landmark for navigation sidebar -->
+        <aside class="sidebar" id="sidebar" role="complementary" aria-label="Menú de navegación principal">
+            <button class="btn-toggle-sidebar" id="toggleSidebar" aria-label="Alternar menú lateral" aria-expanded="true" aria-controls="sidebar">
+                <span class="toggle-icon" aria-hidden="true">☰</span>
             </button>
             
             <div class="sidebar-header">
                 <h2>TerapiaFisica+</h2>
             </div>
-            <nav class="sidebar-nav">
+            <!-- Added role="navigation" and aria-label for nav element -->
+            <nav class="sidebar-nav" role="navigation" aria-label="Navegación de secciones">
                 <!-- NUEVO: Panel de Información Personal como primero -->
-                <button class="nav-item active" data-section="informacion-personal">
-                    <span class="nav-icon">👤</span>
+                <!-- Added aria-current for active nav item -->
+                <button class="nav-item active" data-section="informacion-personal" aria-current="page">
+                    <span class="nav-icon" aria-hidden="true">👤</span>
                     <span>Información Personal</span>
                 </button>
                 
                 <button class="nav-item" data-section="ejercicios-asignados">
-                    <span class="nav-icon">💪</span>
+                    <span class="nav-icon" aria-hidden="true">💪</span>
                     <span>Ejercicios Asignados</span>
                 </button>
                 
                 <button class="nav-item" data-section="ejercicios-realizados">
-                    <span class="nav-icon">✅</span>
+                    <span class="nav-icon" aria-hidden="true">✅</span>
                     <span>Ejercicios Realizados</span>
                 </button>
             </nav>
-            <button class="btn-logout" onclick="cerrarSesion()">
-                <span class="nav-icon">🚪</span>
+            <!-- Added aria-label to logout button -->
+            <button class="btn-logout" onclick="cerrarSesion()" aria-label="Cerrar sesión de la aplicación">
+                <span class="nav-icon" aria-hidden="true">🚪</span>
                 <span>Cerrar Sesión</span>
             </button>
         </aside>
 
         <!-- Main content -->
-        <main class="main-content">
+        <!-- Added role="main" and aria-labelledby for main content area -->
+        <main class="main-content" role="main" aria-labelledby="section-title">
             <header class="content-header">
                 <h1 id="section-title">Información Personal</h1>
             </header>
 
             <!-- ================== NUEVA SECCIÓN: INFORMACIÓN PERSONAL ================== -->
-            <section id="informacion-personal" class="content-section active">
+            <!-- Added role="region" and aria-labelledby for section -->
+            <section id="informacion-personal" class="content-section active" role="region" aria-labelledby="titulo-info-personal">
                 <div class="info-card">
                     <div class="card-header">
-                        <h3>Perfil del Paciente</h3>
+                        <h3 id="titulo-info-personal">Perfil del Paciente</h3>
                         <div class="header-buttons">
-                            <button class="btn-edit-profile" id="btnEditProfilePaciente">Editar Perfil</button>
-                            <button class="btn-change-password" id="btnChangePasswordPaciente">
+                            <!-- Added aria-label for better context -->
+                            <button class="btn-edit-profile" id="btnEditProfilePaciente" aria-label="Editar información del perfil">Editar Perfil</button>
+                            <button class="btn-change-password" id="btnChangePasswordPaciente" aria-label="Abrir formulario para cambiar contraseña" aria-haspopup="dialog">
                                 Cambiar Contraseña
                             </button>
                         </div>
                     </div>
-                    <div class="info-grid">
+                    <!-- Added role="form" and aria-labelledby -->
+                    <div class="info-grid" role="form" aria-labelledby="titulo-info-personal">
                         <div class="info-item">
                             <label for="inputNombrePaciente">Nombre Completo</label>
-                            <input type="text" class="info-input" id="inputNombrePaciente" readonly>
+                            <input type="text" class="info-input" id="inputNombrePaciente" readonly aria-readonly="true">
                         </div>
                         <div class="info-item">
                             <label for="inputDocumentoPaciente">Documento De Identidad</label>
-                            <input type="text" class="info-input" id="inputDocumentoPaciente" readonly>
+                            <input type="text" class="info-input" id="inputDocumentoPaciente" readonly aria-readonly="true">
                         </div>
                         <div class="info-item">
                             <label for="inputCorreoPaciente">Correo Electrónico</label>
-                            <input type="email" class="info-input" id="inputCorreoPaciente" readonly>
+                            <input type="email" class="info-input" id="inputCorreoPaciente" readonly aria-readonly="true">
                         </div>
                         <div class="info-item">
                             <label for="inputTelefonoPaciente">Teléfono</label>
-                            <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly>
+                            <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly aria-readonly="true">
                         </div>
                     </div>
-                    <div class="profile-actions" id="profileActionsPaciente" style="display: none; margin-top: 20px; text-align: right;">
-                        <button class="btn-cancel" id="btnCancelEditPaciente">Cancelar</button>
-                        <button class="btn-submit" id="btnSaveProfilePaciente">Guardar Cambios</button>
+                    <!-- Added aria-live for dynamic visibility changes -->
+                    <div class="profile-actions" id="profileActionsPaciente" style="display: none; margin-top: 20px; text-align: right;" aria-live="polite">
+                        <button class="btn-cancel" id="btnCancelEditPaciente" aria-label="Cancelar edición del perfil">Cancelar</button>
+                        <button class="btn-submit" id="btnSaveProfilePaciente" aria-label="Guardar cambios del perfil">Guardar Cambios</button>
                     </div>
                 </div>
             </section>
 
             <!-- ================== EJERCICIOS ASIGNADOS ================== -->
-            <section id="ejercicios-asignados" class="content-section">
+            <!-- Added role="region" and aria-labelledby -->
+            <section id="ejercicios-asignados" class="content-section" role="region" aria-labelledby="titulo-ejercicios-asignados">
                 <div class="library-header">
-                    <h2>Biblioteca de Ejercicios</h2>
+                    <h2 id="titulo-ejercicios-asignados">Biblioteca de Ejercicios</h2>
                     <p>Selecciona una extremidad para filtrar tus ejercicios asignados</p>
                 </div>
 
-                <div class="filters" id="filters">
+                <!-- Added role="group" and aria-label for filters -->
+                <div class="filters" id="filters" role="group" aria-label="Filtros de ejercicios por extremidad">
                     <!-- Filtros dinámicos -->
                 </div>
 
-                <div class="exercises-grid" id="exercisesGrid">
+                <!-- Added role="list" and aria-live for dynamic content -->
+                <div class="exercises-grid" id="exercisesGrid" role="list" aria-live="polite" aria-atomic="false">
                     <!-- Ejercicios dinámicos -->
                 </div>
 
-                <div class="no-results" id="noResults" style="display: none;">
+                <!-- Added role="status" and aria-live for no results message -->
+                <div class="no-results" id="noResults" style="display: none;" role="status" aria-live="polite">
                     <h3>No se encontraron ejercicios</h3>
                     <p>Intenta seleccionar otra extremidad</p>
                 </div>
             </section>
 
             <!-- ================== EJERCICIOS REALIZADOS ================== -->
-            <section id="ejercicios-realizados" class="content-section">
+            <!-- Added role="region" and aria-labelledby -->
+            <section id="ejercicios-realizados" class="content-section" role="region" aria-labelledby="titulo-ejercicios-realizados">
                 <div class="library-header">
-                    <h2>Ejercicios Realizados</h2>
+                    <h2 id="titulo-ejercicios-realizados">Ejercicios Realizados</h2>
                     <p>Historial de ejercicios que has completado</p>
                 </div>
 
-                <div class="filters" id="filtersRealizados">
+                <!-- Added role="group" and aria-label for filters -->
+                <div class="filters" id="filtersRealizados" role="group" aria-label="Filtros de ejercicios realizados por extremidad">
                     <!-- Filtros dinámicos para ejercicios realizados -->
                 </div>
 
-                <div class="exercises-grid" id="exercisesGridRealizados">
+                <!-- Added role="list" and aria-live for dynamic content -->
+                <div class="exercises-grid" id="exercisesGridRealizados" role="list" aria-live="polite" aria-atomic="false">
                     <!-- Ejercicios realizados dinámicos -->
                 </div>
 
-                <div class="no-results" id="noResultsRealizados" style="display: none;">
+                <!-- Added role="status" and aria-live for no results message -->
+                <div class="no-results" id="noResultsRealizados" style="display: none;" role="status" aria-live="polite">
                     <h3>No se encontraron ejercicios realizados</h3>
                     <p>Aún no has completado ningún ejercicio</p>
                 </div>
@@ -133,31 +150,35 @@
     </div>
 
     <!-- ================== MODAL CAMBIAR CONTRASEÑA ================== -->
-    <div class="modal" id="changePasswordModalPaciente">
+    <!-- Added role="dialog", aria-labelledby, and aria-modal for modal -->
+    <div class="modal" id="changePasswordModalPaciente" role="dialog" aria-labelledby="titulo-modal-password" aria-modal="true" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Cambiar Contraseña</h3>
-                <button class="close-btn" id="closePasswordModalPaciente">&times;</button>
+                <h3 id="titulo-modal-password">Cambiar Contraseña</h3>
+                <!-- Added aria-label for close button -->
+                <button class="close-btn" id="closePasswordModalPaciente" aria-label="Cerrar formulario de cambio de contraseña">&times;</button>
             </div>
-            <form id="changePasswordFormPaciente" class="modal-form">
+            <!-- Added aria-describedby for form instructions -->
+            <form id="changePasswordFormPaciente" class="modal-form" aria-describedby="passwordMessagePaciente">
                 <div class="form-group">
                     <label for="currentPasswordPaciente">Contraseña Actual</label>
-                    <input type="password" id="currentPasswordPaciente" required minlength="4">
+                    <input type="password" id="currentPasswordPaciente" required minlength="4" aria-required="true">
                 </div>
                 <div class="form-group">
                     <label for="newPasswordPaciente">Nueva Contraseña</label>
-                    <input type="password" id="newPasswordPaciente" required minlength="8" maxlength="72">
-                    <small>Mínimo 8 caracteres</small>
+                    <input type="password" id="newPasswordPaciente" required minlength="8" maxlength="72" aria-required="true" aria-describedby="password-hint">
+                    <small id="password-hint">Mínimo 8 caracteres</small>
                 </div>
                 <div class="form-group">
                     <label for="confirmPasswordPaciente">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="confirmPasswordPaciente" required minlength="8" maxlength="72">
+                    <input type="password" id="confirmPasswordPaciente" required minlength="8" maxlength="72" aria-required="true">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" id="cancelPasswordChangePaciente">Cancelar</button>
-                    <button type="submit" class="btn-submit">Cambiar Contraseña</button>
+                    <button type="button" class="btn-cancel" id="cancelPasswordChangePaciente" aria-label="Cancelar cambio de contraseña">Cancelar</button>
+                    <button type="submit" class="btn-submit" aria-label="Confirmar cambio de contraseña">Cambiar Contraseña</button>
                 </div>
-                <div id="passwordMessagePaciente" class="form-message"></div>
+                <!-- Added role="status" and aria-live for dynamic messages -->
+                <div id="passwordMessagePaciente" class="form-message" role="status" aria-live="polite"></div>
             </form>
         </div>
     </div>
