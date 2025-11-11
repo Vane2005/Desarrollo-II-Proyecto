@@ -179,3 +179,8 @@
   color: #1a1a1a; /* Updated for improved contrast */
   margin-bottom: 8px;
 }
+
+.sidebar:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 4px;
+}
