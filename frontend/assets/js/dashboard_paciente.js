@@ -30,6 +30,8 @@ function initEditarPerfil() {
   let originalProfileData = {}
 
   btnEditProfile.addEventListener("click", () => {
+    limpiarErroresPerfil()
+
     // Save original data
     originalProfileData = {
       nombre: document.getElementById("inputNombrePaciente").value,
@@ -38,18 +40,28 @@ function initEditarPerfil() {
     }
 
     // Enable editing
-    document.getElementById("inputNombrePaciente").removeAttribute("readonly")
-    document.getElementById("inputCorreoPaciente").removeAttribute("readonly")
-    document.getElementById("inputTelefonoPaciente").removeAttribute("readonly")
+    const nombreInput = document.getElementById("inputNombrePaciente")
+    const correoInput = document.getElementById("inputCorreoPaciente")
+    const telefonoInput = document.getElementById("inputTelefonoPaciente")
+
+    nombreInput.removeAttribute("readonly")
+    correoInput.removeAttribute("readonly")
+    telefonoInput.removeAttribute("readonly")
+
+    nombreInput.setAttribute("aria-readonly", "false")
+    correoInput.setAttribute("aria-readonly", "false")
+    telefonoInput.setAttribute("aria-readonly", "false")
 
     // Add editing styles
-    document.getElementById("inputNombrePaciente").style.borderColor = "#667eea"
-    document.getElementById("inputCorreoPaciente").style.borderColor = "#667eea"
-    document.getElementById("inputTelefonoPaciente").style.borderColor = "#667eea"
+    nombreInput.style.borderColor = "#667eea"
+    correoInput.style.borderColor = "#667eea"
+    telefonoInput.style.borderColor = "#667eea"
 
     // Show save/cancel buttons
     profileActions.style.display = "block"
     btnEditProfile.style.display = "none"
+
+    nombreInput.focus()
   })
 
   btnCancelEdit.addEventListener("click", () => {
@@ -58,31 +70,76 @@ function initEditarPerfil() {
     document.getElementById("inputCorreoPaciente").value = originalProfileData.correo
     document.getElementById("inputTelefonoPaciente").value = originalProfileData.telefono
 
+    limpiarErroresPerfil()
+
     // Disable editing
     cancelProfileEdit()
   })
 
   btnSaveProfile.addEventListener("click", async () => {
+    limpiarErroresPerfil()
+    ocultarMensajeExitoPerfil()
+
     const nombre = document.getElementById("inputNombrePaciente").value.trim()
     const correo = document.getElementById("inputCorreoPaciente").value.trim()
     const telefono = document.getElementById("inputTelefonoPaciente").value.trim()
 
-    // Validate fields
-    if (!nombre || !correo || !telefono) {
-      alert("Por favor complete todos los campos")
-      return
+    const errores = []
+
+    if (!nombre) {
+      errores.push({
+        campo: "inputNombrePaciente",
+        mensaje: "El nombre completo es obligatorio. Por favor ingrese su nombre.",
+      })
+    } else if (nombre.length < 3) {
+      errores.push({
+        campo: "inputNombrePaciente",
+        mensaje: "El nombre debe tener al menos 3 caracteres. Por favor ingrese un nombre válido.",
+      })
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(correo)) {
-      alert("Por favor ingrese un correo electrónico válido")
+    if (!correo) {
+      errores.push({
+        campo: "inputCorreoPaciente",
+        mensaje: "El correo electrónico es obligatorio. Por favor ingrese su correo.",
+      })
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(correo)) {
+        errores.push({
+          campo: "inputCorreoPaciente",
+          mensaje: "El correo electrónico no es válido. Use el formato: usuario@ejemplo.com",
+        })
+      }
+    }
+
+    if (!telefono) {
+      errores.push({
+        campo: "inputTelefonoPaciente",
+        mensaje: "El teléfono es obligatorio. Por favor ingrese su número de teléfono.",
+      })
+    } else if (!/^\d{7,10}$/.test(telefono)) {
+      errores.push({
+        campo: "inputTelefonoPaciente",
+        mensaje: "El teléfono debe contener entre 7 y 10 dígitos numéricos. Ejemplo: 3001234567",
+      })
+    }
+
+    if (errores.length > 0) {
+      mostrarErroresPerfil(errores)
+      // Focus first error field
+      document.getElementById(errores[0].campo).focus()
       return
     }
 
     const token = localStorage.getItem("token")
     if (!token) {
-      alert("No hay sesión activa. Por favor inicie sesión nuevamente.")
+      mostrarErroresPerfil([
+        {
+          campo: "inputNombrePaciente",
+          mensaje: "No hay sesión activa. Por favor inicie sesión nuevamente.",
+        },
+      ])
       return
     }
 
@@ -110,14 +167,20 @@ function initEditarPerfil() {
         throw new Error(data.detail || "Error al actualizar el perfil")
       }
 
-      alert("✅ Perfil actualizado correctamente")
+      mostrarMensajeExitoPerfil("Perfil actualizado correctamente")
+
       cancelProfileEdit()
 
       // Reload profile data
       await cargarInfoPaciente()
     } catch (error) {
       console.error("Error al actualizar perfil:", error)
-      alert(`❌ ${error.message}`)
+      mostrarErroresPerfil([
+        {
+          campo: "inputNombrePaciente",
+          mensaje: `Error al guardar: ${error.message}. Por favor intente nuevamente.`,
+        },
+      ])
     } finally {
       btnSaveProfile.disabled = false
       btnSaveProfile.textContent = "Guardar Cambios"
@@ -125,16 +188,99 @@ function initEditarPerfil() {
   })
 
   function cancelProfileEdit() {
-    document.getElementById("inputNombrePaciente").setAttribute("readonly", true)
-    document.getElementById("inputCorreoPaciente").setAttribute("readonly", true)
-    document.getElementById("inputTelefonoPaciente").setAttribute("readonly", true)
+    const nombreInput = document.getElementById("inputNombrePaciente")
+    const correoInput = document.getElementById("inputCorreoPaciente")
+    const telefonoInput = document.getElementById("inputTelefonoPaciente")
 
-    document.getElementById("inputNombrePaciente").style.borderColor = ""
-    document.getElementById("inputCorreoPaciente").style.borderColor = ""
-    document.getElementById("inputTelefonoPaciente").style.borderColor = ""
+    nombreInput.setAttribute("readonly", true)
+    correoInput.setAttribute("readonly", true)
+    telefonoInput.setAttribute("readonly", true)
+
+    nombreInput.setAttribute("aria-readonly", "true")
+    correoInput.setAttribute("aria-readonly", "true")
+    telefonoInput.setAttribute("aria-readonly", "true")
+
+    nombreInput.style.borderColor = ""
+    correoInput.style.borderColor = ""
+    telefonoInput.style.borderColor = ""
 
     profileActions.style.display = "none"
     btnEditProfile.style.display = "inline-block"
+  }
+}
+
+function mostrarErroresPerfil(errores) {
+  // Show error summary
+  const errorSummary = document.getElementById("errorSummaryPerfil")
+  const errorList = document.getElementById("errorListPerfil")
+
+  errorList.innerHTML = errores
+    .map((error) => `<li><a href="#${error.campo}" class="error-link">${error.mensaje}</a></li>`)
+    .join("")
+
+  errorSummary.style.display = "block"
+
+  // Scroll to error summary
+  errorSummary.scrollIntoView({ behavior: "smooth", block: "nearest" })
+
+  // Display individual field errors
+  errores.forEach((error) => {
+    const input = document.getElementById(error.campo)
+    const errorDiv = document.getElementById(`error${error.campo.replace("input", "")}`)
+
+    if (input && errorDiv) {
+      input.setAttribute("aria-invalid", "true")
+      input.classList.add("input-error")
+      errorDiv.textContent = error.mensaje
+      errorDiv.style.display = "block"
+    }
+  })
+}
+
+function limpiarErroresPerfil() {
+  // Hide error summary
+  const errorSummary = document.getElementById("errorSummaryPerfil")
+  if (errorSummary) {
+    errorSummary.style.display = "none"
+  }
+
+  // Clear individual field errors
+  const campos = ["inputNombrePaciente", "inputCorreoPaciente", "inputTelefonoPaciente"]
+  campos.forEach((campoId) => {
+    const input = document.getElementById(campoId)
+    const errorDiv = document.getElementById(`error${campoId.replace("input", "")}`)
+
+    if (input) {
+      input.setAttribute("aria-invalid", "false")
+      input.classList.remove("input-error")
+    }
+
+    if (errorDiv) {
+      errorDiv.textContent = ""
+      errorDiv.style.display = "none"
+    }
+  })
+}
+
+function mostrarMensajeExitoPerfil(mensaje) {
+  const successBox = document.getElementById("successMessagePerfil")
+  const successText = document.getElementById("successTextPerfil")
+
+  if (successBox && successText) {
+    successText.textContent = mensaje
+    successBox.style.display = "flex"
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      ocultarMensajeExitoPerfil()
+    }, 5000)
+  }
+}
+
+function ocultarMensajeExitoPerfil() {
+  const successBox = document.getElementById("successMessagePerfil")
+  if (successBox) {
+    successBox.style.display = "none"
   }
 }
 
@@ -182,14 +328,20 @@ function initCambiarContrasena() {
   // Abrir modal
   btnChangePassword.addEventListener("click", () => {
     changePasswordModal.classList.add("active")
+    changePasswordModal.setAttribute("aria-hidden", "false")
     changePasswordForm.reset()
+    limpiarErroresPassword()
     passwordMessage.classList.remove("visible")
+
+    document.getElementById("currentPasswordPaciente").focus()
   })
 
   // Cerrar modal
   function closeModal() {
     changePasswordModal.classList.remove("active")
+    changePasswordModal.setAttribute("aria-hidden", "true")
     changePasswordForm.reset()
+    limpiarErroresPassword()
     passwordMessage.classList.remove("visible")
   }
 
@@ -203,17 +355,36 @@ function initCambiarContrasena() {
     }
   })
 
-  // Validar contraseñas en tiempo real
+  document.getElementById("newPasswordPaciente").addEventListener("input", function () {
+    const errorDiv = document.getElementById("errorNewPassword")
+
+    if (this.value && this.value.length < 8) {
+      this.setAttribute("aria-invalid", "true")
+      this.classList.add("input-error")
+      errorDiv.textContent = "La contraseña debe tener al menos 8 caracteres"
+      errorDiv.style.display = "block"
+    } else {
+      this.setAttribute("aria-invalid", "false")
+      this.classList.remove("input-error")
+      errorDiv.textContent = ""
+      errorDiv.style.display = "none"
+    }
+  })
+
   document.getElementById("confirmPasswordPaciente").addEventListener("input", function () {
     const newPassword = document.getElementById("newPasswordPaciente").value
-    const confirmPassword = this.value
+    const errorDiv = document.getElementById("errorConfirmPassword")
 
-    if (confirmPassword && newPassword !== confirmPassword) {
-      this.setCustomValidity("Las contraseñas no coinciden")
-      this.style.borderColor = "#ff4444"
+    if (this.value && newPassword !== this.value) {
+      this.setAttribute("aria-invalid", "true")
+      this.classList.add("input-error")
+      errorDiv.textContent = "Las contraseñas no coinciden. Por favor verifique."
+      errorDiv.style.display = "block"
     } else {
-      this.setCustomValidity("")
-      this.style.borderColor = ""
+      this.setAttribute("aria-invalid", "false")
+      this.classList.remove("input-error")
+      errorDiv.textContent = ""
+      errorDiv.style.display = "none"
     }
   })
 
@@ -221,25 +392,59 @@ function initCambiarContrasena() {
   changePasswordForm.addEventListener("submit", async (e) => {
     e.preventDefault()
 
+    limpiarErroresPassword()
+
     const currentPassword = document.getElementById("currentPasswordPaciente").value
     const newPassword = document.getElementById("newPasswordPaciente").value
     const confirmPassword = document.getElementById("confirmPasswordPaciente").value
 
-    // Validar que las contraseñas coincidan
-    if (newPassword !== confirmPassword) {
-      mostrarMensajePassword("error", "Las contraseñas no coinciden")
-      return
+    const errores = []
+
+    if (!currentPassword) {
+      errores.push({
+        campo: "currentPasswordPaciente",
+        mensaje: "La contraseña actual es obligatoria. Por favor ingrésela.",
+      })
+    } else if (currentPassword.length < 4) {
+      errores.push({
+        campo: "currentPasswordPaciente",
+        mensaje: "La contraseña actual debe tener al menos 4 caracteres.",
+      })
     }
 
-    // Validar longitud mínima
-    if (newPassword.length < 8) {
-      mostrarMensajePassword("error", "La nueva contraseña debe tener al menos 8 caracteres")
+    if (!newPassword) {
+      errores.push({
+        campo: "newPasswordPaciente",
+        mensaje: "La nueva contraseña es obligatoria. Por favor ingrésela.",
+      })
+    } else if (newPassword.length < 8) {
+      errores.push({
+        campo: "newPasswordPaciente",
+        mensaje: "La nueva contraseña debe tener al menos 8 caracteres.",
+      })
+    }
+
+    if (!confirmPassword) {
+      errores.push({
+        campo: "confirmPasswordPaciente",
+        mensaje: "Debe confirmar la nueva contraseña. Por favor ingrésela nuevamente.",
+      })
+    } else if (newPassword !== confirmPassword) {
+      errores.push({
+        campo: "confirmPasswordPaciente",
+        mensaje: "Las contraseñas no coinciden. Verifique que ambas sean iguales.",
+      })
+    }
+
+    if (errores.length > 0) {
+      mostrarErroresPassword(errores)
+      document.getElementById(errores[0].campo).focus()
       return
     }
 
     const token = localStorage.getItem("token")
     if (!token) {
-      mostrarMensajePassword("error", "No hay sesión activa")
+      mostrarMensajePassword("error", "No hay sesión activa. Por favor inicie sesión nuevamente.")
       return
     }
 
@@ -275,7 +480,7 @@ function initCambiarContrasena() {
       }, 2000)
     } catch (error) {
       console.error("Error al cambiar contraseña:", error)
-      mostrarMensajePassword("error", error.message)
+      mostrarMensajePassword("error", `Error: ${error.message}. Por favor intente nuevamente.`)
     } finally {
       submitBtn.disabled = false
       submitBtn.textContent = "Cambiar Contraseña"
@@ -283,10 +488,65 @@ function initCambiarContrasena() {
   })
 }
 
-function mostrarMensajePassword(tipo, contenido) {
+function mostrarErroresPassword(errores) {
+  // Show error summary
+  const errorSummary = document.getElementById("errorSummaryPassword")
+  const errorList = document.getElementById("errorListPassword")
+
+  errorList.innerHTML = errores
+    .map((error) => `<li><a href="#${error.campo}" class="error-link">${error.mensaje}</a></li>`)
+    .join("")
+
+  errorSummary.style.display = "block"
+
+  // Scroll to error summary
+  errorSummary.scrollIntoView({ behavior: "smooth", block: "nearest" })
+
+  // Display individual field errors
+  errores.forEach((error) => {
+    const input = document.getElementById(error.campo)
+    const errorDiv = document.getElementById(`error${error.campo.replace("Paciente", "")}`)
+
+    if (input && errorDiv) {
+      input.setAttribute("aria-invalid", "true")
+      input.classList.add("input-error")
+      errorDiv.textContent = error.mensaje
+      errorDiv.style.display = "block"
+    }
+  })
+}
+
+function limpiarErroresPassword() {
+  // Hide error summary
+  const errorSummary = document.getElementById("errorSummaryPassword")
+  if (errorSummary) {
+    errorSummary.style.display = "none"
+  }
+
+  // Clear individual field errors
+  const campos = ["currentPasswordPaciente", "newPasswordPaciente", "confirmPasswordPaciente"]
+  campos.forEach((campoId) => {
+    const input = document.getElementById(campoId)
+    const errorDiv = document.getElementById(`error${campoId.replace("Paciente", "")}`)
+
+    if (input) {
+      input.setAttribute("aria-invalid", "false")
+      input.classList.remove("input-error")
+    }
+
+    if (errorDiv) {
+      errorDiv.textContent = ""
+      errorDiv.style.display = "none"
+    }
+  })
+}
+
+function mostrarMensajePassword(tipo, mensaje) {
   const passwordMessage = document.getElementById("passwordMessagePaciente")
-  passwordMessage.className = `form-message ${tipo} visible`
-  passwordMessage.innerHTML = contenido
+  passwordMessage.textContent = mensaje
+  passwordMessage.classList.add(tipo)
+  passwordMessage.classList.remove(tipo === "success" ? "error" : "success")
+  passwordMessage.classList.add("visible")
 }
 
 // ==========================================

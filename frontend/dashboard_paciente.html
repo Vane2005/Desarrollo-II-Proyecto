@@ -70,25 +70,72 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Added error summary section for WCAG compliance -->
+                    <div id="errorSummaryPerfil" class="error-summary" role="alert" aria-live="polite" style="display: none;">
+                        <h4 class="error-summary-title">
+                            <span class="error-icon" aria-hidden="true">⚠️</span>
+                            Se encontraron los siguientes errores:
+                        </h4>
+                        <ul id="errorListPerfil" class="error-list"></ul>
+                    </div>
+                    
                     <!-- Added role="form" and aria-labelledby -->
                     <div class="info-grid" role="form" aria-labelledby="titulo-info-personal">
+                        <!-- Enhanced form fields with WCAG error messaging -->
                         <div class="info-item">
-                            <label for="inputNombrePaciente">Nombre Completo</label>
-                            <input type="text" class="info-input" id="inputNombrePaciente" readonly aria-readonly="true">
+                            <label for="inputNombrePaciente">Nombre Completo <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                            <input 
+                                type="text" 
+                                class="info-input" 
+                                id="inputNombrePaciente" 
+                                readonly 
+                                aria-readonly="true"
+                                aria-required="true"
+                                aria-invalid="false"
+                                aria-describedby="errorNombrePaciente">
+                            <div id="errorNombrePaciente" class="error-message" role="alert" aria-live="polite"></div>
                         </div>
                         <div class="info-item">
                             <label for="inputDocumentoPaciente">Documento De Identidad</label>
                             <input type="text" class="info-input" id="inputDocumentoPaciente" readonly aria-readonly="true">
                         </div>
                         <div class="info-item">
-                            <label for="inputCorreoPaciente">Correo Electrónico</label>
-                            <input type="email" class="info-input" id="inputCorreoPaciente" readonly aria-readonly="true">
+                            <label for="inputCorreoPaciente">Correo Electrónico <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                            <input 
+                                type="email" 
+                                class="info-input" 
+                                id="inputCorreoPaciente" 
+                                readonly 
+                                aria-readonly="true"
+                                aria-required="true"
+                                aria-invalid="false"
+                                aria-describedby="errorCorreoPaciente inputCorreoHint">
+                            <small id="inputCorreoHint" class="field-hint">Ejemplo: usuario@ejemplo.com</small>
+                            <div id="errorCorreoPaciente" class="error-message" role="alert" aria-live="polite"></div>
                         </div>
                         <div class="info-item">
-                            <label for="inputTelefonoPaciente">Teléfono</label>
-                            <input type="tel" class="info-input" id="inputTelefonoPaciente" readonly aria-readonly="true">
+                            <label for="inputTelefonoPaciente">Teléfono <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                            <input 
+                                type="tel" 
+                                class="info-input" 
+                                id="inputTelefonoPaciente" 
+                                readonly 
+                                aria-readonly="true"
+                                aria-required="true"
+                                aria-invalid="false"
+                                aria-describedby="errorTelefonoPaciente inputTelefonoHint">
+                            <small id="inputTelefonoHint" class="field-hint">Ejemplo: 3001234567</small>
+                            <div id="errorTelefonoPaciente" class="error-message" role="alert" aria-live="polite"></div>
                         </div>
                     </div>
+                    
+                    <!-- Added success message section -->
+                    <div id="successMessagePerfil" class="success-message-box" role="status" aria-live="polite" style="display: none;">
+                        <span class="success-icon" aria-hidden="true">✓</span>
+                        <span id="successTextPerfil"></span>
+                    </div>
+                    
                     <!-- Added aria-live for dynamic visibility changes -->
                     <div class="profile-actions" id="profileActionsPaciente" style="display: none; margin-top: 20px; text-align: right;" aria-live="polite">
                         <button class="btn-cancel" id="btnCancelEditPaciente" aria-label="Cancelar edición del perfil">Cancelar</button>
@@ -158,25 +205,69 @@
                 <!-- Added aria-label for close button -->
                 <button class="close-btn" id="closePasswordModalPaciente" aria-label="Cerrar formulario de cambio de contraseña">&times;</button>
             </div>
+            
+            <!-- Added error summary for password form -->
+            <div id="errorSummaryPassword" class="error-summary" role="alert" aria-live="polite" style="display: none;">
+                <h4 class="error-summary-title">
+                    <span class="error-icon" aria-hidden="true">⚠️</span>
+                    Se encontraron los siguientes errores:
+                </h4>
+                <ul id="errorListPassword" class="error-list"></ul>
+            </div>
+            
             <!-- Added aria-describedby for form instructions -->
-            <form id="changePasswordFormPaciente" class="modal-form" aria-describedby="passwordMessagePaciente">
+            <form id="changePasswordFormPaciente" class="modal-form" aria-describedby="passwordMessagePaciente" novalidate>
+                <!-- Enhanced password fields with WCAG error messaging -->
                 <div class="form-group">
-                    <label for="currentPasswordPaciente">Contraseña Actual</label>
-                    <input type="password" id="currentPasswordPaciente" required minlength="4" aria-required="true">
+                    <label for="currentPasswordPaciente">Contraseña Actual <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                    <input 
+                        type="password" 
+                        id="currentPasswordPaciente" 
+                        required 
+                        minlength="4" 
+                        aria-required="true"
+                        aria-invalid="false"
+                        aria-describedby="errorCurrentPassword">
+                    <div id="errorCurrentPassword" class="error-message" role="alert" aria-live="polite"></div>
                 </div>
+                
                 <div class="form-group">
-                    <label for="newPasswordPaciente">Nueva Contraseña</label>
-                    <input type="password" id="newPasswordPaciente" required minlength="8" maxlength="72" aria-required="true" aria-describedby="password-hint">
-                    <small id="password-hint">Mínimo 8 caracteres</small>
+                    <label for="newPasswordPaciente">Nueva Contraseña <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                    <input 
+                        type="password" 
+                        id="newPasswordPaciente" 
+                        required 
+                        minlength="8" 
+                        maxlength="72" 
+                        aria-required="true"
+                        aria-invalid="false"
+                        aria-describedby="password-hint errorNewPassword">
+                    <small id="password-hint" class="field-hint">
+                        <span class="hint-icon" aria-hidden="true">ℹ️</span>
+                        Debe tener mínimo 8 caracteres
+                    </small>
+                    <div id="errorNewPassword" class="error-message" role="alert" aria-live="polite"></div>
                 </div>
+                
                 <div class="form-group">
-                    <label for="confirmPasswordPaciente">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="confirmPasswordPaciente" required minlength="8" maxlength="72" aria-required="true">
+                    <label for="confirmPasswordPaciente">Confirmar Nueva Contraseña <span class="required-indicator" aria-label="campo requerido">*</span></label>
+                    <input 
+                        type="password" 
+                        id="confirmPasswordPaciente" 
+                        required 
+                        minlength="8" 
+                        maxlength="72" 
+                        aria-required="true"
+                        aria-invalid="false"
+                        aria-describedby="errorConfirmPassword">
+                    <div id="errorConfirmPassword" class="error-message" role="alert" aria-live="polite"></div>
                 </div>
+                
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" id="cancelPasswordChangePaciente" aria-label="Cancelar cambio de contraseña">Cancelar</button>
                     <button type="submit" class="btn-submit" aria-label="Confirmar cambio de contraseña">Cambiar Contraseña</button>
                 </div>
+                
                 <!-- Added role="status" and aria-live for dynamic messages -->
                 <div id="passwordMessagePaciente" class="form-message" role="status" aria-live="polite"></div>
             </form>
