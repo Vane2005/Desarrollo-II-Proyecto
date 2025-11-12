@@ -1,9 +1,14 @@
 const ejercicios = []
 const ejerciciosAsignados = []
 const ejerciciosRealizados = []
+let historialTerapias = []
+let resumenGrupos = []
+let gruposEjerciciosAsignados = [] // Nueva variable para ejercicios por grupos
+const filtroGrupoActual = "Todos"
 
 let filtroActual = "Todos"
 let filtroRealizadosActual = "Todos"
+let filtroAllExercisesActual = "Todos" // Nuevo filtro
 
 const API_URL = "http://localhost:8000/paciente"
 const AUTH_API_URL = "http://localhost:8000/auth"
@@ -15,11 +20,278 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarInfoPaciente() // NUEVO: Cargar información del paciente
   initCambiarContrasena() // NUEVO: Inicializar modal de cambio de contraseña
   initEditarPerfil() // Added profile editing initialization
-  cargarFiltros()
+  cargarHistorialTerapias()
+  cargarResumenGrupos()
+  cargarGruposEjerciciosAsignados() // Cargar ejercicios por grupos
+  cargarFiltrosAllExercises() // Filtros para todos los ejercicios
   cargarEjerciciosAsignadosDesdeAPI()
   cargarFiltrosRealizados()
   cargarEjerciciosRealizadosDesdeAPI()
 })
+
+async function cargarGruposEjerciciosAsignados() {
+  const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+  if (!cedula) {
+    console.error("No se encontró la cédula del paciente")
+    return
+  }
+
+  try {
+    console.log(`📚 Cargando ejercicios asignados por grupos para: ${cedula}`)
+
+    const response = await fetch(`${API_URL}/ejercicios-asignados-por-grupo/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar ejercicios: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    gruposEjerciciosAsignados = data.grupos || []
+    console.log("Grupos de ejercicios asignados:", gruposEjerciciosAsignados)
+
+    mostrarGruposEjerciciosAsignados()
+  } catch (error) {
+    console.error("Error al cargar grupos de ejercicios asignados:", error)
+  }
+}
+
+function mostrarGruposEjerciciosAsignados() {
+  const container = document.getElementById("gruposEjerciciosAsignados")
+  const noMessage = document.getElementById("noEjerciciosAsignados")
+
+  if (gruposEjerciciosAsignados.length === 0) {
+    container.style.display = "none"
+    noMessage.style.display = "block"
+    return
+  }
+
+  container.style.display = "grid"
+  noMessage.style.display = "none"
+
+  let html = ""
+
+  gruposEjerciciosAsignados.forEach((grupo) => {
+    html += `
+      <div class="grupo-ejercicios-section" role="listitem">
+        <div class="grupo-header-asignados">
+          <h4>Grupo de Terapia #${grupo.grupo_terapia}</h4>
+          <span class="ejercicios-count">${grupo.ejercicios.length} ejercicio(s)</span>
+        </div>
+        <div class="ejercicios-en-grupo">
+    `
+
+    grupo.ejercicios.forEach((ejercicio) => {
+      html += `
+        <div class="exercise-card-asignado">
+          ${
+            ejercicio.url_video
+              ? `
+            <div class="exercise-video">
+              <video controls width="100%" style="border-radius: 8px 8px 0 0;">
+                <source src="${ejercicio.url_video}" type="video/mp4">
+                Tu navegador no soporta video
+              </video>
+            </div>
+          `
+              : `
+            <div class="exercise-image">
+              <img src="/--ejercicio-nombre-.jpg" alt="${ejercicio.nombre}">
+            </div>
+          `
+          }
+          <div class="exercise-content">
+            <h5>${ejercicio.nombre}</h5>
+            <span class="exercise-category">${ejercicio.extremidad}</span>
+            <p class="exercise-description">${ejercicio.descripcion}</p>
+            <div class="exercise-details">
+              <span><strong>Repeticiones:</strong> ${ejercicio.repeticiones}</span>
+              <span><strong>Estado:</strong> ${ejercicio.estado}</span>
+            </div>
+            <button onclick="marcarComoRealizado(${ejercicio.id_terapia})" 
+                    class="btn-marcar-realizado"
+                    style="margin-top: 12px; padding: 8px 16px; background: #667eea; 
+                           color: white; border: none; border-radius: 6px; cursor: pointer; 
+                           font-weight: 500; transition: all 0.3s;">
+              Marcar como Realizado
+            </button>
+          </div>
+        </div>
+      `
+    })
+
+    html += `
+        </div>
+      </div>
+    `
+  })
+
+  container.innerHTML = html
+}
+
+async function cargarHistorialTerapias() {
+  const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+  if (!cedula) {
+    console.error("No se encontró la cédula del paciente")
+    return
+  }
+
+  try {
+    console.log(`📊 Cargando historial de terapias para: ${cedula}`)
+
+    const response = await fetch(`${API_URL}/historial-terapias/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar historial: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    historialTerapias = data.historial || []
+    console.log("Historial de terapias:", historialTerapias)
+
+    mostrarHistorialTerapias()
+  } catch (error) {
+    console.error("Error al cargar historial de terapias:", error)
+  }
+}
+
+async function cargarResumenGrupos() {
+  const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+  if (!cedula) {
+    console.error("No se encontró la cédula del paciente")
+    return
+  }
+
+  try {
+    console.log(`📈 Cargando resumen de grupos para: ${cedula}`)
+
+    const response = await fetch(`${API_URL}/resumen-grupos/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar resumen: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    resumenGrupos = data.grupos || []
+    console.log("Resumen de grupos:", resumenGrupos)
+
+    mostrarResumenGrupos()
+  } catch (error) {
+    console.error("Error al cargar resumen de grupos:", error)
+  }
+}
+
+function mostrarResumenGrupos() {
+  const container = document.getElementById("gruposContainer")
+  const noMessage = document.getElementById("noGruposMessage")
+
+  if (resumenGrupos.length === 0) {
+    container.style.display = "none"
+    noMessage.style.display = "block"
+    return
+  }
+
+  container.style.display = "grid"
+  noMessage.style.display = "none"
+
+  container.innerHTML = resumenGrupos
+    .map(
+      (grupo) => `
+        <div class="grupo-card" role="listitem">
+            <div class="grupo-header">
+                <h4>Grupo de Terapia #${grupo.grupo_terapia}</h4>
+                <span class="grupo-status ${grupo.estado.toLowerCase()}">${grupo.estado}</span>
+            </div>
+            <div class="grupo-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${grupo.progreso_porcentaje}%"></div>
+                </div>
+                <p class="progress-text">${grupo.completados} de ${grupo.total_ejercicios} completados (${grupo.progreso_porcentaje}%)</p>
+            </div>
+            <div class="grupo-info">
+                <span>Inicio: ${grupo.fecha_inicio || "N/A"}</span>
+                ${grupo.fecha_fin ? `<span>Fin: ${grupo.fecha_fin}</span>` : ""}
+            </div>
+        </div>
+    `,
+    )
+    .join("")
+}
+
+function mostrarHistorialTerapias() {
+  const container = document.getElementById("historialLista")
+  const noMessage = document.getElementById("noHistorialMessage")
+
+  if (historialTerapias.length === 0) {
+    container.style.display = "none"
+    noMessage.style.display = "block"
+    return
+  }
+
+  container.style.display = "grid"
+  noMessage.style.display = "none"
+
+  // Agrupar por grupo de terapia
+  const agrupados = {}
+  historialTerapias.forEach((terapia) => {
+    const grupo = terapia.grupo_terapia
+    if (!agrupados[grupo]) {
+      agrupados[grupo] = []
+    }
+    agrupados[grupo].push(terapia)
+  })
+
+  // Mostrar agrupados
+  let html = ""
+  Object.keys(agrupados)
+    .sort((a, b) => b - a)
+    .forEach((grupoNum) => {
+      const terapias = agrupados[grupoNum]
+      html += `
+        <div class="grupo-terapias-section" role="listitem">
+            <h4 class="grupo-titulo">Grupo de Terapia #${grupoNum}</h4>
+            <div class="terapias-en-grupo">
+    `
+
+      terapias.forEach((terapia) => {
+        html += `
+          <div class="historial-item">
+              <div class="historial-content">
+                  <h5>${terapia.nombre}</h5>
+                  <p><strong>Extremidad:</strong> ${terapia.extremidad}</p>
+                  <p><strong>Repeticiones:</strong> ${terapia.repeticiones}</p>
+                  <p><strong>Fecha realización:</strong> ${formatearFecha(terapia.fecha_realizacion)}</p>
+                  ${terapia.observaciones ? `<p><strong>Observaciones:</strong> ${terapia.observaciones}</p>` : ""}
+              </div>
+              ${
+                terapia.url_video
+                  ? `
+              <div class="historial-video">
+                  <video width="150" height="100" controls style="border-radius: 6px;">
+                      <source src="${terapia.url_video}" type="video/mp4">
+                      Tu navegador no soporta video
+                  </video>
+              </div>
+            `
+                  : ""
+              }
+          </div>
+        `
+      })
+
+      html += `
+            </div>
+        </div>
+      `
+    })
+
+  container.innerHTML = html
+}
 
 function initEditarPerfil() {
   const btnEditProfile = document.getElementById("btnEditProfilePaciente")
@@ -590,6 +862,8 @@ function cambiarSeccion(sectionId) {
     "informacion-personal": "Información Personal",
     "ejercicios-asignados": "Ejercicios Asignados",
     "ejercicios-realizados": "Ejercicios Realizados",
+    "historial-terapias": "Historial de Terapias",
+    "resumen-grupos": "Resumen de Grupos",
   }
   document.getElementById("section-title").textContent = titles[sectionId]
 }
@@ -597,6 +871,50 @@ function cambiarSeccion(sectionId) {
 // ==========================================
 // EJERCICIOS ASIGNADOS - FILTRADO
 // ==========================================
+
+function cargarFiltrosAllExercises() {
+  const filtersContainer = document.getElementById("filtersAllExercises")
+  const extremidades = [
+    "Todos",
+    "Brazo",
+    "Hombro",
+    "Codo",
+    "Muñeca",
+    "Mano",
+    "Pierna",
+    "Rodilla",
+    "Tobillo",
+    "Pie",
+    "Cervical",
+    "Lumbar",
+    "Tronco",
+    "Cadera",
+  ]
+
+  filtersContainer.innerHTML = extremidades
+    .map(
+      (ext) => `
+        <button class="filter-btn ${ext === "Todos" ? "active" : ""}" 
+                onclick="filtrarTodosEjercicios('${ext}')">
+          ${ext}
+        </button>
+      `,
+    )
+    .join("")
+}
+
+function filtrarTodosEjercicios(extremidad) {
+  filtroAllExercisesActual = extremidad
+
+  document.querySelectorAll("#filtersAllExercises .filter-btn").forEach((btn) => {
+    btn.classList.remove("active")
+    if (btn.textContent.trim() === extremidad) {
+      btn.classList.add("active")
+    }
+  })
+
+  cargarTodosEjercicios()
+}
 
 function cargarFiltros() {
   const filtersContainer = document.getElementById("filters")
@@ -642,55 +960,16 @@ function filtrarEjerciciosAsignados(extremidad) {
   cargarEjercicios()
 }
 
-async function cargarEjerciciosAsignadosDesdeAPI() {
-  try {
-    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-
-    if (!cedula) {
-      console.error("No se encontró la cédula del paciente")
-      mostrarMensajeErrorAsignados("No se pudo identificar al paciente")
-      return
-    }
-
-    const response = await fetch(`${API_URL}/ejercicios-asignados/${cedula}`)
-
-    if (!response.ok) {
-      throw new Error(`Error al cargar ejercicios: ${response.status}`)
-    }
-
-    const ejerciciosAsignadosAPI = await response.json()
-
-    console.log("Ejercicios asignados recibidos:", ejerciciosAsignadosAPI)
-
-    ejerciciosAsignados.length = 0
-    ejerciciosAsignados.push(
-      ...ejerciciosAsignadosAPI.map((ej) => ({
-        id_terapia: ej.id_terapia,
-        id_ejercicio: ej.id_ejercicio,
-        nombre: ej.nombre,
-        extremidad: ej.extremidad,
-        descripcion: ej.descripcion,
-        repeticiones: ej.repeticiones,
-        urlVideo: ej.url_video,
-        imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
-      })),
-    )
-
-    cargarEjercicios()
-  } catch (error) {
-    console.error("Error al cargar ejercicios asignados:", error)
-    mostrarMensajeErrorAsignados("Error al cargar los ejercicios asignados")
-  }
-}
-
-function cargarEjercicios() {
+async function cargarTodosEjercicios() {
   const grid = document.getElementById("exercisesGrid")
   const noResults = document.getElementById("noResults")
 
   const ejerciciosFiltrados =
-    filtroActual === "Todos" ? ejerciciosAsignados : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroActual)
+    filtroAllExercisesActual === "Todos"
+      ? ejerciciosAsignados
+      : ejerciciosAsignados.filter((ej) => ej.extremidad === filtroAllExercisesActual)
 
-  console.log(`🔍 Filtro activo: ${filtroActual}`)
+  console.log(`🔍 Filtro activo: ${filtroAllExercisesActual}`)
   console.log(`📋 Ejercicios filtrados: ${ejerciciosFiltrados.length}`)
 
   if (ejerciciosFiltrados.length === 0) {
@@ -742,6 +1021,52 @@ function cargarEjercicios() {
     .join("")
 }
 
+function cargarEjercicios() {
+  // Esta función ahora se llama cargarTodosEjercicios()
+  cargarTodosEjercicios()
+}
+
+async function cargarEjerciciosAsignadosDesdeAPI() {
+  try {
+    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+    if (!cedula) {
+      console.error("No se encontró la cédula del paciente")
+      mostrarMensajeErrorAsignados("No se pudo identificar al paciente")
+      return
+    }
+
+    const response = await fetch(`${API_URL}/ejercicios-asignados/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar ejercicios: ${response.status}`)
+    }
+
+    const ejerciciosAsignadosAPI = await response.json()
+
+    console.log("Ejercicios asignados recibidos:", ejerciciosAsignadosAPI)
+
+    ejerciciosAsignados.length = 0
+    ejerciciosAsignados.push(
+      ...ejerciciosAsignadosAPI.map((ej) => ({
+        id_terapia: ej.id_terapia,
+        id_ejercicio: ej.id_ejercicio,
+        nombre: ej.nombre,
+        extremidad: ej.extremidad,
+        descripcion: ej.descripcion,
+        repeticiones: ej.repeticiones,
+        urlVideo: ej.url_video,
+        imagen: ej.url_video || "/placeholder.svg?height=200&width=300",
+      })),
+    )
+
+    cargarTodosEjercicios()
+  } catch (error) {
+    console.error("Error al cargar ejercicios asignados:", error)
+    mostrarMensajeErrorAsignados("Error al cargar los ejercicios asignados")
+  }
+}
+
 // ==========================================
 // EJERCICIOS REALIZADOS - FILTRADO
 // ==========================================
@@ -788,46 +1113,6 @@ function filtrarEjerciciosRealizados(extremidad) {
   })
 
   cargarEjerciciosRealizados()
-}
-
-async function cargarEjerciciosRealizadosDesdeAPI() {
-  try {
-    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
-
-    if (!cedula) {
-      console.error("No se encontró la cédula del paciente")
-      mostrarMensajeError("No se pudo identificar al paciente")
-      return
-    }
-
-    const response = await fetch(`${API_URL}/ejercicios-completados/${cedula}`)
-
-    if (!response.ok) {
-      throw new Error(`Error al cargar ejercicios: ${response.status}`)
-    }
-
-    const ejerciciosCompletados = await response.json()
-
-    ejerciciosRealizados.length = 0
-    ejerciciosRealizados.push(
-      ...ejerciciosCompletados.map((ej) => ({
-        id: ej.id_ejercicio,
-        nombre: ej.nombre,
-        extremidad: ej.extremidad,
-        descripcion: ej.descripcion,
-        repeticiones: ej.repeticiones,
-        fechaRealizacion: ej.fecha_realizacion,
-        completado: true,
-        urlVideo: ej.url_video,
-        observaciones: ej.observaciones,
-      })),
-    )
-
-    cargarEjerciciosRealizados()
-  } catch (error) {
-    console.error("Error al cargar ejercicios completados:", error)
-    mostrarMensajeError("Error al cargar los ejercicios completados")
-  }
 }
 
 function cargarEjerciciosRealizados() {
@@ -893,6 +1178,46 @@ function cargarEjerciciosRealizados() {
     .join("")
 }
 
+async function cargarEjerciciosRealizadosDesdeAPI() {
+  try {
+    const cedula = localStorage.getItem("cedula") || localStorage.getItem("usuario_id")
+
+    if (!cedula) {
+      console.error("No se encontró la cédula del paciente")
+      mostrarMensajeError("No se pudo identificar al paciente")
+      return
+    }
+
+    const response = await fetch(`${API_URL}/ejercicios-completados/${cedula}`)
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar ejercicios: ${response.status}`)
+    }
+
+    const ejerciciosCompletados = await response.json()
+
+    ejerciciosRealizados.length = 0
+    ejerciciosRealizados.push(
+      ...ejerciciosCompletados.map((ej) => ({
+        id: ej.id_ejercicio,
+        nombre: ej.nombre,
+        extremidad: ej.extremidad,
+        descripcion: ej.descripcion,
+        repeticiones: ej.repeticiones,
+        fechaRealizacion: ej.fecha_realizacion,
+        completado: true,
+        urlVideo: ej.url_video,
+        observaciones: ej.observaciones,
+      })),
+    )
+
+    cargarEjerciciosRealizados()
+  } catch (error) {
+    console.error("Error al cargar ejercicios completados:", error)
+    mostrarMensajeError("Error al cargar los ejercicios completados")
+  }
+}
+
 // ==========================================
 // MARCAR COMO REALIZADO
 // ==========================================
@@ -917,8 +1242,10 @@ async function marcarComoRealizado(idTerapia) {
       boton.disabled = true
     }
 
+    await cargarGruposEjerciciosAsignados()
     await cargarEjerciciosAsignadosDesdeAPI()
     await cargarEjerciciosRealizadosDesdeAPI()
+    await cargarResumenGrupos()
   } catch (error) {
     console.error("Error al marcar como realizado:", error)
     alert("No se pudo marcar el ejercicio como realizado")

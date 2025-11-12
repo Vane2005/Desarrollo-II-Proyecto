@@ -19,7 +19,8 @@ import traceback
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from config.jwt_config import SECRET_KEY, ALGORITHM
-from data.models.user import User_Fisioterapeuta
+from data.models.user import User_Fisioterapeuta, User_Paciente
+from sqlalchemy import text
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -101,13 +102,18 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        # Obtener estado del fisioterapeuta (pero NO bloquear el acceso)
-        estado = "activo"  # Por defecto para pacientes
+        estado = "activo"  # Por defecto
         if user_data["tipo"] == "fisio":
             fisio = db.query(User_Fisioterapeuta).filter(
                 User_Fisioterapeuta.cedula == user_data["id"]
             ).first()
-            estado = fisio.estado.lower()
+            estado = fisio.estado.lower() if fisio else "activo"
+        else:
+            query = text("""
+                SELECT Estado FROM Paciente WHERE Cedula = :cedula
+            """)
+            resultado = db.execute(query, {"cedula": user_data["id"]}).fetchone()
+            estado = resultado[0].lower() if resultado else "activo"
         
         # Crear token JWT con tipo de usuario y estado
         access_token_expires = timedelta(minutes=30)

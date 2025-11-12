@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from data.db import get_db
+from logic.terapia_service import verificar_y_actualizar_estado_paciente
 
 router = APIRouter(prefix="/paciente", tags=["Paciente"])
 
@@ -10,11 +11,12 @@ router = APIRouter(prefix="/paciente", tags=["Paciente"])
 def marcar_ejercicio_realizado(id_terapia: int, db: Session = Depends(get_db)):
     """
     Marca una terapia (ejercicio asignado) como completada
+    y verifica si el paciente debe cambiar de estado a inactivo
     """
     try:
-        # Verificamos si la terapia existe
+        # Verificamos si la terapia existe y obtenemos la cédula del paciente
         query_select = text("""
-            SELECT Estado 
+            SELECT Estado, Cedula_paciente
             FROM Terapia_Asignada 
             WHERE Id_terapia = :id_terapia
         """)
@@ -22,6 +24,8 @@ def marcar_ejercicio_realizado(id_terapia: int, db: Session = Depends(get_db)):
 
         if not terapia:
             raise HTTPException(status_code=404, detail="Terapia no encontrada")
+
+        cedula_paciente = terapia[1]
 
         # Actualizamos estado y fecha
         query_update = text("""
@@ -36,7 +40,13 @@ def marcar_ejercicio_realizado(id_terapia: int, db: Session = Depends(get_db)):
         })
         db.commit()
 
-        return {"message": "Terapia marcada como completada", "id_terapia": id_terapia}
+        estado_resultado = verificar_y_actualizar_estado_paciente(db, cedula_paciente)
+
+        return {
+            "message": "Terapia marcada como completada",
+            "id_terapia": id_terapia,
+            "estado_paciente": estado_resultado
+        }
 
     except Exception as e:
         db.rollback()

@@ -32,6 +32,11 @@
                     <span>Información Personal</span>
                 </button>
                 
+                <button class="nav-item" data-section="historial-terapias">
+                    <span class="nav-icon" aria-hidden="true">📊</span>
+                    <span>Historial de Terapias</span>
+                </button>
+                
                 <button class="nav-item" data-section="ejercicios-asignados">
                     <span class="nav-icon" aria-hidden="true">💪</span>
                     <span>Ejercicios Asignados</span>
@@ -128,6 +133,16 @@
                             <small id="inputTelefonoHint" class="field-hint">Ejemplo: 3001234567</small>
                             <div id="errorTelefonoPaciente" class="error-message" role="alert" aria-live="polite"></div>
                         </div>
+                        <div class="info-item">
+                            <label for="inputEstadoPaciente">Estado</label>
+                            <input 
+                                type="text" 
+                                class="info-input" 
+                                id="inputEstadoPaciente" 
+                                readonly 
+                                aria-readonly="true"
+                                style="background-color: #f0f0f0;">
+                        </div>
                     </div>
                     
                     <!-- Added success message section -->
@@ -144,20 +159,82 @@
                 </div>
             </section>
 
-            <!-- ================== EJERCICIOS ASIGNADOS ================== -->
-            <!-- Added role="region" and aria-labelledby -->
-            <section id="ejercicios-asignados" class="content-section" role="region" aria-labelledby="titulo-ejercicios-asignados">
+            <!-- ================== HISTORIAL DE TERAPIAS ================== -->
+            <!-- Nueva sección para mostrar historial y resumen de terapias -->
+            <section id="historial-terapias" class="content-section" role="region" aria-labelledby="titulo-historial-terapias">
                 <div class="library-header">
-                    <h2 id="titulo-ejercicios-asignados">Biblioteca de Ejercicios</h2>
-                    <p>Selecciona una extremidad para filtrar tus ejercicios asignados</p>
+                    <h2 id="titulo-historial-terapias">Historial de Terapias</h2>
+                    <p>Resumen de todos tus grupos de terapia y ejercicios completados</p>
                 </div>
 
-                <!-- Added role="group" and aria-label for filters -->
+                <!-- Resumen de Grupos -->
+                <div class="resumen-grupos" id="resumenGrupos" role="region" aria-labelledby="titulo-resumen">
+                    <h3 id="titulo-resumen">Resumen de Grupos de Terapia</h3>
+                    <div class="grupos-grid" id="gruposContainer" role="list" aria-live="polite">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <div id="noGruposMessage" class="no-results" role="status" aria-live="polite" style="display: none;">
+                        <p>Aún no tienes grupos de terapia asignados</p>
+                    </div>
+                </div>
+
+                <!-- Historial Completo de Terapias -->
+                <div class="historial-completo" id="historialCompleto" role="region" aria-labelledby="titulo-historial-completo" style="margin-top: 40px;">
+                    <h3 id="titulo-historial-completo">Historial Completo de Terapias Completadas</h3>
+                    
+                    <div class="filtros-historial" id="filtrosHistorial" role="group" aria-label="Filtros del historial">
+                        <!-- Botones de filtro dinámicos -->
+                    </div>
+
+                    <div class="historial-lista" id="historialLista" role="list" aria-live="polite">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+
+                    <div id="noHistorialMessage" class="no-results" role="status" aria-live="polite" style="display: none;">
+                        <p>No hay terapias completadas aún</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================== EJERCICIOS ASIGNADOS ================== -->
+            <!-- Sección reorganizada para mostrar ejercicios por grupos de terapia -->
+            <section id="ejercicios-asignados" class="content-section" role="region" aria-labelledby="titulo-ejercicios-asignados">
+                <div class="library-header">
+                    <h2 id="titulo-ejercicios-asignados">Ejercicios Asignados</h2>
+                    <p>Tus ejercicios organizados por grupos de terapia</p>
+                </div>
+
+                <!-- Filtros por extremidad (solo si hay múltiples ejercicios) -->
                 <div class="filters" id="filters" role="group" aria-label="Filtros de ejercicios por extremidad">
                     <!-- Filtros dinámicos -->
                 </div>
 
-                <!-- Added role="list" and aria-live for dynamic content -->
+                <!-- Grupos de Ejercicios Asignados -->
+                <div class="ejercicios-grupos-container" id="ejerciciosGruposContainer" role="region" aria-labelledby="titulo-grupos-asignados">
+                    <h3 id="titulo-grupos-asignados" style="margin-bottom: 20px;">Grupos de Ejercicios Pendientes</h3>
+                    <div id="gruposEjerciciosAsignados" role="list" aria-live="polite">
+                        <!-- Se llenan dinámicamente con grupos de ejercicios -->
+                    </div>
+                    <div class="no-results" id="noEjerciciosAsignados" style="display: none;" role="status" aria-live="polite">
+                        <h3>No hay ejercicios asignados</h3>
+                        <p>Espera a que tu fisioterapeuta te asigne nuevos ejercicios</p>
+                    </div>
+                </div>
+
+                <!-- Separador visual -->
+                <hr style="margin: 40px 0; opacity: 0.2;">
+
+                <!-- Filtros para ejercicios antiguos (opcional) -->
+                <div class="library-header">
+                    <h3>Filtrar por Extremidad</h3>
+                    <p>Todos los ejercicios (completados y pendientes)</p>
+                </div>
+
+                <div class="filters" id="filtersAllExercises" role="group" aria-label="Filtros de todos los ejercicios por extremidad">
+                    <!-- Filtros dinámicos -->
+                </div>
+
+                <!-- Grid de todos los ejercicios (antes: ejercisesGrid) -->
                 <div class="exercises-grid" id="exercisesGrid" role="list" aria-live="polite" aria-atomic="false">
                     <!-- Ejercicios dinámicos -->
                 </div>

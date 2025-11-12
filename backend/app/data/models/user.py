@@ -18,3 +18,4 @@ class User_Paciente(Base):
     correo = Column(String, unique=True, index=True, nullable=False)
     contrasena = Column(String, nullable=False)
     telefono = Column(String, nullable=False)
+    estado = Column(String, nullable=False, default="activo")
