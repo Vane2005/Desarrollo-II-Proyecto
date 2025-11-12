@@ -2,15 +2,22 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from presentation.schemas.usuario_schema import (
     PacienteCreate, 
-    ActualizarPerfilPaciente,  # Import new schema
-    InfoPacienteResponse  # Import new schema
+    ActualizarPerfilPaciente,
+    InfoPacienteResponse
 )
 from data.db import get_db
 from sqlalchemy import text
 from logic.paciente_service import (
     crear,
-    obtener_info_paciente,  # Import new service function
-    actualizar_perfil_paciente  # Import new service function
+    obtener_info_paciente,
+    actualizar_perfil_paciente
+)
+from logic.terapia_service import (
+    obtener_historial_terapias_completadas,
+    obtener_resumen_grupos_terapia,
+    verificar_y_actualizar_estado_paciente,
+    obtener_estado_paciente,
+    activar_paciente  # Importar la nueva función activar_paciente
 )
 from datetime import datetime
 import traceback
@@ -201,7 +208,6 @@ def obtener_info_paciente_endpoint(
             detail="Error al obtener información del paciente"
         )
 
-
 @router.put("/actualizar-perfil", response_model=InfoPacienteResponse)
 def actualizar_perfil_paciente_endpoint(
     datos: ActualizarPerfilPaciente,
@@ -241,6 +247,7 @@ def actualizar_perfil_paciente_endpoint(
 def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
     """
     Asigna uno o varios ejercicios a un paciente con número de grupo de terapia automático
+    y activa al paciente si estaba inactivo
     """
     cedula = payload.get("cedula_paciente")
     ejercicios = payload.get("ejercicios", [])
@@ -276,10 +283,13 @@ def asignar_ejercicio(payload: dict, db: Session = Depends(get_db)):
             })
         db.commit()
 
+        estado_resultado = activar_paciente(db, cedula)
+
         return {
             "mensaje": "Ejercicios asignados correctamente",
             "grupo_terapia": nuevo_grupo,
-            "total_ejercicios": len(ejercicios)
+            "total_ejercicios": len(ejercicios),
+            "estado_paciente": estado_resultado
         }
     except Exception as e:
         db.rollback()
@@ -399,3 +409,159 @@ def obtener_ejercicios_asignados(cedula: str, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error al obtener ejercicios asignados: {str(e)}"
         )
+
+# ============================================================
+# 8 OBTENER HISTORIAL DE TERAPIAS
+# ============================================================
+@router.get("/historial-terapias/{cedula}")
+def obtener_historial_terapias(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene el historial completo de terapias completadas de un paciente
+    organizadas por grupo de terapia
+    """
+    try:
+        historial = obtener_historial_terapias_completadas(db, cedula)
+        return {
+            "cedula": cedula,
+            "total_terapias_completadas": len(historial),
+            "historial": historial
+        }
+    except Exception as e:
+        print("ERROR EN /paciente/historial-terapias:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener historial de terapias: {str(e)}"
+        )
+
+# ============================================================
+# 9 OBTENER RESUMEN DE GRUPOS DE TERAPIA
+# ============================================================
+@router.get("/resumen-grupos/{cedula}")
+def obtener_resumen_grupos(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene un resumen de los grupos de terapia de un paciente
+    con información de progreso y estado
+    """
+    try:
+        resumen = obtener_resumen_grupos_terapia(db, cedula)
+        return {
+            "cedula": cedula,
+            "total_grupos": len(resumen),
+            "grupos": resumen
+        }
+    except Exception as e:
+        print("ERROR EN /paciente/resumen-grupos:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener resumen de grupos: {str(e)}"
+        )
+
+# ============================================================
+# 10 OBTENER ESTADO DEL PACIENTE
+# ============================================================
+@router.get("/estado/{cedula}")
+def obtener_estado(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene el estado actual del paciente (activo/inactivo)
+    """
+    try:
+        estado = obtener_estado_paciente(db, cedula)
+        return estado
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+    except Exception as e:
+        print("ERROR EN /paciente/estado:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener estado: {str(e)}"
+        )
+
+# ============================================================
+# 11 VERIFICAR Y ACTUALIZAR ESTADO DEL PACIENTE
+# ============================================================
+@router.post("/verificar-estado/{cedula}")
+def verificar_estado(cedula: str, db: Session = Depends(get_db)):
+    """
+    Verifica y actualiza el estado del paciente basado en sus terapias completadas.
+    Si ha completado todos sus grupos, lo marca como inactivo.
+    """
+    try:
+        resultado = verificar_y_actualizar_estado_paciente(db, cedula)
+        return resultado
+    except Exception as e:
+        print("ERROR EN /paciente/verificar-estado:")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al verificar estado: {str(e)}"
+        )
+
+@router.get("/ejercicios-asignados-por-grupo/{cedula}")
+def obtener_ejercicios_asignados_por_grupo(cedula: str, db: Session = Depends(get_db)):
+    """
+    Obtiene todos los ejercicios asignados de un paciente organizados por grupo de terapia
+    Incluye solo ejercicios en estado 'Pendiente' o 'En Progreso'
+    """
+    try:
+        query = text("""
+            SELECT 
+                ta.Grupo_terapia,
+                ta.Id_terapia,
+                e.Id_ejercicio,
+                e.Nombre,
+                e.Descripcion,
+                e.Repeticion,
+                e.Url,
+                ext.Nombre as Extremidad,
+                ta.Estado,
+                ta.Fecha_asignacion
+            FROM Terapia_Asignada ta
+            INNER JOIN Ejercicio e ON ta.Id_ejercicio = e.Id_ejercicio
+            LEFT JOIN Extremidad ext ON e.Id_extremidad = ext.Id_extremidad
+            WHERE ta.Cedula_paciente = :cedula 
+            AND ta.Estado IN ('Pendiente', 'En Progreso')
+            ORDER BY ta.Grupo_terapia DESC, ta.Fecha_asignacion DESC
+        """)
+        
+        ejercicios = db.execute(query, {"cedula": cedula}).fetchall()
+        
+        if not ejercicios:
+            return {"grupos": []}
+        
+        # Agrupar por Grupo_terapia
+        grupos_dict = {}
+        for e in ejercicios:
+            grupo_num = e[0]
+            if grupo_num not in grupos_dict:
+                grupos_dict[grupo_num] = {
+                    "grupo_terapia": grupo_num,
+                    "ejercicios": []
+                }
+            
+            grupos_dict[grupo_num]["ejercicios"].append({
+                "id_terapia": e[1],
+                "id_ejercicio": e[2],
+                "nombre": e[3],
+                "descripcion": e[4],
+                "repeticiones": e[5],
+                "url_video": e[6],
+                "extremidad": e[7] if e[7] else "General",
+                "estado": e[8],
+                "fecha_asignacion": e[9].isoformat() if e[9] else None
+            })
+        
+        # Convertir a lista ordenada por grupo descendente
+        grupos_list = sorted(grupos_dict.values(), key=lambda x: x["grupo_terapia"], reverse=True)
+        
+        return {"grupos": grupos_list}
+        
+    except Exception as e:
+        print("ERROR en /paciente/ejercicios-asignados-por-grupo:")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

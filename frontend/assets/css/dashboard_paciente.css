@@ -358,3 +358,518 @@ a:focus-visible {
     animation: none;
   }
 }
+
+/* ========================================
+   HISTORIAL DE TERAPIAS - NUEVOS ESTILOS
+   ======================================== */
+
+/* Nuevos estilos para la sección de resumen de grupos */
+.resumen-grupos {
+  margin-bottom: 40px;
+}
+
+.resumen-grupos h3 {
+  font-size: 20px;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.grupos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.grupo-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.grupo-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+}
+
+.grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.grupo-header h4 {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin: 0;
+  font-weight: 600;
+}
+
+.grupo-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grupo-status.completado {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #28a745;
+}
+
+.grupo-status.en\ progreso {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+.grupo-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.4s ease;
+  border-radius: 10px;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: #4a4a4a;
+  margin: 0;
+  font-weight: 500;
+}
+
+.grupo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.grupo-info span {
+  font-size: 13px;
+  color: #4a4a4a;
+}
+
+/* Historial Completo */
+.historial-completo h3 {
+  font-size: 20px;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.filtros-historial {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grupo-terapias-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.grupo-titulo {
+  font-size: 16px;
+  color: #667eea;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+}
+
+.terapias-en-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historial-item {
+  background: white;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.historial-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
+}
+
+.historial-content {
+  flex: 1;
+}
+
+.historial-content h5 {
+  font-size: 16px;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.historial-content p {
+  font-size: 13px;
+  color: #4a4a4a;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.historial-video {
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.historial-video video {
+  width: 150px;
+  height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e9ecef;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .grupos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .historial-item {
+    flex-direction: column;
+  }
+
+  .historial-video {
+    min-width: 100%;
+  }
+
+  .historial-video video {
+    width: 100%;
+    height: auto;
+  }
+
+  .grupo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grupo-status {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grupo-header h4 {
+    font-size: 16px;
+  }
+
+  .historial-content h5 {
+    font-size: 14px;
+  }
+
+  .historial-content p {
+    font-size: 12px;
+  }
+}
+
+/* ========================================
+   EJERCICIOS ASIGNADOS POR GRUPO - NUEVOS ESTILOS
+   ======================================== */
+
+/* Nuevos estilos para organizar ejercicios asignados por grupos de terapia */
+
+.ejercicios-grupos-container {
+  margin-bottom: 40px;
+}
+
+.ejercicios-grupos-container h3 {
+  font-size: 20px;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+#gruposEjerciciosAsignados {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.grupo-ejercicios-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.grupo-ejercicios-section:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.grupo-header-asignados {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+}
+
+.grupo-header-asignados h4 {
+  font-size: 18px;
+  color: #667eea;
+  margin: 0;
+  font-weight: 600;
+}
+
+.ejercicios-count {
+  display: inline-block;
+  background-color: #667eea;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.ejercicios-en-grupo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.exercise-card-asignado {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-card-asignado:hover {
+  transform: translateY(-5px);
+  border-color: #667eea;
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+}
+
+.exercise-card-asignado .exercise-video,
+.exercise-card-asignado .exercise-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.exercise-card-asignado .exercise-video video {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.exercise-card-asignado .exercise-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.exercise-card-asignado .exercise-content {
+  padding: 16px 18px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-card-asignado h5 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.exercise-card-asignado .exercise-category {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+.exercise-card-asignado .exercise-description {
+  font-size: 14px;
+  color: #4a4a4a;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.exercise-card-asignado .exercise-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e9ecef;
+  font-size: 13px;
+  color: #4a4a4a;
+}
+
+.exercise-card-asignado .exercise-details span {
+  display: block;
+}
+
+.btn-marcar-realizado {
+  margin-top: 12px !important;
+  padding: 10px 16px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-marcar-realizado:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4) !important;
+}
+
+.btn-marcar-realizado:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+.btn-marcar-realizado:disabled {
+  background: #28a745 !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+#noEjerciciosAsignados {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #e9ecef;
+}
+
+#noEjerciciosAsignados h3 {
+  font-size: 22px;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+#noEjerciciosAsignados p {
+  color: #4a4a4a;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* Separador visual */
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+  margin: 40px 0;
+}
+
+/* Estilos responsivos para ejercicios por grupo */
+@media (max-width: 1024px) {
+  .ejercicios-en-grupo {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grupo-header-asignados {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ejercicios-count {
+    align-self: flex-start;
+  }
+
+  .ejercicios-en-grupo {
+    grid-template-columns: 1fr;
+  }
+
+  .grupo-ejercicios-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grupo-header-asignados h4 {
+    font-size: 16px;
+  }
+
+  .exercise-card-asignado h5 {
+    font-size: 14px;
+  }
+
+  .exercise-card-asignado .exercise-description {
+    font-size: 13px;
+  }
+
+  .exercise-card-asignado .exercise-details {
+    font-size: 12px;
+  }
+
+  .btn-marcar-realizado {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+}

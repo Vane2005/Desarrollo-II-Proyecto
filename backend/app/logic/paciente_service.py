@@ -70,7 +70,6 @@ def enviar_correo(destinatario: str, contrasena: str, nombre: str):
 def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
     """
     Crea un nuevo paciente con una contraseña aleatoria generada automáticamente.
-    En modo pruebas: imprime las credenciales por consola.
     """
     print(" [DEBUG] usando la versión ACTUAL de paciente_service.py")
     try:
@@ -86,7 +85,8 @@ def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
             nombre=nombre,
             correo=correo,
             contrasena=contrasena_hash,
-            telefono=telefono
+            telefono=telefono,
+            estado="activo"
         )
 
         # 4️ Guardar en la base de datos
@@ -100,11 +100,7 @@ def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
         print(f"    Correo: {correo}")
         print(f"    Contraseña generada: {contrasena_generada}")
 
-        #  Si deseas activar el envío de correo real, descomenta esta línea:
-        # enviar_correo(correo, contrasena_generada, nombre)
-
         return paciente, contrasena_generada
-
 
     except Exception as e:
         db.rollback()
@@ -127,7 +123,8 @@ def obtener_info_paciente(db: Session, cedula: str):
         "cedula": paciente.cedula,
         "nombre": paciente.nombre,
         "correo": paciente.correo,
-        "telefono": paciente.telefono
+        "telefono": paciente.telefono,
+        "estado": paciente.estado
     }
 
 
@@ -166,5 +163,6 @@ def actualizar_perfil_paciente(db: Session, cedula: str, nombre: str, correo: st
         "cedula": paciente.cedula,
         "nombre": paciente.nombre,
         "correo": paciente.correo,
-        "telefono": paciente.telefono
+        "telefono": paciente.telefono,
+        "estado": paciente.estado
     }
