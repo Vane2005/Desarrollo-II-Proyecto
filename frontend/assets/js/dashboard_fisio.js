@@ -12,6 +12,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.querySelector(".btn-logout")
   const toggleSidebarBtn = document.getElementById("toggleSidebar")
   const sidebar = document.getElementById("sidebar")
+      // Redirigir al formulario de registro de paciente
+  const registrarBtn = document.querySelector('[data-section="registrar-paciente"]');
+    if (registrarBtn) {
+        registrarBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.href = "registrar_paciente.html";
+        });
+  }
+
 
   let estadoFisioterapeuta = "activo"
 
