@@ -351,6 +351,178 @@
         </div>
     </div>
 
+    <!-- ================== MODAL CALIFICAR EJERCICIO ================== -->
+    <!-- Added role="dialog", aria-labelledby, and aria-modal for modal -->
+    <div class="modal" id="calificacionModalEjercicio" role="dialog" aria-labelledby="titulo-modal-calificacion" aria-modal="true" aria-hidden="true" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="titulo-modal-calificacion">Calificar Ejercicio</h3>
+                <button class="close-btn" id="closeCalificacionModal" aria-label="Cerrar formulario de calificación">&times;</button>
+            </div>
+            
+            <form id="calificacionForm" class="modal-form" novalidate>
+                <!-- Campo oculto para guardar el ID de la terapia -->
+                <input type="hidden" id="idTerapiaCalificacion">
+                
+                <!-- Instrucciones -->
+                <div class="form-instructions" role="region" aria-labelledby="titulo-instrucciones">
+                    <p id="titulo-instrucciones">Por favor, evalúa cómo te sentiste después de realizar el ejercicio en una escala de 1 a 5:</p>
+                </div>
+
+                <!-- DOLOR -->
+                <div class="form-group">
+                    <label for="dolorInput">
+                        Dolor
+                        <span class="required-indicator" aria-label="campo requerido">*</span>
+                    </label>
+                    <p class="form-hint">¿Cuánto dolor sentiste durante el ejercicio?</p>
+                    
+                    <div class="escala-radio" role="group" aria-labelledby="dolorLabel">
+                        <span id="dolorLabel" class="sr-only">Selecciona el nivel de dolor</span>
+                        <div class="opciones-escala">
+                            <label class="opcion-escala">
+                                <input type="radio" name="dolor" value="1" required aria-label="1 - Mínimo: Sin dolor">
+                                <span class="numero">1</span>
+                                <span class="etiqueta">Mínimo</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="dolor" value="2" aria-label="2 - Leve: Dolor leve">
+                                <span class="numero">2</span>
+                                <span class="etiqueta">Leve</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="dolor" value="3" aria-label="3 - Moderado: Dolor moderado">
+                                <span class="numero">3</span>
+                                <span class="etiqueta">Moderado</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="dolor" value="4" aria-label="4 - Intenso: Dolor intenso">
+                                <span class="numero">4</span>
+                                <span class="etiqueta">Intenso</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="dolor" value="5" aria-label="5 - Máximo: Dolor máximo">
+                                <span class="numero">5</span>
+                                <span class="etiqueta">Máximo</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="errorDolor" class="error-message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- SENSACIÓN -->
+                <div class="form-group">
+                    <label for="sensacionInput">
+                        Sensación
+                        <span class="required-indicator" aria-label="campo requerido">*</span>
+                    </label>
+                    <p class="form-hint">¿Cómo fue la sensación muscular/articular?</p>
+                    
+                    <div class="escala-radio" role="group" aria-labelledby="sensacionLabel">
+                        <span id="sensacionLabel" class="sr-only">Selecciona el nivel de sensación</span>
+                        <div class="opciones-escala">
+                            <label class="opcion-escala">
+                                <input type="radio" name="sensacion" value="1" required aria-label="1 - Excelente: Sensación excelente">
+                                <span class="numero">1</span>
+                                <span class="etiqueta">Excelente</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="sensacion" value="2" aria-label="2 - Buena: Buena sensación">
+                                <span class="numero">2</span>
+                                <span class="etiqueta">Buena</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="sensacion" value="3" aria-label="3 - Normal: Sensación normal">
+                                <span class="numero">3</span>
+                                <span class="etiqueta">Normal</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="sensacion" value="4" aria-label="4 - Incómoda: Sensación incómoda">
+                                <span class="numero">4</span>
+                                <span class="etiqueta">Incómoda</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="sensacion" value="5" aria-label="5 - Muy incómoda: Muy incómoda">
+                                <span class="numero">5</span>
+                                <span class="etiqueta">Muy incómoda</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="errorSensacion" class="error-message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- CANSANCIO -->
+                <div class="form-group">
+                    <label for="cansancioInput">
+                        Cansancio
+                        <span class="required-indicator" aria-label="campo requerido">*</span>
+                    </label>
+                    <p class="form-hint">¿Qué tan cansado te sentiste?</p>
+                    
+                    <div class="escala-radio" role="group" aria-labelledby="cansancioLabel">
+                        <span id="cansancioLabel" class="sr-only">Selecciona el nivel de cansancio</span>
+                        <div class="opciones-escala">
+                            <label class="opcion-escala">
+                                <input type="radio" name="cansancio" value="1" required aria-label="1 - Mínimo: Sin cansancio">
+                                <span class="numero">1</span>
+                                <span class="etiqueta">Mínimo</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="cansancio" value="2" aria-label="2 - Leve: Cansancio leve">
+                                <span class="numero">2</span>
+                                <span class="etiqueta">Leve</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="cansancio" value="3" aria-label="3 - Moderado: Cansancio moderado">
+                                <span class="numero">3</span>
+                                <span class="etiqueta">Moderado</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="cansancio" value="4" aria-label="4 - Intenso: Cansancio intenso">
+                                <span class="numero">4</span>
+                                <span class="etiqueta">Intenso</span>
+                            </label>
+                            <label class="opcion-escala">
+                                <input type="radio" name="cansancio" value="5" aria-label="5 - Máximo: Cansancio máximo">
+                                <span class="numero">5</span>
+                                <span class="etiqueta">Máximo</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="errorCansancio" class="error-message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- OBSERVACIONES -->
+                <div class="form-group">
+                    <label for="observacionesInput">
+                        Observaciones adicionales
+                        <span class="optional-indicator" aria-label="campo opcional">(opcional)</span>
+                    </label>
+                    <p class="form-hint">Comparte cualquier comentario sobre tu experiencia</p>
+                    <textarea 
+                        id="observacionesInput" 
+                        name="observaciones" 
+                        maxlength="500" 
+                        rows="4"
+                        class="form-textarea"
+                        placeholder="Ejemplo: El ejercicio fue más difícil de lo esperado..."
+                        aria-describedby="charCount">
+                    </textarea>
+                    <small id="charCount" class="char-count">0/500 caracteres</small>
+                </div>
+
+                <!-- Botones -->
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelCalificacionBtn" aria-label="Cancelar calificación del ejercicio">Cancelar</button>
+                    <button type="submit" class="btn-submit" aria-label="Enviar calificación del ejercicio">Enviar Calificación</button>
+                </div>
+                
+                <!-- Mensaje de estado -->
+                <div id="calificacionMessage" class="form-message" role="status" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+
     <script src="assets/js/dashboard_paciente.js"></script>
 </body>
 </html>

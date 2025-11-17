@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarInfoPaciente() // NUEVO: Cargar información del paciente
   initCambiarContrasena() // NUEVO: Inicializar modal de cambio de contraseña
   initEditarPerfil() // Added profile editing initialization
+  initCalificacionModal() // Inicializar modal de calificación
   cargarHistorialTerapias()
   cargarResumenGrupos()
   cargarGruposEjerciciosAsignados() // Cargar ejercicios por grupos
@@ -1242,6 +1243,8 @@ async function marcarComoRealizado(idTerapia) {
       boton.disabled = true
     }
 
+    abrirModalCalificacion(idTerapia)
+
     await cargarGruposEjerciciosAsignados()
     await cargarEjerciciosAsignadosDesdeAPI()
     await cargarEjerciciosRealizadosDesdeAPI()
@@ -1249,6 +1252,191 @@ async function marcarComoRealizado(idTerapia) {
   } catch (error) {
     console.error("Error al marcar como realizado:", error)
     alert("No se pudo marcar el ejercicio como realizado")
+  }
+}
+
+// ==========================================
+// MODAL DE CALIFICACIÓN
+// ==========================================
+
+function initCalificacionModal() {
+  const modal = document.getElementById("calificacionModalEjercicio")
+  const closeBtn = document.getElementById("closeCalificacionModal")
+  const cancelBtn = document.getElementById("cancelCalificacionBtn")
+  const form = document.getElementById("calificacionForm")
+  const observacionesInput = document.getElementById("observacionesInput")
+  const charCount = document.getElementById("charCount")
+
+  // Cerrar modal al hacer clic en X
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => cerrarModalCalificacion())
+  }
+
+  // Cerrar modal al hacer clic en Cancelar
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => cerrarModalCalificacion())
+  }
+
+  // Cerrar modal al hacer clic fuera de él
+  if (modal) {
+    window.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        cerrarModalCalificacion()
+      }
+    })
+  }
+
+  // Contador de caracteres en observaciones
+  if (observacionesInput) {
+    observacionesInput.addEventListener("input", () => {
+      const count = observacionesInput.value.length
+      charCount.textContent = `${count}/500 caracteres`
+    })
+  }
+
+  // Manejar envío del formulario
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault()
+      await enviarCalificacion()
+    })
+  }
+}
+
+function abrirModalCalificacion(idTerapia) {
+  const modal = document.getElementById("calificacionModalEjercicio")
+  const form = document.getElementById("calificacionForm")
+  const idTerapiaInput = document.getElementById("idTerapiaCalificacion")
+  const messageDiv = document.getElementById("calificacionMessage")
+
+  // Guardar el ID de la terapia
+  if (idTerapiaInput) {
+    idTerapiaInput.value = idTerapia
+  }
+
+  // Limpiar el formulario
+  if (form) {
+    form.reset()
+  }
+
+  // Limpiar mensaje previo
+  if (messageDiv) {
+    messageDiv.textContent = ""
+    messageDiv.className = "form-message"
+  }
+
+  // Mostrar modal
+  if (modal) {
+    modal.style.display = "block"
+    modal.setAttribute("aria-hidden", "false")
+    // Enfocar en el primer input
+    const primerInput = form.querySelector("input[type='radio']")
+    if (primerInput) {
+      setTimeout(() => primerInput.focus(), 100)
+    }
+  }
+}
+
+function cerrarModalCalificacion() {
+  const modal = document.getElementById("calificacionModalEjercicio")
+  const form = document.getElementById("calificacionForm")
+  const messageDiv = document.getElementById("calificacionMessage")
+
+  if (modal) {
+    modal.style.display = "none"
+    modal.setAttribute("aria-hidden", "true")
+  }
+
+  if (form) {
+    form.reset()
+  }
+
+  if (messageDiv) {
+    messageDiv.textContent = ""
+    messageDiv.className = "form-message"
+  }
+}
+
+async function enviarCalificacion() {
+  const form = document.getElementById("calificacionForm")
+  const messageDiv = document.getElementById("calificacionMessage")
+  const submitBtn = form.querySelector('button[type="submit"]')
+
+  // Validar que todos los campos requeridos estén seleccionados
+  const dolor = form.querySelector('input[name="dolor"]:checked')
+  const sensacion = form.querySelector('input[name="sensacion"]:checked')
+  const cansancio = form.querySelector('input[name="cansancio"]:checked')
+
+  if (!dolor || !sensacion || !cansancio) {
+    mostrarMensajeCalificacion(messageDiv, "Por favor, completa todas las calificaciones", "error")
+    return
+  }
+
+  const idTerapia = document.getElementById("idTerapiaCalificacion").value
+  const observaciones = document.getElementById("observacionesInput").value
+
+  // Deshabilitar botón durante el envío
+  if (submitBtn) {
+    submitBtn.disabled = true
+    submitBtn.textContent = "Enviando..."
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/paciente/calificar-ejercicio", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_terapia: parseInt(idTerapia),
+        dolor: parseInt(dolor.value),
+        sensacion: parseInt(sensacion.value),
+        cansancio: parseInt(cansancio.value),
+        observaciones: observaciones || null,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error al guardar calificaciones (${response.status})`)
+    }
+
+    const data = await response.json()
+
+    // Mostrar mensaje de éxito
+    mostrarMensajeCalificacion(
+      messageDiv,
+      "✓ Calificación guardada exitosamente",
+      "success"
+    )
+
+    // Cerrar modal después de 2 segundos
+    setTimeout(() => {
+      cerrarModalCalificacion()
+      // Recargar los datos
+      cargarGruposEjerciciosAsignados()
+      cargarEjerciciosAsignadosDesdeAPI()
+      cargarEjerciciosRealizadosDesdeAPI()
+      cargarResumenGrupos()
+    }, 2000)
+  } catch (error) {
+    console.error("Error al enviar calificación:", error)
+    mostrarMensajeCalificacion(
+      messageDiv,
+      "Error al guardar la calificación. Intenta de nuevo.",
+      "error"
+    )
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false
+      submitBtn.textContent = "Enviar Calificación"
+    }
+  }
+}
+
+function mostrarMensajeCalificacion(messageDiv, mensaje, tipo) {
+  if (messageDiv) {
+    messageDiv.textContent = mensaje
+    messageDiv.className = `form-message ${tipo}`
   }
 }
 

@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from data.db import get_db
-from logic.terapia_service import verificar_y_actualizar_estado_paciente
+from logic.terapia_service import verificar_y_actualizar_estado_paciente, guardar_calificaciones_ejercicio
+from presentation.schemas.calificacion_schema import CalificacionEjercicio, CalificacionResponse
 
 router = APIRouter(prefix="/paciente", tags=["Paciente"])
 
@@ -95,5 +96,46 @@ def obtener_ejercicios_por_grupo(cedula: str, db: Session = Depends(get_db)):
         
     except Exception as e:
         print("ERROR en /paciente/ejercicios-por-grupo:")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/calificar-ejercicio")
+def calificar_ejercicio(calificacion: CalificacionEjercicio, db: Session = Depends(get_db)):
+    """
+    Nuevo endpoint para guardar las calificaciones de dolor, sensación y cansancio
+    después de que el paciente completa un ejercicio
+    """
+    try:
+        # Verificar que la terapia existe
+        query_check = text("""
+            SELECT Id_terapia, Estado
+            FROM Terapia_Asignada
+            WHERE Id_terapia = :id_terapia
+        """)
+        terapia = db.execute(query_check, {"id_terapia": calificacion.id_terapia}).fetchone()
+        
+        if not terapia:
+            raise HTTPException(status_code=404, detail="Terapia no encontrada")
+        
+        # Guardar las calificaciones
+        resultado = guardar_calificaciones_ejercicio(
+            db,
+            calificacion.id_terapia,
+            calificacion.dolor,
+            calificacion.sensacion,
+            calificacion.cansancio,
+            calificacion.observaciones
+        )
+        
+        return CalificacionResponse(
+            message=resultado["message"],
+            id_terapia=resultado["id_terapia"],
+            estado=resultado["estado"]
+        )
+        
+    except Exception as e:
+        db.rollback()
+        print("ERROR en /paciente/calificar-ejercicio:")
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
