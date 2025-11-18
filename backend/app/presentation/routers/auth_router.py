@@ -131,6 +131,7 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
             "access_token": access_token,
             "token_type": "bearer",
             "tipo_usuario": user_data["tipo"],
+            "id_usuario": user_data["id"],
             "nombre": user_data["nombre"],
             "email": user_data["email"]
         }
@@ -145,27 +146,33 @@ def login_user(datos: LoginCreate, db: Session = Depends(get_db)):
         )
 
 
-def get_current_user(token: str):
+def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         tipo_usuario = payload.get("tipo")
-        if tipo_usuario is None:
+        cedula = payload.get("cedula")
+
+        if tipo_usuario is None or cedula is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido: tipo de usuario no encontrado",
+                detail="Token inválido: datos incompletos",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
         class User:
-            def __init__(self, tipo_usuario):
+            def __init__(self, tipo_usuario, cedula):
                 self.tipo_usuario = tipo_usuario
-        return User(tipo_usuario)
+                self.cedula = cedula
+
+        return User(tipo_usuario, cedula)
+    
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
 
 
 @router.get("/verify")
