@@ -186,3 +186,38 @@ def obtener_estado_paciente(db: Session, cedula_paciente: str):
     except Exception as e:
         print(f"Error en obtener_estado_paciente: {e}")
         raise e
+
+
+def guardar_calificaciones_ejercicio(db: Session, id_terapia: int, dolor: int, sensacion: int, cansancio: int, observaciones: str = None):
+    """
+    Nueva función para guardar las calificaciones del ejercicio después de realizarlo
+    Actualiza los campos de dolor, sensación, cansancio y observaciones en Terapia_Asignada
+    """
+    try:
+        query_update = text("""
+            UPDATE Terapia_Asignada
+            SET Dolor = :dolor,
+                Sensacion = :sensacion,
+                Cansancio = :cansancio,
+                Observaciones = :observaciones
+            WHERE Id_terapia = :id_terapia
+        """)
+        
+        db.execute(query_update, {
+            "dolor": dolor,
+            "sensacion": sensacion,
+            "cansancio": cansancio,
+            "observaciones": observaciones,
+            "id_terapia": id_terapia
+        })
+        db.commit()
+        
+        return {
+            "message": "Calificaciones guardadas exitosamente",
+            "id_terapia": id_terapia,
+            "estado": "Guardado"
+        }
+    except Exception as e:
+        print(f"Error en guardar_calificaciones_ejercicio: {e}")
+        db.rollback()
+        raise e

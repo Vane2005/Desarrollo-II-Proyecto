@@ -76,6 +76,9 @@ CREATE TABLE Terapia_Asignada (
     Fecha_asignacion DATE NOT NULL DEFAULT CURRENT_DATE,
     Fecha_realizacion DATE,
     Observaciones TEXT,
+    Dolor INT CHECK (Dolor BETWEEN 1 AND 5),
+    Sensacion INT CHECK (Sensacion BETWEEN 1 AND 5),
+    Cansancio INT CHECK (Cansancio BETWEEN 1 AND 5),
     FOREIGN KEY (Cedula_paciente) REFERENCES Paciente(Cedula)
         ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (Id_ejercicio) REFERENCES Ejercicio(Id_ejercicio)
