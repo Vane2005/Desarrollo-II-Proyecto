@@ -21,6 +21,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
   }
 
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("btn-details")) {
+        const cedula = e.target.dataset.cedula;
+
+        // Redirigir al detalle del paciente
+        window.location.href = `detalle_paciente.html?cedula=${cedula}`;
+    }
+  });
+
 
   let estadoFisioterapeuta = "activo"
 
