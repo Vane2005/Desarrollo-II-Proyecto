@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
+from presentation.routers.auth_router import get_current_user
+
 from presentation.schemas.usuario_schema import (
     PacienteCreate, 
     ActualizarPerfilPaciente,
@@ -28,12 +30,21 @@ router = APIRouter(prefix="/paciente", tags=["Paciente"])
 # ============================================================
 # 1 REGISTRAR PACIENTE
 # ============================================================
+from fastapi import Depends
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
+def registrar(
+    datos: PacienteCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)   # ← AQUI SE AGREGA
+):
     """
-    Registra un nuevo Paciente en el sistema
+    Registra un nuevo Paciente en el sistema y lo asocia al fisioterapeuta que lo crea.
     """
     try:
+        # Obtener la cédula del fisioterapeuta que está logueado
+        cedula_fisio = current_user.cedula
+
         usuario, contrasena_generada = crear(
             db=db,
             cedula=datos.cedula,
@@ -41,9 +52,21 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
             nombre=datos.nombre,
             telefono=datos.telefono
         )
-        
+
+        # Crear relación en TRATA (unión fisio – paciente)
+        query = text("""
+            INSERT INTO trata (cedula_fisio, cedula_paciente)
+            VALUES (:cedula_fisio, :cedula_paciente)
+        """)
+        db.execute(query, {
+            "cedula_fisio": cedula_fisio,
+            "cedula_paciente": datos.cedula
+        })
+        db.commit()
+
         return {
-            "mensaje": f"Usuario {usuario.nombre} registrado correctamente",
+            "mensaje": f"Paciente {usuario.nombre} registrado correctamente",
+            "cedula_fisio": cedula_fisio,
             "usuario": {
                 "id": usuario.cedula,
                 "nombre": usuario.nombre,
@@ -60,9 +83,10 @@ def registrar(datos: PacienteCreate, db: Session = Depends(get_db)):
     except Exception as e:
         print("ERROR COMPLETO:")
         print(traceback.format_exc())
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al registrar usuario: {str(e)}")
-
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al registrar usuario: {str(e)}"
+        )
 
 # ============================================================
 # 2 OBTENER LISTA DE EJERCICIOS
@@ -109,22 +133,21 @@ def obtener_ejercicios(db: Session = Depends(get_db)):
 # 3 OBTENER TODOS LOS PACIENTES
 # ============================================================
 @router.get("/todos")
-def obtener_todos_pacientes(db: Session = Depends(get_db)):
-    """
-    Obtiene la lista de todos los pacientes registrados en el sistema
-    """
+def obtener_todos_pacientes(
+    fisio_id: str,
+    db: Session = Depends(get_db)
+):
     try:
         query = text("""
-            SELECT cedula, nombre, correo, telefono, estado
-            FROM Paciente
-            ORDER BY nombre
+            SELECT p.cedula, p.nombre, p.correo, p.telefono, p.estado
+            FROM Paciente p
+            INNER JOIN trata t ON p.cedula = t.cedula_paciente
+            WHERE t.cedula_fisioterapeuta = :fisio_id
+            ORDER BY p.nombre
         """)
-        
-        pacientes = db.execute(query).fetchall()
-        
-        if not pacientes:
-            return []
-        
+
+        pacientes = db.execute(query, {"fisio_id": fisio_id}).fetchall()
+
         return [
             {
                 "cedula": p[0],
@@ -135,46 +158,38 @@ def obtener_todos_pacientes(db: Session = Depends(get_db)):
             }
             for p in pacientes
         ]
-        
+
     except Exception as e:
-        print("ERROR EN /paciente/todos:")
-        print(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Error al obtener lista de pacientes: {str(e)}"
-        )
+        raise HTTPException(500, f"Error: {str(e)}")
+
+
 
 # ============================================================
 # 4 BUSCAR PACIENTE POR CÉDULA
 # ============================================================
 @router.get("/{cedula}")
-def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
-    """
-    Obtiene la información de un paciente por su cédula
-    """
+def obtener_paciente(
+    cedula: str,
+    fisio_id: str,
+    db: Session = Depends(get_db)
+):
     try:
         query = text("""
-            SELECT nombre, correo, telefono
-            FROM Paciente
-            WHERE cedula = :cedula
+            SELECT p.nombre, p.correo, p.telefono
+            FROM Paciente p
+            INNER JOIN trata t ON p.cedula = t.cedula_paciente
+            WHERE p.cedula = :cedula
+            AND t.cedula_fisioterapeuta = :fisio_id
         """)
-        paciente = db.execute(query, {"cedula": cedula}).fetchone()
+
+        paciente = db.execute(query, {
+            "cedula": cedula,
+            "fisio_id": fisio_id
+        }).fetchone()
 
         if not paciente:
-            raise HTTPException(status_code=404, detail="Paciente no encontrado")
+            raise HTTPException(404, "Paciente no encontrado o no pertenece a este fisioterapeuta")
 
-        # Ver cuántas columnas llegaron realmente
-        print("Resultado SQL:", paciente)
-
-        # Si solo tiene 2 columnas (nombre, correo)
-        if len(paciente) == 2:
-            return {
-                "nombre": paciente[0],
-                "correo": paciente[1],
-                "telefono": None
-            }
-
-        # Si tiene 3 columnas (nombre, correo, telefono)
         return {
             "nombre": paciente[0],
             "correo": paciente[1],
@@ -182,8 +197,11 @@ def obtener_paciente(cedula: str, db: Session = Depends(get_db)):
         }
 
     except Exception as e:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(500, str(e))
+
+
+    
+
     
 @router.get("/info-paciente", response_model=InfoPacienteResponse)
 def obtener_info_paciente_endpoint(

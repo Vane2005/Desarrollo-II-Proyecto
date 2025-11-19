@@ -12,6 +12,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.querySelector(".btn-logout")
   const toggleSidebarBtn = document.getElementById("toggleSidebar")
   const sidebar = document.getElementById("sidebar")
+  const fisioId = localStorage.getItem("cedula");
+
+      // Redirigir al formulario de registro de paciente
+  const registrarBtn = document.querySelector('[data-section="registrar-paciente"]');
+    if (registrarBtn) {
+        registrarBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.href = "registrar_paciente.html";
+        });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("btn-details")) {
+        const cedula = e.target.dataset.cedula;
+
+        // Redirigir al detalle del paciente
+        window.location.href = `detalle_paciente.html?cedula=${cedula}`;
+    }
+  });
+
 
   let estadoFisioterapeuta = "activo"
 
@@ -454,7 +474,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!cedula) return alert("Por favor ingrese una cédula")
 
       try {
-        const res = await fetch(`${PACIENTE_API_URL}/${cedula}`)
+        const res = await fetch(`${PACIENTE_API_URL}/${cedula}?fisio_id=${fisioId}`)
+
         console.log("FETCH /paciente status:", res.status)
         const text = await res.text()
         console.log("FETCH /paciente body (raw):", text)
@@ -586,7 +607,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function calcularAvancePaciente(cedula) {
     try {
-      const pacienteRes = await fetch(`${PACIENTE_API_URL}/${cedula}`)
+     const pacienteRes = await fetch(`${PACIENTE_API_URL}/${cedula}?fisio_id=${fisioId}`);
+
+
       if (!pacienteRes.ok) {
         throw new Error("Paciente no encontrado")
       }
@@ -669,45 +692,77 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  const btnMostrarTodos = document.getElementById("btnMostrarTodos")
-  if (btnMostrarTodos) {
-    btnMostrarTodos.addEventListener("click", async () => {
-      const container = document.getElementById("patientProgressList")
-      container.innerHTML = '<p style="text-align: center; color: #666;">Cargando todos los pacientes...</p>'
+document.getElementById("btnMostrarTodos").addEventListener("click", async () => {
+    try {
+        const fisioId = localStorage.getItem("cedula");
 
-      try {
-        const response = await fetch(`${PACIENTE_API_URL}/todos`)
-        if (!response.ok) {
-          throw new Error("Error al obtener lista de pacientes")
+        if (!fisioId) {
+            console.error("No hay fisioId en localStorage");
+            alert("Error: no se encontró la cédula del fisioterapeuta");
+            return;
         }
 
-        const pacientes = await response.json()
+        const res = await fetch(`${PACIENTE_API_URL}/todos?fisio_id=${fisioId}`);
 
-        if (!Array.isArray(pacientes) || pacientes.length === 0) {
-          container.innerHTML = '<p style="text-align: center; color: #666;">No hay pacientes registrados</p>'
-          return
+        if (!res.ok) {
+            throw new Error("Error al obtener lista de pacientes");
         }
 
-        container.innerHTML = ""
+        const data = await res.json();
 
-        for (const paciente of pacientes) {
-          try {
-            const pacienteInfo = await calcularAvancePaciente(paciente.cedula)
-            mostrarAvancePaciente(pacienteInfo)
-          } catch (error) {
-            console.error(`Error calculando avance para paciente ${paciente.cedula}:`, error)
-          }
-        }
+        mostrarPacientes(data);  // tu función existente
 
-        if (container.children.length === 0) {
-          container.innerHTML =
-            '<p style="text-align: center; color: #666;">No se pudo cargar información de pacientes</p>'
-        }
-      } catch (error) {
-        console.error("Error mostrando todos los pacientes:", error)
-        container.innerHTML =
-          '<p style="text-align: center; color: #ff4444;">❌ Error al cargar la lista de pacientes</p>'
-      }
-    })
-  }
+    } catch (error) {
+        console.error("Error mostrando todos los pacientes:", error);
+        alert(error.message);
+    }
+    
+   function mostrarPacientes(pacientes) {
+    const container = document.getElementById("patientProgressList");
+    container.innerHTML = ""; // limpiar antes de agregar
+
+    if (!pacientes || pacientes.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#666;">No se encontraron pacientes</p>`;
+        return;
+    }
+
+    pacientes.forEach(p => {
+        // Datos por defecto (porque tu endpoint no los trae)
+        const porcentaje = p.porcentaje || 0;
+        const completados = p.completados || 0;
+        const total = p.total || 0;
+
+        const progressItem = document.createElement("div");
+        progressItem.classList.add("patient-progress-item");
+
+        progressItem.innerHTML = `
+            <div class="progress-info">
+                <p class="patient-name">${p.nombre}</p>
+                <p class="progress-label">
+                    Avance: <span class="progress-percentage">${porcentaje}%</span>
+                    <span style="font-size: 0.9em; color: #666; margin-left: 10px;">
+                        (${completados} completados / ${total} total)
+                    </span>
+                </p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${porcentaje}%"></div>
+            </div>
+
+            <div class="patient-actions">
+                <button class="btn-action btn-details" data-cedula="${p.cedula}">Ver Detalles</button>
+                <button class="btn-action btn-edit-paciente" data-cedula="${p.cedula}">Editar Paciente</button>
+                <button class="btn-action btn-disable" data-cedula="${p.cedula}">Inhabilitar Paciente</button>
+            </div>
+        `;
+
+        container.appendChild(progressItem);
+    });
+}
+
+
+
+
+});
 })

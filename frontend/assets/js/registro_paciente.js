@@ -4,6 +4,8 @@ const API_URL = 'http://localhost:8000';
 // Función para mostrar mensajes
 function mostrarMensaje(tipo, contenido) {
     const messageDiv = document.getElementById('message');
+    
+
     messageDiv.className = tipo; // 'exito' o 'error'
     messageDiv.innerHTML = contenido;
     messageDiv.style.display = 'block';
@@ -19,12 +21,17 @@ function mostrarMensaje(tipo, contenido) {
 // Función para registrar paciente
 async function registrarPaciente(datos) {
     try {
-        console.log(' Enviando datos:', datos);
-        
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("Token no encontrado. Inicie sesión nuevamente.");
+        }
+
         const response = await fetch(`${API_URL}/paciente/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token  // <-- TOKEN AQUI
             },
             body: JSON.stringify(datos)
         });
@@ -32,7 +39,6 @@ async function registrarPaciente(datos) {
         const data = await response.json();
 
         if (!response.ok) {
-            // Si es error 422 (validación), procesar los errores
             if (response.status === 422 && data.detail) {
                 const errores = data.detail.map(error => {
                     const campo = error.loc[error.loc.length - 1];
@@ -56,7 +62,7 @@ async function registrarPaciente(datos) {
         }
 
         return data;
-        
+
     } catch (error) {
         console.error(' Error:', error);
         throw error;
@@ -66,7 +72,74 @@ async function registrarPaciente(datos) {
 // Manejar el formulario
 document.getElementById('registroForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        mostrarMensaje('error', 'Debe iniciar sesión nuevamente. Token no encontrado.');
+        return;
+    }
+
+    document.getElementById('message').style.display = 'none';
+
+    const datos = {
+        cedula: document.getElementById('cedula').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        nombre: document.getElementById('nombre').value.trim(),
+        telefono: document.getElementById('telefono').value.trim()
+        // YA NO SE ENVÍA fisio_id porque viene del JWT
+    };
+
+    if (!datos.cedula || !datos.email || !datos.nombre || !datos.telefono) {
+        mostrarMensaje('error', 'Todos los campos son obligatorios');
+        return;
+    }
+
+    try {
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Registrando...';
+
+        const resultado = await registrarPaciente(datos);
+
+        mostrarMensaje('exito', `
+            <strong>Registro exitoso</strong><br>
+            ${resultado.mensaje}<br><br>
+            <strong>Correo:</strong> ${resultado.credenciales.correo}<br>
+            <strong>Contraseña generada:</strong> ${resultado.credenciales.contrasena}
+        `);
+
+        e.target.reset();
+
+        setTimeout(() => {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Registrar';
+        }, 2500);
+
+    } catch (error) {
+        mostrarMensaje('error', `
+            <strong>Error en el registro</strong><br>
+            ${error.message}
+        `);
+
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Registrar';
+    }
+});
+
+console.log(' Script de registro de paciente cargado correctamente');
+
+// Manejar el formulario
+document.getElementById('registroForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
     
+    const fisioId = localStorage.getItem("cedula"); // <-- AHORA SÍ AQUÍ
+
+    if (!fisioId) {
+        mostrarMensaje('error', 'No se encontró el ID del fisioterapeuta. Inicie sesión nuevamente.');
+        return;
+    }
     document.getElementById('message').style.display = 'none';
     
     // Obtener valores
@@ -74,7 +147,8 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         cedula: document.getElementById('cedula').value.trim(),
         email: document.getElementById('email').value.trim(),
         nombre: document.getElementById('nombre').value.trim(),
-        telefono: document.getElementById('telefono').value.trim()
+        telefono: document.getElementById('telefono').value.trim(),
+        fisio_id: fisioId
     };
 
     // Validar campos vacíos

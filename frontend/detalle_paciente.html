@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Paciente</title>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="assets/css/detalle_paciente.css">
+
+    <!-- Librería para la gráfica -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="page-container">
+
+        <h1 class="titulo">Avance del Paciente</h1>
+        <h2 id="tituloCedula" class="subtitulo"></h2>
+
+        <div class="card">
+            <h3 class="card-title">Resumen por Grupo</h3>
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Grupo</th>
+                        <th>Total</th>
+                        <th>Completados</th>
+                        <th>Pendientes</th>
+                        <th>Progreso %</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaProgreso"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Gráfica de Progreso</h3>
+            <canvas id="graficaProgreso"></canvas>
+        </div>
+
+    </div>
+
+    <script src="assets/js/detalle_paciente.js"></script>
+</body>
+</html>
