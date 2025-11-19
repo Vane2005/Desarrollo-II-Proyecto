@@ -55,11 +55,11 @@ def registrar(
 
         # Crear relación en TRATA (unión fisio – paciente)
         query = text("""
-            INSERT INTO trata (cedula_fisio, cedula_paciente)
-            VALUES (:cedula_fisio, :cedula_paciente)
+            INSERT INTO trata (cedula_fisioterapeuta, cedula_paciente)
+            VALUES (:cedula_fisioterapeuta, :cedula_paciente)
         """)
         db.execute(query, {
-            "cedula_fisio": cedula_fisio,
+            "cedula_fisioterapeuta": cedula_fisio,
             "cedula_paciente": datos.cedula
         })
         db.commit()
