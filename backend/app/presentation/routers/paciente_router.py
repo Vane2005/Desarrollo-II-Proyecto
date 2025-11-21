@@ -50,7 +50,8 @@ def registrar(
             cedula=datos.cedula,
             correo=datos.email,
             nombre=datos.nombre,
-            telefono=datos.telefono
+            telefono=datos.telefono,
+            historiaclinica=datos.historiaclinica
         )
 
         # Crear relación en TRATA (unión fisio – paciente)

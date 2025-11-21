@@ -92,6 +92,7 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         email: document.getElementById('email').value.trim(),
         nombre: document.getElementById('nombre').value.trim(),
         telefono: document.getElementById('telefono').value.trim(),
+        historiaclinica: document.getElementById('historiaclinica').value.trim(),
         fisio_id: fisioId   // 🚀 AQUI SE ENVIA PARA LA TABLA TRATA
     };
 
