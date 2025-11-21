@@ -692,34 +692,30 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-document.getElementById("btnMostrarTodos").addEventListener("click", async () => {
+ 
+ document.getElementById("filtroEstado").addEventListener("change", async (event) => {
+    const estado = event.target.value;  // todos | activo | inactivo
+    const fisioId = localStorage.getItem("cedula");
+
     try {
-        const fisioId = localStorage.getItem("cedula");
-
-        if (!fisioId) {
-            console.error("No hay fisioId en localStorage");
-            alert("Error: no se encontró la cédula del fisioterapeuta");
-            return;
-        }
-
         const res = await fetch(`${PACIENTE_API_URL}/todos?fisio_id=${fisioId}`);
+        const pacientes = await res.json();
 
-        if (!res.ok) {
-            throw new Error("Error al obtener lista de pacientes");
+        // Filtrar aquí
+        let filtrados = pacientes;
+        if (estado !== "todos") {
+            filtrados = pacientes.filter(p => p.estado === estado);
         }
 
-        const data = await res.json();
+        mostrarPacientes(filtrados);
 
-        mostrarPacientes(data);  // tu función existente
-
-    } catch (error) {
-        console.error("Error mostrando todos los pacientes:", error);
-        alert(error.message);
+    } catch (err) {
+        console.error("Error en el filtro:", err);
     }
-    
-   function mostrarPacientes(pacientes) {
+});
+function mostrarPacientes(pacientes) {
     const container = document.getElementById("patientProgressList");
-    container.innerHTML = ""; // limpiar antes de agregar
+    container.innerHTML = "";
 
     if (!pacientes || pacientes.length === 0) {
         container.innerHTML = `<p style="text-align:center; color:#666;">No se encontraron pacientes</p>`;
@@ -727,42 +723,29 @@ document.getElementById("btnMostrarTodos").addEventListener("click", async () =>
     }
 
     pacientes.forEach(p => {
-        // Datos por defecto (porque tu endpoint no los trae)
-        const porcentaje = p.porcentaje || 0;
-        const completados = p.completados || 0;
-        const total = p.total || 0;
-
         const progressItem = document.createElement("div");
         progressItem.classList.add("patient-progress-item");
 
         progressItem.innerHTML = `
             <div class="progress-info">
                 <p class="patient-name">${p.nombre}</p>
+                <p class="patient-status">Estado: <strong>${p.estado}</strong></p>
                 <p class="progress-label">
-                    Avance: <span class="progress-percentage">${porcentaje}%</span>
-                    <span style="font-size: 0.9em; color: #666; margin-left: 10px;">
-                        (${completados} completados / ${total} total)
-                    </span>
+                    Avance: <span class="progress-percentage">${p.porcentaje || 0}%</span>
                 </p>
             </div>
-
             <div class="progress-bar">
-                <div class="progress-fill" style="width: ${porcentaje}%"></div>
+                <div class="progress-fill" style="width: ${p.porcentaje || 0}%"></div>
             </div>
-
             <div class="patient-actions">
                 <button class="btn-action btn-details" data-cedula="${p.cedula}">Ver Detalles</button>
                 <button class="btn-action btn-edit-paciente" data-cedula="${p.cedula}">Editar Paciente</button>
                 <button class="btn-action btn-disable" data-cedula="${p.cedula}">Inhabilitar Paciente</button>
             </div>
         `;
-
         container.appendChild(progressItem);
     });
 }
 
 
-
-
-});
 })

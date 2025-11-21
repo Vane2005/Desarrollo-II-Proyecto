@@ -118,7 +118,12 @@
           <div class="search-bar">
             <input type="text" id="cedulaAvanceInput" placeholder="Ingrese la cédula del paciente">
             <button class="btn-search" id="btnBuscarAvance">Buscar</button>
-            <button class="btn-search" id="btnMostrarTodos" style="margin-left: 10px;">Mostrar Todos</button>
+            <select id="filtroEstado" class="btn-search" style="margin-left: 10px;">
+            <option value="todos">Mostrar Todos</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+            </select>
+
           </div>
         </div>
 
