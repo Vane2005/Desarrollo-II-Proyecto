@@ -176,7 +176,7 @@ def obtener_paciente(
 ):
     try:
         query = text("""
-            SELECT p.nombre, p.correo, p.telefono
+            SELECT p.nombre, p.correo, p.telefono, p.historiaclinica
             FROM Paciente p
             INNER JOIN trata t ON p.cedula = t.cedula_paciente
             WHERE p.cedula = :cedula
@@ -194,7 +194,8 @@ def obtener_paciente(
         return {
             "nombre": paciente[0],
             "correo": paciente[1],
-            "telefono": paciente[2]
+            "telefono": paciente[2],
+            "historiaclinica": paciente[3]
         }
 
     except Exception as e:
