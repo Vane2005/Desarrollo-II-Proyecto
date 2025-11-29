@@ -54,6 +54,7 @@ class PacienteCreate(BaseModel):
     email: EmailStr = Field(..., description="Email ")
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo")
     telefono: str = Field(..., min_length=7, max_length=15, description="Número de teléfono")
+    historiaclinica: str 
 
     class Config:
         json_schema_extra = {
@@ -61,7 +62,8 @@ class PacienteCreate(BaseModel):
                 "cedula": "1234567890",
                 "email": "paciente@ejemplo.com",
                 "nombre": "Juan Pérez",
-                "telefono": "3001234567"
+                "telefono": "3001234567",
+                "historiaclinica": "Paciente con antecedentes..."
             }
         }   
 

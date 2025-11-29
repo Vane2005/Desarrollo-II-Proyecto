@@ -67,7 +67,7 @@ def enviar_correo(destinatario: str, contrasena: str, nombre: str):
 # ----------------------------------------------------------
 #  Función principal: Crear un nuevo paciente
 # ----------------------------------------------------------
-def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
+def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str,historiaclinica: str = None):
     """
     Crea un nuevo paciente con una contraseña aleatoria generada automáticamente.
     """
@@ -86,7 +86,8 @@ def crear(db: Session, cedula: str, correo: str, nombre: str, telefono: str):
             correo=correo,
             contrasena=contrasena_hash,
             telefono=telefono,
-            estado="activo"
+            estado="activo",
+            historiaclinica=historiaclinica
         )
 
         # 4️ Guardar en la base de datos

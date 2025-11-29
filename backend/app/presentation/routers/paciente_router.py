@@ -50,16 +50,17 @@ def registrar(
             cedula=datos.cedula,
             correo=datos.email,
             nombre=datos.nombre,
-            telefono=datos.telefono
+            telefono=datos.telefono,
+            historiaclinica=datos.historiaclinica
         )
 
         # Crear relación en TRATA (unión fisio – paciente)
         query = text("""
-            INSERT INTO trata (cedula_fisio, cedula_paciente)
-            VALUES (:cedula_fisio, :cedula_paciente)
+            INSERT INTO trata (cedula_fisioterapeuta, cedula_paciente)
+            VALUES (:cedula_fisioterapeuta, :cedula_paciente)
         """)
         db.execute(query, {
-            "cedula_fisio": cedula_fisio,
+            "cedula_fisioterapeuta": cedula_fisio,
             "cedula_paciente": datos.cedula
         })
         db.commit()
@@ -175,7 +176,7 @@ def obtener_paciente(
 ):
     try:
         query = text("""
-            SELECT p.nombre, p.correo, p.telefono
+            SELECT p.nombre, p.correo, p.telefono, p.historiaclinica
             FROM Paciente p
             INNER JOIN trata t ON p.cedula = t.cedula_paciente
             WHERE p.cedula = :cedula
@@ -193,7 +194,8 @@ def obtener_paciente(
         return {
             "nombre": paciente[0],
             "correo": paciente[1],
-            "telefono": paciente[2]
+            "telefono": paciente[2],
+            "historiaclinica": paciente[3]
         }
 
     except Exception as e:

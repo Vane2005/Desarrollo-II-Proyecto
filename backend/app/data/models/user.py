@@ -19,3 +19,4 @@ class User_Paciente(Base):
     contrasena = Column(String, nullable=False)
     telefono = Column(String, nullable=False)
     estado = Column(String, nullable=False, default="activo")
+    historiaclinica = Column(String, nullable=True)
