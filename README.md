@@ -1,4 +1,8 @@
-# TerapiaFisica+ 🏥
+# Proyecto Final - TerapiaFisica+ 🏥
+
+## Integrantes
+- Vanessa Durán Mona 2359394
+- Alejandra Osorio Giraldo 2266128
 
 Sistema integral de gestión de terapias físicas que conecta fisioterapeutas con pacientes para el seguimiento y asignación de ejercicios terapéuticos.
 
