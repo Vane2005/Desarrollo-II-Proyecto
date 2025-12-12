@@ -660,8 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="patient-actions">
         <button class="btn-action btn-details" data-cedula="${pacienteInfo.cedula}">Ver Detalles</button>
-        <button class="btn-action btn-edit-paciente" data-cedula="${pacienteInfo.cedula}">Editar Paciente</button>
-        <button class="btn-action btn-disable" data-cedula="${pacienteInfo.cedula}">Inhabilitar Paciente</button>
+        
       </div>
     `
 
@@ -739,8 +738,7 @@ function mostrarPacientes(pacientes) {
             </div>
             <div class="patient-actions">
                 <button class="btn-action btn-details" data-cedula="${p.cedula}">Ver Detalles</button>
-                <button class="btn-action btn-edit-paciente" data-cedula="${p.cedula}">Editar Paciente</button>
-                <button class="btn-action btn-disable" data-cedula="${p.cedula}">Inhabilitar Paciente</button>
+                
             </div>
         `;
         container.appendChild(progressItem);

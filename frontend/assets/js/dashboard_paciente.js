@@ -569,7 +569,8 @@ async function cargarInfoPaciente() {
   try {
     console.log(`📋 Cargando información del paciente: ${cedula}`)
 
-    const response = await fetch(`${API_URL}/${cedula}`)
+    const response = await fetch(`${API_URL}/solo/${cedula}`);
+
 
     if (!response.ok) {
       throw new Error(`Error al obtener información: ${response.status}`)

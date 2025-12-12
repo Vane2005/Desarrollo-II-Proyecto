@@ -12,7 +12,7 @@ function mostrarMensaje(tipo, contenido) {
     if (tipo === 'exito') {
         setTimeout(() => {
             messageDiv.style.display = 'none';
-        }, 5000);
+        }, 7000);
     }
 }
 
@@ -102,6 +102,38 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         return;
     }
 
+        // Validar cédula: solo números y entre 6 y 20 dígitos
+    if (!/^[0-9]+$/.test(datos.cedula)) {
+        mostrarMensaje('error', 'La cédula debe contener solo números');
+        return;
+    }
+    if (datos.cedula.length < 6 || datos.cedula.length > 20) {
+        mostrarMensaje('error', 'La cédula debe tener entre 6 y 20 dígitos');
+        return;
+    }
+
+    // Validar nombre: mínimo 2 caracteres
+    if (datos.nombre.length < 2) {
+        mostrarMensaje('error', 'El nombre debe tener al menos 2 caracteres');
+        return;
+    }
+
+    // Validar email con expresión regular
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+        mostrarMensaje('error', 'El email no es válido');
+        return;
+    }
+
+    // Validar teléfono: solo números y entre 7 y 15 dígitos
+    if (!/^[0-9]+$/.test(datos.telefono)) {
+        mostrarMensaje('error', 'El teléfono debe contener solo números');
+        return;
+    }
+    if (datos.telefono.length < 7 || datos.telefono.length > 15) {
+        mostrarMensaje('error', 'El teléfono debe tener entre 7 y 15 dígitos');
+        return;
+    }
+
     try {
         // Deshabilitar botón
         const btnSubmit = e.target.querySelector('button[type="submit"]');
@@ -111,12 +143,12 @@ document.getElementById('registroForm')?.addEventListener('submit', async (e) =>
         // Registrar en backend
         const resultado = await registrarPaciente(datos);
 
-        mostrarMensaje('exito', `
-            <strong>Registro exitoso</strong><br>
-            ${resultado.mensaje}<br><br>
-            <strong>Correo:</strong> ${resultado.credenciales.correo}<br>
-            <strong>Contraseña generada:</strong> ${resultado.credenciales.contrasena}
-        `);
+        mostrarMensaje('exito',
+        `<strong>Registro exitoso</strong><br>
+        Las credenciales han sido enviadas al correo del paciente.`
+            );
+
+
 
         e.target.reset();
 

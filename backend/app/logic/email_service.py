@@ -211,3 +211,80 @@ def send_email(to: str, subject: str, body: str):
     except Exception as e:
         print(f"Error al enviar correo: {e}")
         raise
+
+def send_patient_credentials(to: str, nombre: str, correo:str,cedula: str, contrasena: str):
+    """
+    Envía al paciente sus credenciales iniciales de acceso cuando el fisioterapeuta lo registra.
+    """
+    try:
+        if not EMAIL_ORIGEN or not EMAIL_PASSWORD:
+            raise Exception("Configuración de email incompleta. Verifica EMAIL_ORIGEN y EMAIL_PASSWORD en .env")
+
+        msg = MIMEMultipart('alternative')
+        msg["Subject"] = "Tus credenciales de acceso - TerapiaFisica+"
+        msg["From"] = EMAIL_ORIGEN
+        msg["To"] = to
+
+        # ----------- HTML bonito -----------
+        html_content = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <div style="max-width: 600px; margin: auto; padding: 20px;">
+                    <div style="background: #138d75; padding: 25px; text-align:center; border-radius: 10px 10px 0 0;">
+                        <h2 style="color:white; margin:0;">Bienvenido a TerapiaFisica+</h2>
+                        <p style="color:white; margin-top:5px;">Tus credenciales de acceso</p>
+                    </div>
+
+                    <div style="background:#f9f9f9; padding:30px; border-radius:0 0 10px 10px;">
+                        <p>Hola <strong>{nombre}</strong>,</p>
+                        <p>Has sido registrado en el sistema por tu fisioterapeuta. Aquí están tus datos de ingreso:</p>
+
+                        <div style="background:white; border-left:4px solid #138d75; padding:15px; margin:20px 0;">
+                            <p><strong>Cedula:</strong> {cedula}</p>
+                            <p><strong>Contraseña temporal:</strong> {contrasena}</p>
+                        </div>
+
+                        <p style="background:#fff3cd; padding:15px; border-radius:5px;">
+                            <strong>⚠️ Recomendación:</strong> Cambia tu contraseña al iniciar sesión.
+                        </p>
+
+                      
+
+                        <p style="font-size:12px; color:#999; margin-top:30px; text-align:center;">
+                            © 2025 TerapiaFisica+ — Tu bienestar es nuestra prioridad.
+                        </p>
+                    </div>
+                </div>
+            </body>
+        </html>
+        """
+
+        # ----------- Texto alternativo -----------
+        text_content = f"""
+        Hola {nombre},
+
+        Has sido registrado en TerapiaFisica+.
+
+        Aquí están tus credenciales de ingreso:
+        Cedula: {cedula}
+        Contraseña: {contrasena}
+
+        
+        Cambia tu contraseña después del primer ingreso.
+
+        ¡Bienvenido!
+        """
+
+        msg.attach(MIMEText(text_content, 'plain'))
+        msg.attach(MIMEText(html_content, 'html'))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(EMAIL_ORIGEN, EMAIL_PASSWORD)
+            server.send_message(msg)
+
+        print(f"Correo de credenciales enviado a {to}")
+        return True
+
+    except Exception as e:
+        print(f"Error al enviar correo: {e}")
+        raise Exception(f"Error al enviar correo: {str(e)}")

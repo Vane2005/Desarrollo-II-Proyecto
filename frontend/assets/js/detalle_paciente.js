@@ -193,4 +193,60 @@ document.addEventListener("DOMContentLoaded", async () => {
         showPageError("Error al cargar el progreso del paciente.");
         return;
     }
+
+    async function cargarCalificaciones() {
+    try {
+        const url = `${PACIENTE_API}/calificaciones/${encodeURIComponent(cedula)}`;
+
+        console.log("DEBUG calificaciones URL:", url);
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+            console.error("Error al obtener calificaciones", res.status);
+            return;
+        }
+
+        const datos = await res.json();
+        console.log("DEBUG calificaciones:", datos);
+
+        mostrarCalificaciones(datos);
+
+    } catch (error) {
+        console.error("Error cargando calificaciones:", error);
+    }
+}
+function mostrarCalificaciones(lista) {
+    const tbody = document.getElementById("tablaCalificaciones");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">Este paciente aún no ha calificado ejercicios.</td></tr>`;
+        return;
+    }
+
+    lista.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const fecha = item.fecha_realizado
+            ? item.fecha_realizado.split("T")[0]
+            : "—";
+
+        tr.innerHTML = `
+            <td>${item.ejercicio}</td>
+            <td>${item.dolor ?? "—"}</td>
+            <td>${item.sensacion ?? "—"}</td>
+            <td>${item.cansancio ?? "—"}</td>
+            <td>${item.observaciones ?? "—"}</td>
+            <td>${fecha}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+cargarCalificaciones();
+
 });

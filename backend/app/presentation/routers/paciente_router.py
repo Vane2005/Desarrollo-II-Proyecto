@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from presentation.routers.auth_router import get_current_user
+from logic.email_service import send_patient_credentials
+
+
 
 from presentation.schemas.usuario_schema import (
     PacienteCreate, 
@@ -53,6 +56,15 @@ def registrar(
             telefono=datos.telefono,
             historiaclinica=datos.historiaclinica
         )
+         # 🔥 ENVIAR CORREO AQUÍ 🔥
+        send_patient_credentials(
+            to=usuario.correo,
+            nombre=usuario.nombre,
+            cedula=usuario.cedula,
+            correo=usuario.correo,
+            contrasena=contrasena_generada
+        )
+
 
         # Crear relación en TRATA (unión fisio – paciente)
         query = text("""
@@ -164,9 +176,38 @@ def obtener_todos_pacientes(
         raise HTTPException(500, f"Error: {str(e)}")
 
 
+# ============================================================
+# 4 BUSCAR PACIENTE POR CÉDULA SOLO
+# ============================================================
+@router.get("/solo/{cedula}")
+def obtener_paciente(
+    cedula: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("""
+            SELECT p.nombre, p.correo, p.telefono, p.historiaclinica
+            FROM Paciente p
+            WHERE p.cedula = :cedula
+        """)
+
+        paciente = db.execute(query, {"cedula": cedula}).fetchone()
+
+        if not paciente:
+            raise HTTPException(404, "Paciente no encontrado")
+
+        return {
+            "nombre": paciente[0],
+            "correo": paciente[1],
+            "telefono": paciente[2],
+            "historiaclinica": paciente[3]
+        }
+
+    except Exception as e:
+        raise HTTPException(500, str(e))
 
 # ============================================================
-# 4 BUSCAR PACIENTE POR CÉDULA
+# 4 BUSCAR PACIENTE POR CÉDULA Y FISIO
 # ============================================================
 @router.get("/{cedula}")
 def obtener_paciente(
@@ -585,3 +626,50 @@ def obtener_ejercicios_asignados_por_grupo(cedula: str, db: Session = Depends(ge
         print("ERROR en /paciente/ejercicios-asignados-por-grupo:")
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================
+# 12 OBTENER CALIFICACIONES DE UN PACIENTE (SOLO LECTURA)
+# ============================================================
+@router.get("/calificaciones/{cedula}")
+def obtener_calificaciones(
+    cedula: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("""
+            SELECT 
+                e.nombre AS ejercicio,
+                t.dolor,
+                t.sensacion,
+                t.cansancio,
+                t.observaciones,
+                t.fecha_realizacion
+            FROM terapia_asignada t
+            INNER JOIN ejercicio e 
+                ON t.id_ejercicio = e.id_ejercicio
+            WHERE t.cedula_paciente = :cedula
+              AND t.fecha_realizacion IS NOT NULL   -- el paciente ya lo realizó
+            ORDER BY t.fecha_realizacion DESC
+        """)
+
+        resultados = db.execute(query, {"cedula": cedula}).fetchall()
+
+        lista = [
+            {
+                "ejercicio": r.ejercicio,
+                "dolor": r.dolor,
+                "sensacion": r.sensacion,
+                "cansancio": r.cansancio,
+                "observaciones": r.observaciones,
+                "fecha_realizado": r.fecha_realizacion
+            }
+            for r in resultados
+        ]
+
+        return lista
+
+    except Exception as e:
+        print("ERROR EN /paciente/calificaciones:", e)
+        raise HTTPException(status_code=500, detail="Error obteniendo calificaciones")
+
+
