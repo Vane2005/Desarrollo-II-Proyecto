@@ -1,0 +1,123 @@
+/* === BOTÓN CIRCULAR ABAJO A LA IZQUIERDA === */
+.chat-circle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;              /* 🔥 esto lo pone abajo a la izquierda */
+    width: 65px;
+    height: 65px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.chat-circle-btn:hover {
+    transform: scale(1.08);
+}
+
+/* === VENTANA DEL CHAT === */
+.chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;     /* 🔥 ventana sale encima del botón */
+    width: 320px;
+    height: 420px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    display: none;   /* 🔥 oculta hasta que den click */
+    flex-direction: column;
+    z-index: 9999;
+}
+
+/* Header */
+.chat-header {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.chat-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Mensajes */
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 15px;
+}
+
+.message {
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.user-msg {
+    background: #d1e7ff;
+    margin-left: auto;
+}
+
+.bot-msg {
+    background: #eeeeee;
+}
+
+/* Input */
+.chat-input-box {
+    display: flex;
+    border-top: 1px solid #ccc;
+}
+
+#chatInput {
+    flex: 1;
+    padding: 10px;
+    border: none;
+}
+
+#sendChat {
+    width: 50px;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+}
+.chat-options {
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chat-option {
+    background: #4A90E2;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.chat-option:hover {
+    background: #357ABD;
+}
+
